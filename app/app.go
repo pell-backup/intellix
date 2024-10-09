@@ -1,6 +1,8 @@
 package app
 
 import (
+	pkglogger "intellix/pkg/logger"
+	"intellix/pkg/taskdispatcher"
 	"io"
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
@@ -149,6 +151,8 @@ type App struct {
 
 	// simulation manager
 	sm *module.SimulationManager
+
+	TaskDispatcher *taskdispatcher.TaskDispatcher
 }
 
 func init() {
@@ -297,6 +301,15 @@ func New(
 	if err := app.Load(loadLatest); err != nil {
 		return nil, err
 	}
+
+	// init taskDispatcher
+	cmtLogger := pkglogger.NewCometBFTLogAdapter(logger)
+	// todo: using config
+	taskDispatcher, err := taskdispatcher.NewTaskDispatcher(cmtLogger, "", "", nil)
+	if err != nil {
+		panic(err)
+	}
+	app.TaskDispatcher = taskDispatcher
 
 	return app, nil
 }
