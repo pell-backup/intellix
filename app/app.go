@@ -76,8 +76,8 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
 	intellixmodulekeeper "intellix/x/intellix/keeper"
-	oraclemodulekeeper "intellix/x/oracle/keeper"
 
+	pricemodulekeeper "intellix/x/price/keeper"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	"intellix/docs"
@@ -144,7 +144,7 @@ type App struct {
 	ScopedKeepers             map[string]capabilitykeeper.ScopedKeeper
 
 	IntellixKeeper intellixmodulekeeper.Keeper
-	OracleKeeper   oraclemodulekeeper.Keeper
+	PriceKeeper    pricemodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
@@ -249,7 +249,7 @@ func New(
 		&app.GroupKeeper,
 		&app.CircuitBreakerKeeper,
 		&app.IntellixKeeper,
-		&app.OracleKeeper,
+		&app.PriceKeeper,
 		// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	); err != nil {
 		panic(err)

@@ -54,11 +54,11 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	intellixmodulev1 "intellix/api/intellix/intellix/module"
-	oraclemodulev1 "intellix/api/intellix/oracle/module"
+	pricemodulev1 "intellix/api/intellix/price/module"
 	_ "intellix/x/intellix/module" // import for side-effects
 	intellixmoduletypes "intellix/x/intellix/types"
-	_ "intellix/x/oracle/module" // import for side-effects
-	oraclemoduletypes "intellix/x/oracle/types"
+	_ "intellix/x/price/module" // import for side-effects
+	pricemoduletypes "intellix/x/price/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
@@ -97,7 +97,7 @@ var (
 		circuittypes.ModuleName,
 		// chain modules
 		intellixmoduletypes.ModuleName,
-		oraclemoduletypes.ModuleName,
+		pricemoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	}
 
@@ -123,7 +123,7 @@ var (
 		ibcfeetypes.ModuleName,
 		// chain modules
 		intellixmoduletypes.ModuleName,
-		oraclemoduletypes.ModuleName,
+		pricemoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	}
 
@@ -143,7 +143,7 @@ var (
 		ibcfeetypes.ModuleName,
 		// chain modules
 		intellixmoduletypes.ModuleName,
-		oraclemoduletypes.ModuleName,
+		pricemoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 	}
 
@@ -304,8 +304,8 @@ var (
 				Config: appconfig.WrapAny(&intellixmodulev1.Module{}),
 			},
 			{
-				Name:   oraclemoduletypes.ModuleName,
-				Config: appconfig.WrapAny(&oraclemodulev1.Module{}),
+				Name:   pricemoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&pricemodulev1.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},

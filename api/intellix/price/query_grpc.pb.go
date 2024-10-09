@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             (unknown)
-// source: intellix/intellix/query.proto
+// source: intellix/price/query.proto
 
-package intellix
+package price
 
 import (
 	context "context"
@@ -20,7 +20,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Params_FullMethodName = "/intellix.intellix.Query/Params"
+	Query_Params_FullMethodName = "/intellix.price.Query/Params"
 )
 
 // QueryClient is the client API for Query service.
@@ -99,7 +99,7 @@ func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interf
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Query_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "intellix.intellix.Query",
+	ServiceName: "intellix.price.Query",
 	HandlerType: (*QueryServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -108,5 +108,5 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "intellix/intellix/query.proto",
+	Metadata: "intellix/price/query.proto",
 }

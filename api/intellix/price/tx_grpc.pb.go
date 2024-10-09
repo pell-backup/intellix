@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             (unknown)
-// source: intellix/intellix/tx.proto
+// source: intellix/price/tx.proto
 
-package intellix
+package price
 
 import (
 	context "context"
@@ -20,7 +20,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_UpdateParams_FullMethodName = "/intellix.intellix.Msg/UpdateParams"
+	Msg_UpdateParams_FullMethodName = "/intellix.price.Msg/UpdateParams"
 )
 
 // MsgClient is the client API for Msg service.
@@ -101,7 +101,7 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Msg_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "intellix.intellix.Msg",
+	ServiceName: "intellix.price.Msg",
 	HandlerType: (*MsgServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -110,5 +110,5 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "intellix/intellix/tx.proto",
+	Metadata: "intellix/price/tx.proto",
 }
