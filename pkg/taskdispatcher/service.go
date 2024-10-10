@@ -3,13 +3,13 @@ package taskdispatcher
 import (
 	"context"
 	"fmt"
+	contractPriceOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/PriceOracle"
 	"github.com/cometbft/cometbft/libs/json"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cometbft/cometbft/libs/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	incrediblePriceTaskManager "intellix/bindings/IncrediblePriceTaskManager"
 	"intellix/pkg/pelldvs"
 )
 
@@ -18,7 +18,7 @@ type TaskDispatcher struct {
 
 	logger        log.Logger
 	pellDVSClient *pelldvs.Client
-	contract      *incrediblePriceTaskManager.ContractIncrediblePriceTaskManager
+	contract      *contractPriceOracle.ContractPriceOracle
 }
 
 func NewTaskDispatcher(logger log.Logger, ethURL, contractAddress string, pellDVSClient *pelldvs.Client) (*TaskDispatcher, error) {
@@ -27,7 +27,7 @@ func NewTaskDispatcher(logger log.Logger, ethURL, contractAddress string, pellDV
 		return nil, fmt.Errorf("failed to connect to Ethereum client: %w", err)
 	}
 
-	contract, err := incrediblePriceTaskManager.NewContractIncrediblePriceTaskManager(common.HexToAddress(contractAddress), ethClient)
+	contract, err := contractPriceOracle.NewContractPriceOracle(common.HexToAddress(contractAddress), ethClient)
 	if err != nil {
 		return nil, fmt.Errorf("failed to instantiate contract: %w", err)
 	}
@@ -43,7 +43,7 @@ func NewTaskDispatcher(logger log.Logger, ethURL, contractAddress string, pellDV
 }
 
 func (td *TaskDispatcher) listenForNewTasks() {
-	newTaskChan := make(chan *incrediblePriceTaskManager.ContractIncrediblePriceTaskManagerNewTaskCreated)
+	newTaskChan := make(chan *contractPriceOracle.ContractPriceOracleNewTaskCreated)
 	sub, err := td.contract.WatchNewTaskCreated(&bind.WatchOpts{}, newTaskChan, nil)
 	if err != nil {
 		td.logger.Error("Failed to watch for new tasks", "error", err)
@@ -64,8 +64,8 @@ func (td *TaskDispatcher) listenForNewTasks() {
 	}
 }
 
-func (td *TaskDispatcher) handleNewTask(newTask *incrediblePriceTaskManager.ContractIncrediblePriceTaskManagerNewTaskCreated) {
-	td.logger.Info("New task created", "TaskIndex", newTask.TaskIndex, "priceId", newTask.Task.PriceId)
+func (td *TaskDispatcher) handleNewTask(newTask *contractPriceOracle.ContractPriceOracleNewTaskCreated) {
+	td.logger.Info("New task created", "TaskIndex", newTask.TaskIndex, "RequestId", newTask.Task.RequestId)
 
 	// serialize
 	taskData, err := td.serializeTask(newTask.Task)
@@ -84,10 +84,10 @@ func (td *TaskDispatcher) handleNewTask(newTask *incrediblePriceTaskManager.Cont
 	td.logger.Info("Task sent to PellDVS successfully", "TaskIndex", newTask.TaskIndex)
 }
 
-func (td *TaskDispatcher) serializeTask(task incrediblePriceTaskManager.IIncrediblePriceTaskManagerTask) ([]byte, error) {
+func (td *TaskDispatcher) serializeTask(task contractPriceOracle.IPriceOracleTask) ([]byte, error) {
 	// todo: serialize to proto-buffer, mock json for now
 	return json.Marshal(map[string]interface{}{
-		"priceId":                   task.PriceId,
+		"RequestId":                 task.RequestId,
 		"requestData":               task.RequestData,
 		"callbackAddress":           task.CallbackAddress.Hex(),
 		"callbackFunctionId":        task.CallbackFunctionId,
