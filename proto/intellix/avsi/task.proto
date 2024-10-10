@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package intellix.avsi;
+
+message Task {
+  bytes price_id = 1;
+  bytes request_data = 2;
+  string callback_address = 3;
+  bytes callback_function_id = 4;
+  uint32 task_created_block = 5;
+  bytes quorum_numbers = 6;
+  uint32 quorum_threshold_percentage = 7;
+}
+
+message TaskRequest {
+  uint32 task_num = 1;
+  Task task = 2;
+}
