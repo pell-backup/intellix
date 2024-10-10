@@ -3,13 +3,15 @@ syntax = "proto3";
 package intellix.avsi;
 
 message Task {
-  bytes price_id = 1;
-  bytes request_data = 2;
-  string callback_address = 3;
-  bytes callback_function_id = 4;
-  uint32 task_created_block = 5;
-  bytes quorum_numbers = 6;
-  uint32 quorum_threshold_percentage = 7;
+  bytes request_id = 1;
+  string fee_token = 2;
+  string payment = 3 [(gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int", (gogoproto.nullable) = false];
+  bytes request_data = 4;
+  string callback_address = 5;
+  bytes callback_function_id = 6;
+  uint32 task_created_block = 7;
+  bytes quorum_numbers = 8;
+  uint32 quorum_threshold_percentage = 9;
 }
 
 message TaskRequest {
