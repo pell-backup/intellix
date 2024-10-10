@@ -1,0 +1,65 @@
+name: Golang Linter
+# Lint runs golangci-lint over the entire CometBFT repository.
+#
+# This workflow is run on every pull request and push to v0.38.x.
+#
+# The `golangci` job will pass without running if no *.{go, mod, sum}
+# files have been modified.
+#
+# To run this locally, simply run `make lint` from the root of the repo.
+
+on:
+  workflow_dispatch:  # allow running workflow manually
+  pull_request:
+  push:
+    branches:
+      - master
+jobs:
+  golangci:
+    name: golangci-lint
+    runs-on: [ "self-hosted", "Linux", "X64", "ci" ]
+    timeout-minutes: 10
+    steps:
+      - name: Setup new work dir
+        id: setup_new_work_dir
+        run: |
+          CLEAN_WORKFLOW_NAME=$(echo "${{ github.workflow }}" | tr -cs '[:alnum:]' '_')
+          CLEAN_JOB_NAME=$(echo "${{ github.job }}" | tr -cs '[:alnum:]' '_')
+          echo "NEW_WORK_DIR=./codes/${CLEAN_WORKFLOW_NAME}/${CLEAN_JOB_NAME}" >> $GITHUB_ENV
+      - uses: actions/checkout@v4
+        with:
+          path: ${{ env.NEW_WORK_DIR }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: false
+#      - uses: technote-space/get-diff-action@v6
+#        with:
+#          RELATIVE: ${{ env.NEW_WORK_DIR }}
+#          PATTERNS: |
+#            **/**.go
+#            go.mod
+#            go.sum
+      - name: setup go private modules
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          go env -w GOPRIVATE=github.com/0xPellNetwork
+          go env -w GONOSUMDB=github.com/0xPellNetwork
+          git config --global url."https://${GH_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
+      - name: download go modules
+        run: go mod download
+        working-directory: ${{ env.NEW_WORK_DIR }}
+      - name: install golangci-lint
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3
+        working-directory: ${{ env.NEW_WORK_DIR }}
+      - name: run golangci-lint manually
+        run: golangci-lint run --timeout 10m
+        working-directory: ${{ env.NEW_WORK_DIR }}
+
+#      - uses: golangci/golangci-lint-action@v6
+#        with:
+#          version: latest
+#          args: --timeout 10m
+#          github-token: ${{ secrets.github_token }}
+##        if: env.GIT_DIFF
