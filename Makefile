@@ -76,15 +76,15 @@ all: build test install
 include tests.mk
 
 ###############################################################################
-###                                Build PellDVS                           ###
+###                                Build Intellixd                           ###
 ###############################################################################
 
-#? build: Build PellDVS
+#? build: Build Intellixd
 build:
 	CGO_ENABLED=$(CGO_ENABLED) go build $(BUILD_FLAGS) -tags '$(BUILD_TAGS)' -o $(OUTPUT) ./cmd/intellixd/
 .PHONY: build
 
-#? install: Install PellDVS to GOBIN
+#? install: Install Intellixd to GOBIN
 install:
 	CGO_ENABLED=$(CGO_ENABLED) go install $(BUILD_FLAGS) -tags $(BUILD_TAGS) ./cmd/intellixd
 .PHONY: install
