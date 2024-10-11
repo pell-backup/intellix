@@ -1,0 +1,51 @@
+name: Build
+# Tests runs different tests (test_abci_apps, test_abci_cli, test_apps)
+# This workflow runs on every push to v0.38.x and every pull request
+# All jobs will pass without running if no *{.go, .mod, .sum} files have been modified
+on:
+  workflow_dispatch:  # allow running workflow manually
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # goarch: ["arm", "amd64"]
+        goarch: [ "amd64" ]
+        goos: [ "linux" ]
+    timeout-minutes: 10
+    steps:
+      - name: Setup new work dir
+        id: setup_new_work_dir
+        run: |
+          CLEAN_WORKFLOW_NAME=$(echo "${{ github.workflow }}" | tr -cs '[:alnum:]' '_')
+          CLEAN_JOB_NAME=$(echo "${{ github.job }}" | tr -cs '[:alnum:]' '_')
+          echo "NEW_WORK_DIR=./codes/${CLEAN_WORKFLOW_NAME}/${CLEAN_JOB_NAME}" >> $GITHUB_ENV
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.21"
+          cache: false
+      - uses: actions/checkout@v4
+        with:
+          path: ${{ env.NEW_WORK_DIR }}
+      - name: setup go private modules
+        env:
+          PELL_GH_TOKEN: ${{ secrets.PELL_GH_TOKEN }}
+          INTELLIX_GH_TOKEN: ${{ secrets.INTELLIX_GH_TOKEN }}
+        run: |
+          go env -w GOPRIVATE=github.com/0xPellNetwork,github.com/IntelliXLabs
+          go env -w GONOSUMDB=github.com/0xPellNetwork,github.com/IntelliXLabs
+          git config --global url."https://${PELL_GH_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
+          git config --global url."https://${INTELLIX_GH_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
+      - name: download go modules
+        working-directory: ${{ env.NEW_WORK_DIR }}
+        run: go mod download
+      - name: install
+        working-directory: ${{ env.NEW_WORK_DIR }}
+        run: GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} make build

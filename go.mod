@@ -11,13 +11,13 @@ replace (
 
 require (
 	cosmossdk.io/api v0.7.5
-	cosmossdk.io/client/v2 v2.0.0-beta.5
+	cosmossdk.io/client/v2 v2.0.0-beta.4
 	cosmossdk.io/core v0.11.1
 	cosmossdk.io/depinject v1.0.0
 	cosmossdk.io/errors v1.0.1
 	cosmossdk.io/log v1.4.1
 	cosmossdk.io/math v1.3.0
-	cosmossdk.io/store v1.1.1
+	cosmossdk.io/store v1.1.0
 	cosmossdk.io/tools/confix v0.1.2
 	cosmossdk.io/x/circuit v0.1.1
 	cosmossdk.io/x/evidence v0.1.1
@@ -26,10 +26,10 @@ require (
 	cosmossdk.io/x/upgrade v0.1.4
 	github.com/0xPellNetwork/pelldvs v0.0.1
 	github.com/bufbuild/buf v1.34.0
-	github.com/cometbft/cometbft v0.38.12
+	github.com/cometbft/cometbft v0.38.11
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
-	github.com/cosmos/cosmos-sdk v0.50.10
+	github.com/cosmos/cosmos-sdk v0.50.9
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/cosmos/ibc-go/modules/capability v1.0.1
 	github.com/cosmos/ibc-go/v8 v8.5.1
@@ -77,7 +77,7 @@ require (
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/bgentry/speakeasy v0.1.1-0.20220910012023-760eaf8b6816 // indirect
 	github.com/bits-and-blooms/bitset v1.10.0 // indirect
-	github.com/btcsuite/btcd/btcec/v2 v2.3.4 // indirect
+	github.com/btcsuite/btcd/btcec/v2 v2.3.2 // indirect
 	github.com/bufbuild/protocompile v0.14.0 // indirect
 	github.com/bufbuild/protoplugin v0.0.0-20240323223605-e2735f6c31ee // indirect
 	github.com/bufbuild/protovalidate-go v0.6.2 // indirect
