@@ -196,6 +196,7 @@ func appExport(
 	return bApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
 }
 
+// TODO: put start logic into "start" command with flag
 // taskDispatcherCommand builds task-dispatcher command
 func taskDispatcherCommand() *cobra.Command {
 	cmd := &cobra.Command{
