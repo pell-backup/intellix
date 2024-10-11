@@ -10,10 +10,10 @@ type Client struct {
 	ctx client.Context
 }
 
-func NewClient(clientCtx client.Context) *Client {
+func NewClient(clientCtx client.Context) (*Client, error) {
 	return &Client{
 		ctx: clientCtx,
-	}
+	}, nil
 }
 
 func (c *Client) WithTendermintClient(tmNode *local.Local) *Client {
@@ -22,6 +22,6 @@ func (c *Client) WithTendermintClient(tmNode *local.Local) *Client {
 }
 
 func (c *Client) RequestDVS(ctx context.Context, request []byte) error {
-	// todo: convert bytes to *avsiTypes.DVSRequest and call pell-dvs
+	// TODO: convert bytes to *avsiTypes.DVSRequest and call pell-dvs
 	return nil
 }

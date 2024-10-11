@@ -85,7 +85,7 @@ func (td *TaskDispatcher) handleNewTask(newTask *contractPriceOracle.ContractPri
 }
 
 func (td *TaskDispatcher) serializeTask(task contractPriceOracle.IPriceOracleTask) ([]byte, error) {
-	// todo: serialize to proto-buffer, mock json for now
+	// TODO: serialize to proto-buffer, mock json for now
 	return json.Marshal(map[string]interface{}{
 		"RequestId":                 task.RequestId,
 		"requestData":               task.RequestData,
