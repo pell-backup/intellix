@@ -10,7 +10,7 @@ on:
 
 jobs:
   tests:
-    runs-on: [ "self-hosted", "Linux", "X64", "ci" ]
+    runs-on: ubuntu-latest
     steps:
       - name: Setup new work dir
         id: setup_new_work_dir
