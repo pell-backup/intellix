@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"intellix/pkg/pelldvs"
+	"math/big"
 	"sync"
 )
 
@@ -21,12 +22,12 @@ type TaskDispatcher struct {
 
 	logger        log.Logger
 	pellDVSClient *pelldvs.Client
-	chains        map[string]*chainWatcher
+	chains        map[uint64]*chainWatcher
 	mu            sync.Mutex
 }
 
 type chainWatcher struct {
-	chainID  string
+	chainID  uint64
 	contract *contractPriceOracle.ContractPriceOracle
 	client   *ethclient.Client
 }
@@ -35,7 +36,7 @@ func NewTaskDispatcher(logger log.Logger, pellDVSClient *pelldvs.Client, configs
 	td := &TaskDispatcher{
 		logger:        logger,
 		pellDVSClient: pellDVSClient,
-		chains:        make(map[string]*chainWatcher),
+		chains:        make(map[uint64]*chainWatcher),
 	}
 
 	for _, config := range configs {
@@ -87,6 +88,8 @@ func (td *TaskDispatcher) Start() error {
 
 func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
 	newTaskChan := make(chan *contractPriceOracle.ContractPriceOracleNewTaskCreated)
+	// TODO: add index by height
+	// TODO: add scan mode
 	sub, err := chain.contract.WatchNewTaskCreated(&bind.WatchOpts{}, newTaskChan, nil)
 	if err != nil {
 		td.logger.Error("Failed to watch for new tasks", "chainID", chain.chainID, "error", err)
@@ -107,16 +110,22 @@ func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
 	}
 }
 
-func (td *TaskDispatcher) handleNewTask(chainID string, newTask *contractPriceOracle.ContractPriceOracleNewTaskCreated) {
+func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractPriceOracle.ContractPriceOracleNewTaskCreated) {
 	td.logger.Info("New task created", "chainID", chainID, "TaskIndex", newTask.TaskIndex, "RequestId", newTask.Task.RequestId)
 
-	taskData, err := td.serializeTask(chainID, newTask.Raw.BlockNumber, newTask.Task)
+	taskData, err := td.serializeTask(newTask.Task)
 	if err != nil {
 		td.logger.Error("Failed to serialize task", "chainID", chainID, "error", err)
 		return
 	}
 
-	err = td.pellDVSClient.RequestDVS(context.Background(), taskData)
+	err = td.pellDVSClient.RequestDVS(context.Background(), &avsi.RequestProcessRequest{
+		Request: types.DVSRequest{
+			Data:    taskData,
+			Height:  int64(newTask.Raw.BlockNumber),
+			ChainID: new(big.Int).SetUint64(chainID),
+		},
+	})
 	if err != nil {
 		td.logger.Error("Failed to send task to PellDVS", "chainID", chainID, "error", err)
 		return
@@ -125,9 +134,9 @@ func (td *TaskDispatcher) handleNewTask(chainID string, newTask *contractPriceOr
 	td.logger.Info("Task sent to PellDVS successfully", "chainID", chainID, "TaskIndex", newTask.TaskIndex)
 }
 
-func (td *TaskDispatcher) serializeTask(chainID string, taskCreationHeight uint64, task contractPriceOracle.IPriceOracleTask) (*avsi.RequestProcessRequest, error) {
+func (td *TaskDispatcher) serializeTask(task contractPriceOracle.IPriceOracleTask) ([]byte, error) {
 	// TODO: serialize to proto-buffer, mock json for now
-	data, err := json.Marshal(map[string]interface{}{
+	return json.Marshal(map[string]interface{}{
 		"RequestId":                 task.RequestId,
 		"requestData":               task.RequestData,
 		"callbackAddress":           task.CallbackAddress.Hex(),
@@ -136,17 +145,6 @@ func (td *TaskDispatcher) serializeTask(chainID string, taskCreationHeight uint6
 		"quorumNumbers":             task.QuorumNumbers,
 		"quorumThresholdPercentage": task.QuorumThresholdPercentage,
 	})
-	if err != nil {
-		return nil, err
-	}
-
-	return &avsi.RequestProcessRequest{
-		Request: types.DVSRequest{
-			Data:    data,
-			Height:  int64(taskCreationHeight),
-			ChainID: common.HexToHash(chainID).Big(),
-		},
-	}, nil
 }
 
 func (td *TaskDispatcher) OnStart() error {

@@ -5,14 +5,14 @@ import (
 )
 
 type ChainConfig struct {
-	ChainID         string `mapstructure:"chain_id"`
+	ChainID         uint64 `mapstructure:"chain_id"`
 	EthURL          string `mapstructure:"eth_url"`
 	ContractAddress string `mapstructure:"contract_address"`
 }
 
 // Validate checks if the ChainConfig is valid
 func (c ChainConfig) Validate() error {
-	if c.ChainID == "" {
+	if c.ChainID == 0 {
 		return fmt.Errorf("chain_id cannot be empty")
 	}
 	if c.EthURL == "" {
