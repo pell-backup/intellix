@@ -110,7 +110,7 @@ func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
 func (td *TaskDispatcher) handleNewTask(chainID string, newTask *contractPriceOracle.ContractPriceOracleNewTaskCreated) {
 	td.logger.Info("New task created", "chainID", chainID, "TaskIndex", newTask.TaskIndex, "RequestId", newTask.Task.RequestId)
 
-	taskData, err := td.serializeTask(chainID, newTask.Task)
+	taskData, err := td.serializeTask(chainID, newTask.Raw.BlockNumber, newTask.Task)
 	if err != nil {
 		td.logger.Error("Failed to serialize task", "chainID", chainID, "error", err)
 		return
@@ -125,7 +125,7 @@ func (td *TaskDispatcher) handleNewTask(chainID string, newTask *contractPriceOr
 	td.logger.Info("Task sent to PellDVS successfully", "chainID", chainID, "TaskIndex", newTask.TaskIndex)
 }
 
-func (td *TaskDispatcher) serializeTask(chainID string, task contractPriceOracle.IPriceOracleTask) (*avsi.RequestProcessRequest, error) {
+func (td *TaskDispatcher) serializeTask(chainID string, taskCreationHeight uint64, task contractPriceOracle.IPriceOracleTask) (*avsi.RequestProcessRequest, error) {
 	// TODO: serialize to proto-buffer, mock json for now
 	data, err := json.Marshal(map[string]interface{}{
 		"RequestId":                 task.RequestId,
@@ -143,7 +143,7 @@ func (td *TaskDispatcher) serializeTask(chainID string, task contractPriceOracle
 	return &avsi.RequestProcessRequest{
 		Request: types.DVSRequest{
 			Data:    data,
-			Height:  0,
+			Height:  int64(taskCreationHeight),
 			ChainID: common.HexToHash(chainID).Big(),
 		},
 	}, nil
