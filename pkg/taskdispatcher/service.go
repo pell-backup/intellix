@@ -110,19 +110,13 @@ func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
 func (td *TaskDispatcher) handleNewTask(chainID string, newTask *contractPriceOracle.ContractPriceOracleNewTaskCreated) {
 	td.logger.Info("New task created", "chainID", chainID, "TaskIndex", newTask.TaskIndex, "RequestId", newTask.Task.RequestId)
 
-	taskData, err := td.serializeTask(newTask.Task)
+	taskData, err := td.serializeTask(chainID, newTask.Task)
 	if err != nil {
 		td.logger.Error("Failed to serialize task", "chainID", chainID, "error", err)
 		return
 	}
 
-	err = td.pellDVSClient.RequestDVS(context.Background(), &avsi.RequestProcessRequest{
-		Request: types.DVSRequest{
-			Data:    taskData,
-			Height:  0,
-			ChainID: common.HexToHash(chainID).Big(),
-		},
-	})
+	err = td.pellDVSClient.RequestDVS(context.Background(), taskData)
 	if err != nil {
 		td.logger.Error("Failed to send task to PellDVS", "chainID", chainID, "error", err)
 		return
@@ -131,9 +125,9 @@ func (td *TaskDispatcher) handleNewTask(chainID string, newTask *contractPriceOr
 	td.logger.Info("Task sent to PellDVS successfully", "chainID", chainID, "TaskIndex", newTask.TaskIndex)
 }
 
-func (td *TaskDispatcher) serializeTask(task contractPriceOracle.IPriceOracleTask) ([]byte, error) {
+func (td *TaskDispatcher) serializeTask(chainID string, task contractPriceOracle.IPriceOracleTask) (*avsi.RequestProcessRequest, error) {
 	// TODO: serialize to proto-buffer, mock json for now
-	return json.Marshal(map[string]interface{}{
+	data, err := json.Marshal(map[string]interface{}{
 		"RequestId":                 task.RequestId,
 		"requestData":               task.RequestData,
 		"callbackAddress":           task.CallbackAddress.Hex(),
@@ -142,6 +136,17 @@ func (td *TaskDispatcher) serializeTask(task contractPriceOracle.IPriceOracleTas
 		"quorumNumbers":             task.QuorumNumbers,
 		"quorumThresholdPercentage": task.QuorumThresholdPercentage,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &avsi.RequestProcessRequest{
+		Request: types.DVSRequest{
+			Data:    data,
+			Height:  0,
+			ChainID: common.HexToHash(chainID).Big(),
+		},
+	}, nil
 }
 
 func (td *TaskDispatcher) OnStart() error {
