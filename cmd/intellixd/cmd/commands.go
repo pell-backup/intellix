@@ -2,6 +2,10 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
+	pkglogger "intellix/pkg/logger"
+	"intellix/pkg/pelldvs"
+	"intellix/pkg/taskdispatcher"
 	"io"
 
 	"cosmossdk.io/log"
@@ -24,6 +28,10 @@ import (
 	"github.com/spf13/viper"
 
 	"intellix/app"
+)
+
+var (
+	configFile string
 )
 
 func initRootCmd(
@@ -49,6 +57,7 @@ func initRootCmd(
 		queryCommand(),
 		txCommand(),
 		keys.Commands(),
+		taskDispatcherCommand(),
 	)
 }
 
@@ -185,4 +194,71 @@ func appExport(
 	}
 
 	return bApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
+}
+
+// TODO: put start logic into "start" command with flag
+// taskDispatcherCommand builds task-dispatcher command
+func taskDispatcherCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "task-dispatcher",
+		Short: "Start the TaskDispatcher service",
+		Long: "Start the TaskDispatcher service, Example:\n" +
+			"intellixd task-dispatcher --config=config.yml",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			serverCtx := server.GetServerContextFromCmd(cmd)
+			config := serverCtx.Config
+
+			// read config file
+			if configFile != "" {
+				viper.SetConfigFile(configFile)
+				if err := viper.ReadInConfig(); err != nil {
+					return err
+				}
+				if err := viper.Unmarshal(config); err != nil {
+					return err
+				}
+			} else {
+				return errors.New("config file not set")
+			}
+
+			var chainConfigs []*taskdispatcher.ChainConfig
+			err = viper.UnmarshalKey("task_dispatcher", &chainConfigs)
+			if err != nil {
+				return err
+			}
+
+			// new pell-dvs client
+			pellDVSClient, err := pelldvs.NewClient(clientCtx)
+			if err != nil {
+				return fmt.Errorf("failed to create PellDVS client: %w", err)
+			}
+
+			// start task dispatcher
+			cmtLogger := pkglogger.NewCometBFTLogAdapter(serverCtx.Logger)
+			td, err := taskdispatcher.NewTaskDispatcher(cmtLogger, pellDVSClient, chainConfigs)
+			if err != nil {
+				return fmt.Errorf("failed to create TaskDispatcher: %w", err)
+			}
+
+			err = td.Start()
+			if err != nil {
+				return fmt.Errorf("failed to start TaskDispatcher: %w", err)
+			}
+
+			// wait for quit signal
+			<-td.Quit()
+
+			return nil
+		},
+	}
+
+	// add config flag
+	cmd.Flags().StringVar(&configFile, "config", "", "config file")
+
+	return cmd
 }
