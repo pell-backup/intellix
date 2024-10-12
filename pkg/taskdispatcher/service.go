@@ -41,7 +41,7 @@ func NewTaskDispatcher(logger log.Logger, pellDVSClient *pelldvs.Client, configs
 
 	for _, config := range configs {
 		if err := td.AddChain(config); err != nil {
-			return nil, fmt.Errorf("failed to add chain %s: %w", config.ChainID, err)
+			return nil, fmt.Errorf("failed to add chain %d: %w", config.ChainID, err)
 		}
 	}
 
@@ -57,7 +57,7 @@ func (td *TaskDispatcher) AddChain(config *ChainConfig) error {
 		return err
 	}
 	if _, exists := td.chains[config.ChainID]; exists {
-		return fmt.Errorf("chain %s already exists", config.ChainID)
+		return fmt.Errorf("chain %d already exists", config.ChainID)
 	}
 
 	ethClient, err := ethclient.Dial(config.EthURL)
