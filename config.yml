@@ -22,8 +22,12 @@ validators:
   bonded: 100000000stake
 
 task_dispatcher:
-  eth_url: http://127.0.0.1:8545
-  contract_address: 0x0000000000000000000000000000000000000000
+  - chain_id: chain_id1
+    eth_url: http://127.0.0.1:18545
+    contract_address: '0x0000000000000000000000000000000000000000'
+  - chain_id: chain_id2
+    eth_url: http://127.0.0.1:28545
+    contract_address: '0x0000000000000000000000000000000000000001'
 
 build:
   main: ./cmd/intellixd

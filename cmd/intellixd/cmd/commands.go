@@ -226,8 +226,11 @@ func taskDispatcherCommand() *cobra.Command {
 				return errors.New("config file not set")
 			}
 
-			ethURL := viper.GetString("task_dispatcher.eth_url")
-			contractAddress := viper.GetString("task_dispatcher.contract_address")
+			var chainConfigs []*taskdispatcher.ChainConfig
+			err = viper.UnmarshalKey("task_dispatcher", &chainConfigs)
+			if err != nil {
+				return err
+			}
 
 			// new pell-dvs client
 			pellDVSClient, err := pelldvs.NewClient(clientCtx)
@@ -237,7 +240,7 @@ func taskDispatcherCommand() *cobra.Command {
 
 			// start task dispatcher
 			cmtLogger := pkglogger.NewCometBFTLogAdapter(serverCtx.Logger)
-			td, err := taskdispatcher.NewTaskDispatcher(cmtLogger, ethURL, contractAddress, pellDVSClient)
+			td, err := taskdispatcher.NewTaskDispatcher(cmtLogger, pellDVSClient, chainConfigs)
 			if err != nil {
 				return fmt.Errorf("failed to create TaskDispatcher: %w", err)
 			}
