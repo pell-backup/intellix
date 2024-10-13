@@ -1,12 +1,15 @@
 package app
 
 import (
+	"cosmossdk.io/store"
+	dvstypes "intellix/x/price/dvs/types"
 	"io"
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
 	clienthelpers "cosmossdk.io/client/v2/helpers"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
+	storemetrics "cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
 	_ "cosmossdk.io/x/circuit" // import for side-effects
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
@@ -74,9 +77,8 @@ import (
 	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-
 	intellixmodulekeeper "intellix/x/intellix/keeper"
-
+	dvsmodulekeeper "intellix/x/price/dvs/keeper"
 	pricemodulekeeper "intellix/x/price/keeper"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
@@ -145,10 +147,15 @@ type App struct {
 
 	IntellixKeeper intellixmodulekeeper.Keeper
 	PriceKeeper    pricemodulekeeper.Keeper
+	DvsKeeper      dvsmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
-	sm *module.SimulationManager
+	sm     *module.SimulationManager
+	cms    storetypes.CommitMultiStore
+	logger log.Logger
+
+	DvsServer dvstypes.DvsServer
 }
 
 func init() {
@@ -250,6 +257,7 @@ func New(
 		&app.CircuitBreakerKeeper,
 		&app.IntellixKeeper,
 		&app.PriceKeeper,
+		&app.DvsKeeper,
 		// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	); err != nil {
 		panic(err)
@@ -283,6 +291,9 @@ func New(
 	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, overrideModules)
 	app.sm.RegisterStoreDecoders()
 
+	app.cms = store.NewCommitMultiStore(db, logger, storemetrics.NewNoOpMetrics())
+	app.logger = logger
+
 	// A custom InitChainer sets if extra pre-init-genesis logic is required.
 	// This is necessary for manually registered modules that do not support app wiring.
 	// Manually set the module version map as shown below.
@@ -297,6 +308,8 @@ func New(
 	if err := app.Load(loadLatest); err != nil {
 		return nil, err
 	}
+
+	app.DvsServer = dvsmodulekeeper.NewDvsServerImpl(app.DvsKeeper)
 
 	return app, nil
 }

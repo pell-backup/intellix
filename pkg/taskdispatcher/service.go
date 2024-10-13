@@ -2,17 +2,19 @@ package taskdispatcher
 
 import (
 	"context"
+	"cosmossdk.io/math"
 	"fmt"
 	avsi "github.com/0xPellNetwork/pelldvs/application"
 	"github.com/0xPellNetwork/pelldvs/avsi/types"
 	contractPriceOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/PriceOracle"
-	"github.com/cometbft/cometbft/libs/json"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cometbft/cometbft/libs/service"
+	"github.com/cosmos/gogoproto/proto"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"intellix/pkg/pelldvs"
+	pricetypes "intellix/x/price/dvs/types"
 	"math/big"
 	"sync"
 )
@@ -113,7 +115,7 @@ func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
 func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractPriceOracle.ContractPriceOracleNewTaskCreated) {
 	td.logger.Info("New task created", "chainID", chainID, "TaskIndex", newTask.TaskIndex, "RequestId", newTask.Task.RequestId)
 
-	taskData, err := td.serializeTask(newTask.Task)
+	taskData, err := td.serializeTask(newTask.TaskIndex, newTask.Task)
 	if err != nil {
 		td.logger.Error("Failed to serialize task", "chainID", chainID, "error", err)
 		return
@@ -134,17 +136,21 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractPriceOr
 	td.logger.Info("Task sent to PellDVS successfully", "chainID", chainID, "TaskIndex", newTask.TaskIndex)
 }
 
-func (td *TaskDispatcher) serializeTask(task contractPriceOracle.IPriceOracleTask) ([]byte, error) {
-	// TODO: serialize to proto-buffer, mock json for now
-	return json.Marshal(map[string]interface{}{
-		"RequestId":                 task.RequestId,
-		"requestData":               task.RequestData,
-		"callbackAddress":           task.CallbackAddress.Hex(),
-		"callbackFunctionId":        task.CallbackFunctionId,
-		"taskCreatedBlock":          task.TaskCreatedBlock,
-		"quorumNumbers":             task.QuorumNumbers,
-		"quorumThresholdPercentage": task.QuorumThresholdPercentage,
-	})
+func (td *TaskDispatcher) serializeTask(taskIndex uint32, task contractPriceOracle.IPriceOracleTask) ([]byte, error) {
+	taskRequest := &pricetypes.TaskRequest{
+		TaskIndex:                 taskIndex,
+		RequestId:                 task.RequestId[:],
+		FeeToken:                  task.FeeToken.Hex(),
+		Payment:                   math.NewIntFromBigInt(task.Payment),
+		RequestData:               task.RequestData,
+		CallbackAddress:           task.CallbackAddress.Hex(),
+		CallbackFunctionId:        task.CallbackFunctionId[:],
+		TaskCreatedBlock:          task.TaskCreatedBlock,
+		QuorumNumbers:             task.QuorumNumbers,
+		QuorumThresholdPercentage: task.QuorumThresholdPercentage,
+	}
+
+	return proto.Marshal(taskRequest)
 }
 
 func (td *TaskDispatcher) OnStart() error {
