@@ -67,6 +67,7 @@ type TaskRequest struct {
 	TaskCreatedBlock          uint32                `protobuf:"varint,8,opt,name=task_created_block,json=taskCreatedBlock,proto3" json:"task_created_block,omitempty"`
 	QuorumNumbers             []byte                `protobuf:"bytes,9,opt,name=quorum_numbers,json=quorumNumbers,proto3" json:"quorum_numbers,omitempty"`
 	QuorumThresholdPercentage uint32                `protobuf:"varint,10,opt,name=quorum_threshold_percentage,json=quorumThresholdPercentage,proto3" json:"quorum_threshold_percentage,omitempty"`
+	TaskType                  TaskType              `protobuf:"varint,11,opt,name=task_type,json=taskType,proto3,enum=intellix.price.TaskType" json:"task_type,omitempty"`
 }
 
 func (m *TaskRequest) Reset()         { *m = TaskRequest{} }
@@ -165,24 +166,31 @@ func (m *TaskRequest) GetQuorumThresholdPercentage() uint32 {
 	return 0
 }
 
-type RequestProcessDVSRequest struct {
+func (m *TaskRequest) GetTaskType() TaskType {
+	if m != nil {
+		return m.TaskType
+	}
+	return TaskType_UNSPECIFIED
+}
+
+type RequestProcessRequestPriceFeed struct {
 	Task    *TaskRequest          `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
 	Height  int64                 `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
 	ChainId cosmossdk_io_math.Int `protobuf:"bytes,3,opt,name=chain_id,json=chainId,proto3,customtype=cosmossdk.io/math.Int" json:"chain_id"`
 }
 
-func (m *RequestProcessDVSRequest) Reset()         { *m = RequestProcessDVSRequest{} }
-func (m *RequestProcessDVSRequest) String() string { return proto.CompactTextString(m) }
-func (*RequestProcessDVSRequest) ProtoMessage()    {}
-func (*RequestProcessDVSRequest) Descriptor() ([]byte, []int) {
+func (m *RequestProcessRequestPriceFeed) Reset()         { *m = RequestProcessRequestPriceFeed{} }
+func (m *RequestProcessRequestPriceFeed) String() string { return proto.CompactTextString(m) }
+func (*RequestProcessRequestPriceFeed) ProtoMessage()    {}
+func (*RequestProcessRequestPriceFeed) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3d99f53b3a9a3a58, []int{1}
 }
-func (m *RequestProcessDVSRequest) XXX_Unmarshal(b []byte) error {
+func (m *RequestProcessRequestPriceFeed) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *RequestProcessDVSRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *RequestProcessRequestPriceFeed) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_RequestProcessDVSRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_RequestProcessRequestPriceFeed.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -192,26 +200,26 @@ func (m *RequestProcessDVSRequest) XXX_Marshal(b []byte, deterministic bool) ([]
 		return b[:n], nil
 	}
 }
-func (m *RequestProcessDVSRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RequestProcessDVSRequest.Merge(m, src)
+func (m *RequestProcessRequestPriceFeed) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RequestProcessRequestPriceFeed.Merge(m, src)
 }
-func (m *RequestProcessDVSRequest) XXX_Size() int {
+func (m *RequestProcessRequestPriceFeed) XXX_Size() int {
 	return m.Size()
 }
-func (m *RequestProcessDVSRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_RequestProcessDVSRequest.DiscardUnknown(m)
+func (m *RequestProcessRequestPriceFeed) XXX_DiscardUnknown() {
+	xxx_messageInfo_RequestProcessRequestPriceFeed.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_RequestProcessDVSRequest proto.InternalMessageInfo
+var xxx_messageInfo_RequestProcessRequestPriceFeed proto.InternalMessageInfo
 
-func (m *RequestProcessDVSRequest) GetTask() *TaskRequest {
+func (m *RequestProcessRequestPriceFeed) GetTask() *TaskRequest {
 	if m != nil {
 		return m.Task
 	}
 	return nil
 }
 
-func (m *RequestProcessDVSRequest) GetHeight() int64 {
+func (m *RequestProcessRequestPriceFeed) GetHeight() int64 {
 	if m != nil {
 		return m.Height
 	}
@@ -365,23 +373,23 @@ func (m *BlockRange) GetEnd() uint64 {
 	return 0
 }
 
-type ResponseProcessDVSRequest struct {
+type ResponseProcessRequestPriceFeed struct {
 	Price       *AggregatedRequestPrice `protobuf:"bytes,1,opt,name=price,proto3" json:"price,omitempty"`
 	PriceDigest []byte                  `protobuf:"bytes,2,opt,name=PriceDigest,proto3" json:"PriceDigest,omitempty"`
 }
 
-func (m *ResponseProcessDVSRequest) Reset()         { *m = ResponseProcessDVSRequest{} }
-func (m *ResponseProcessDVSRequest) String() string { return proto.CompactTextString(m) }
-func (*ResponseProcessDVSRequest) ProtoMessage()    {}
-func (*ResponseProcessDVSRequest) Descriptor() ([]byte, []int) {
+func (m *ResponseProcessRequestPriceFeed) Reset()         { *m = ResponseProcessRequestPriceFeed{} }
+func (m *ResponseProcessRequestPriceFeed) String() string { return proto.CompactTextString(m) }
+func (*ResponseProcessRequestPriceFeed) ProtoMessage()    {}
+func (*ResponseProcessRequestPriceFeed) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3d99f53b3a9a3a58, []int{4}
 }
-func (m *ResponseProcessDVSRequest) XXX_Unmarshal(b []byte) error {
+func (m *ResponseProcessRequestPriceFeed) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *ResponseProcessDVSRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *ResponseProcessRequestPriceFeed) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_ResponseProcessDVSRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_ResponseProcessRequestPriceFeed.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -391,48 +399,48 @@ func (m *ResponseProcessDVSRequest) XXX_Marshal(b []byte, deterministic bool) ([
 		return b[:n], nil
 	}
 }
-func (m *ResponseProcessDVSRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ResponseProcessDVSRequest.Merge(m, src)
+func (m *ResponseProcessRequestPriceFeed) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ResponseProcessRequestPriceFeed.Merge(m, src)
 }
-func (m *ResponseProcessDVSRequest) XXX_Size() int {
+func (m *ResponseProcessRequestPriceFeed) XXX_Size() int {
 	return m.Size()
 }
-func (m *ResponseProcessDVSRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_ResponseProcessDVSRequest.DiscardUnknown(m)
+func (m *ResponseProcessRequestPriceFeed) XXX_DiscardUnknown() {
+	xxx_messageInfo_ResponseProcessRequestPriceFeed.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_ResponseProcessDVSRequest proto.InternalMessageInfo
+var xxx_messageInfo_ResponseProcessRequestPriceFeed proto.InternalMessageInfo
 
-func (m *ResponseProcessDVSRequest) GetPrice() *AggregatedRequestPrice {
+func (m *ResponseProcessRequestPriceFeed) GetPrice() *AggregatedRequestPrice {
 	if m != nil {
 		return m.Price
 	}
 	return nil
 }
 
-func (m *ResponseProcessDVSRequest) GetPriceDigest() []byte {
+func (m *ResponseProcessRequestPriceFeed) GetPriceDigest() []byte {
 	if m != nil {
 		return m.PriceDigest
 	}
 	return nil
 }
 
-type RequestPostRequest struct {
+type RequestPostRequestPriceFeed struct {
 	Task *TaskRequest `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
 }
 
-func (m *RequestPostRequest) Reset()         { *m = RequestPostRequest{} }
-func (m *RequestPostRequest) String() string { return proto.CompactTextString(m) }
-func (*RequestPostRequest) ProtoMessage()    {}
-func (*RequestPostRequest) Descriptor() ([]byte, []int) {
+func (m *RequestPostRequestPriceFeed) Reset()         { *m = RequestPostRequestPriceFeed{} }
+func (m *RequestPostRequestPriceFeed) String() string { return proto.CompactTextString(m) }
+func (*RequestPostRequestPriceFeed) ProtoMessage()    {}
+func (*RequestPostRequestPriceFeed) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3d99f53b3a9a3a58, []int{5}
 }
-func (m *RequestPostRequest) XXX_Unmarshal(b []byte) error {
+func (m *RequestPostRequestPriceFeed) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *RequestPostRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *RequestPostRequestPriceFeed) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_RequestPostRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_RequestPostRequestPriceFeed.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -442,40 +450,40 @@ func (m *RequestPostRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, 
 		return b[:n], nil
 	}
 }
-func (m *RequestPostRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_RequestPostRequest.Merge(m, src)
+func (m *RequestPostRequestPriceFeed) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RequestPostRequestPriceFeed.Merge(m, src)
 }
-func (m *RequestPostRequest) XXX_Size() int {
+func (m *RequestPostRequestPriceFeed) XXX_Size() int {
 	return m.Size()
 }
-func (m *RequestPostRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_RequestPostRequest.DiscardUnknown(m)
+func (m *RequestPostRequestPriceFeed) XXX_DiscardUnknown() {
+	xxx_messageInfo_RequestPostRequestPriceFeed.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_RequestPostRequest proto.InternalMessageInfo
+var xxx_messageInfo_RequestPostRequestPriceFeed proto.InternalMessageInfo
 
-func (m *RequestPostRequest) GetTask() *TaskRequest {
+func (m *RequestPostRequestPriceFeed) GetTask() *TaskRequest {
 	if m != nil {
 		return m.Task
 	}
 	return nil
 }
 
-type ResponsePostRequest struct {
+type ResponsePostRequestPriceFeed struct {
 }
 
-func (m *ResponsePostRequest) Reset()         { *m = ResponsePostRequest{} }
-func (m *ResponsePostRequest) String() string { return proto.CompactTextString(m) }
-func (*ResponsePostRequest) ProtoMessage()    {}
-func (*ResponsePostRequest) Descriptor() ([]byte, []int) {
+func (m *ResponsePostRequestPriceFeed) Reset()         { *m = ResponsePostRequestPriceFeed{} }
+func (m *ResponsePostRequestPriceFeed) String() string { return proto.CompactTextString(m) }
+func (*ResponsePostRequestPriceFeed) ProtoMessage()    {}
+func (*ResponsePostRequestPriceFeed) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3d99f53b3a9a3a58, []int{6}
 }
-func (m *ResponsePostRequest) XXX_Unmarshal(b []byte) error {
+func (m *ResponsePostRequestPriceFeed) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *ResponsePostRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *ResponsePostRequestPriceFeed) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_ResponsePostRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_ResponsePostRequestPriceFeed.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -485,82 +493,83 @@ func (m *ResponsePostRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte,
 		return b[:n], nil
 	}
 }
-func (m *ResponsePostRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_ResponsePostRequest.Merge(m, src)
+func (m *ResponsePostRequestPriceFeed) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ResponsePostRequestPriceFeed.Merge(m, src)
 }
-func (m *ResponsePostRequest) XXX_Size() int {
+func (m *ResponsePostRequestPriceFeed) XXX_Size() int {
 	return m.Size()
 }
-func (m *ResponsePostRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_ResponsePostRequest.DiscardUnknown(m)
+func (m *ResponsePostRequestPriceFeed) XXX_DiscardUnknown() {
+	xxx_messageInfo_ResponsePostRequestPriceFeed.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_ResponsePostRequest proto.InternalMessageInfo
+var xxx_messageInfo_ResponsePostRequestPriceFeed proto.InternalMessageInfo
 
 func init() {
 	proto.RegisterEnum("intellix.price.TaskType", TaskType_name, TaskType_value)
 	proto.RegisterType((*TaskRequest)(nil), "intellix.price.TaskRequest")
-	proto.RegisterType((*RequestProcessDVSRequest)(nil), "intellix.price.RequestProcessDVSRequest")
+	proto.RegisterType((*RequestProcessRequestPriceFeed)(nil), "intellix.price.RequestProcessRequestPriceFeed")
 	proto.RegisterType((*AggregatedRequestPrice)(nil), "intellix.price.AggregatedRequestPrice")
 	proto.RegisterType((*BlockRange)(nil), "intellix.price.BlockRange")
-	proto.RegisterType((*ResponseProcessDVSRequest)(nil), "intellix.price.ResponseProcessDVSRequest")
-	proto.RegisterType((*RequestPostRequest)(nil), "intellix.price.RequestPostRequest")
-	proto.RegisterType((*ResponsePostRequest)(nil), "intellix.price.ResponsePostRequest")
+	proto.RegisterType((*ResponseProcessRequestPriceFeed)(nil), "intellix.price.ResponseProcessRequestPriceFeed")
+	proto.RegisterType((*RequestPostRequestPriceFeed)(nil), "intellix.price.RequestPostRequestPriceFeed")
+	proto.RegisterType((*ResponsePostRequestPriceFeed)(nil), "intellix.price.ResponsePostRequestPriceFeed")
 }
 
 func init() { proto.RegisterFile("intellix/price/task.proto", fileDescriptor_3d99f53b3a9a3a58) }
 
 var fileDescriptor_3d99f53b3a9a3a58 = []byte{
-	// 772 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x54, 0xd1, 0x6e, 0x1b, 0x45,
-	0x14, 0xf5, 0xd6, 0x76, 0x6a, 0xdf, 0x4d, 0x52, 0x33, 0xa4, 0xd1, 0xc6, 0xa1, 0xae, 0xbb, 0x08,
-	0xe4, 0x02, 0xb2, 0xab, 0x14, 0x09, 0x24, 0x10, 0x52, 0x63, 0x3b, 0x62, 0x5f, 0x2a, 0x6b, 0x6a,
-	0x10, 0xe2, 0x65, 0x35, 0xde, 0xbd, 0x59, 0x2f, 0xb6, 0x77, 0xb6, 0x33, 0x63, 0xd4, 0x88, 0x9f,
-	0xe0, 0x07, 0xf8, 0x0b, 0xc4, 0x37, 0x54, 0xe2, 0xa5, 0x8f, 0x88, 0x87, 0x08, 0x25, 0x3f, 0x82,
-	0x66, 0x76, 0xd7, 0x0e, 0x0e, 0x16, 0xa8, 0x6f, 0x3b, 0xe7, 0x9e, 0xbd, 0x73, 0xe7, 0x9c, 0x33,
-	0x03, 0x47, 0x71, 0xa2, 0x70, 0x3e, 0x8f, 0x5f, 0xf5, 0x52, 0x11, 0x07, 0xd8, 0x53, 0x4c, 0xce,
-	0xba, 0xa9, 0xe0, 0x8a, 0x93, 0xfd, 0xa2, 0xd4, 0x35, 0xa5, 0xe6, 0x41, 0xc4, 0x23, 0x6e, 0x4a,
-	0x3d, 0xfd, 0x95, 0xb1, 0xdc, 0xdf, 0xca, 0x60, 0x8f, 0x99, 0x9c, 0x51, 0x7c, 0xb9, 0x44, 0xa9,
-	0xc8, 0x03, 0x00, 0xdd, 0xc3, 0x8f, 0x93, 0x10, 0x5f, 0x39, 0x56, 0xdb, 0xea, 0xec, 0xd1, 0xba,
-	0x46, 0x3c, 0x0d, 0xe8, 0xb2, 0xc8, 0x98, 0x7e, 0x1c, 0x3a, 0x77, 0xda, 0x56, 0x67, 0x97, 0xd6,
-	0x73, 0xc4, 0x0b, 0xc9, 0x31, 0xd4, 0xcf, 0x11, 0x7d, 0xc5, 0x67, 0x98, 0x38, 0xe5, 0xb6, 0xd5,
-	0xa9, 0xd3, 0xda, 0x39, 0xe2, 0x58, 0xaf, 0xc9, 0x67, 0x70, 0x37, 0x65, 0x17, 0x0b, 0x4c, 0x94,
-	0x53, 0xd1, 0xa5, 0xd3, 0x07, 0xaf, 0x2f, 0x1f, 0x96, 0xfe, 0xbc, 0x7c, 0x78, 0x3f, 0xe0, 0x72,
-	0xc1, 0xa5, 0x0c, 0x67, 0xdd, 0x98, 0xf7, 0x16, 0x4c, 0x4d, 0xbb, 0x5e, 0xa2, 0x68, 0xc1, 0x26,
-	0x8f, 0x60, 0xb7, 0xd8, 0x34, 0x64, 0x8a, 0x39, 0x55, 0xb3, 0xad, 0x9d, 0x63, 0x03, 0xa6, 0x18,
-	0x79, 0x0c, 0x8d, 0x80, 0xcd, 0xe7, 0x13, 0x16, 0xcc, 0x7c, 0x16, 0x86, 0x02, 0xa5, 0x74, 0x76,
-	0xcc, 0xfe, 0xf7, 0x0a, 0xfc, 0x59, 0x06, 0x93, 0x27, 0x70, 0xb0, 0xa2, 0x9e, 0x2f, 0x93, 0x40,
-	0xc5, 0x3c, 0xd1, 0x87, 0xb9, 0x6b, 0xba, 0x92, 0xa2, 0x76, 0x96, 0x97, 0xbc, 0x90, 0x7c, 0x02,
-	0xc4, 0x68, 0x12, 0x08, 0x64, 0x0a, 0x43, 0x7f, 0x32, 0xe7, 0xc1, 0xcc, 0xa9, 0x19, 0x6d, 0x1a,
-	0xba, 0xd2, 0xcf, 0x0a, 0xa7, 0x1a, 0x27, 0x1f, 0xc0, 0xfe, 0xcb, 0x25, 0x17, 0xcb, 0x85, 0x9f,
-	0x2c, 0x17, 0x13, 0x14, 0xd2, 0xa9, 0x9b, 0xce, 0x7b, 0x19, 0xfa, 0x3c, 0x03, 0xc9, 0x57, 0x70,
-	0x9c, 0xd3, 0xd4, 0x54, 0xa0, 0x9c, 0xf2, 0x79, 0xe8, 0xa7, 0x28, 0x02, 0x4c, 0x14, 0x8b, 0xd0,
-	0x01, 0xd3, 0xfd, 0x28, 0xa3, 0x8c, 0x0b, 0xc6, 0x68, 0x45, 0x70, 0x7f, 0xb1, 0xc0, 0xc9, 0x4d,
-	0x1b, 0x09, 0x1e, 0xa0, 0x94, 0x83, 0x6f, 0x5f, 0x14, 0x2e, 0xf6, 0xa0, 0xa2, 0xe7, 0x32, 0xfe,
-	0xd9, 0x27, 0xc7, 0xdd, 0x7f, 0x46, 0xa1, 0x7b, 0xc3, 0x70, 0x6a, 0x88, 0xe4, 0x10, 0x76, 0xa6,
-	0x18, 0x47, 0x53, 0x65, 0x3c, 0x2d, 0xd3, 0x7c, 0x45, 0x3e, 0x87, 0x5a, 0x30, 0x65, 0xb1, 0x11,
-	0xa8, 0xfc, 0xbf, 0x4c, 0x33, 0x74, 0x2f, 0x74, 0x7f, 0xbd, 0x03, 0x87, 0xcf, 0xa2, 0x48, 0x60,
-	0xa4, 0xa5, 0x59, 0x4d, 0x1a, 0x07, 0xb8, 0x11, 0x22, 0x6b, 0x33, 0x44, 0x4f, 0xa1, 0x6a, 0xc6,
-	0x34, 0xa3, 0xfc, 0xe7, 0x86, 0x19, 0x97, 0xbc, 0x07, 0x75, 0x15, 0x2f, 0x50, 0x2a, 0xb6, 0x48,
-	0xcd, 0xa4, 0x65, 0xba, 0x06, 0x74, 0x82, 0x24, 0x5f, 0x8a, 0x00, 0xfd, 0x80, 0x2f, 0xf3, 0xfc,
-	0x55, 0xa9, 0x9d, 0x61, 0x7d, 0x0d, 0x69, 0xdb, 0x78, 0x8a, 0x82, 0x29, 0x2e, 0x72, 0x52, 0xd5,
-	0x90, 0xf6, 0x0a, 0x34, 0xa3, 0x3d, 0x82, 0x5d, 0x63, 0xbf, 0x9f, 0xcb, 0xa5, 0x43, 0x56, 0xa1,
-	0xb6, 0xc1, 0xbe, 0xce, 0x34, 0xfb, 0x02, 0xb2, 0xa5, 0x2f, 0x58, 0x12, 0xa1, 0xc9, 0x95, 0x7d,
-	0xd2, 0xdc, 0xf4, 0xc0, 0x84, 0x85, 0x6a, 0x06, 0x85, 0xc9, 0xea, 0xdb, 0xfd, 0x14, 0x60, 0x5d,
-	0x21, 0x07, 0x50, 0x95, 0x8a, 0x09, 0x65, 0x44, 0xaa, 0xd0, 0x6c, 0x41, 0x1a, 0x50, 0xc6, 0x24,
-	0xbb, 0x7d, 0x15, 0xaa, 0x3f, 0xdd, 0x9f, 0xe0, 0x88, 0xa2, 0x4c, 0x79, 0x22, 0xf1, 0x76, 0x18,
-	0xbe, 0x2c, 0xf4, 0xcc, 0xd2, 0xf0, 0xe1, 0xe6, 0x24, 0xff, 0xee, 0x52, 0x21, 0x6c, 0x1b, 0x6c,
-	0xb3, 0x1e, 0xc4, 0x11, 0x4a, 0x95, 0x5f, 0xf9, 0x9b, 0x90, 0x3b, 0x04, 0x52, 0xfc, 0xc8, 0xa5,
-	0x7a, 0xdb, 0x08, 0xba, 0xf7, 0xe1, 0xdd, 0xd5, 0x19, 0xd6, 0x7d, 0x3e, 0xfa, 0x18, 0x6a, 0x9a,
-	0x3b, 0xbe, 0x48, 0x91, 0xdc, 0x03, 0xfb, 0x9b, 0xe7, 0x2f, 0x46, 0xc3, 0xbe, 0x77, 0xe6, 0x0d,
-	0x07, 0x8d, 0x12, 0xd9, 0x07, 0x18, 0x51, 0xaf, 0x3f, 0xf4, 0xcf, 0x86, 0xc3, 0x41, 0xc3, 0x3a,
-	0xf9, 0xdd, 0x82, 0xf2, 0xe0, 0x47, 0x49, 0x7e, 0x80, 0x77, 0x6e, 0xeb, 0xd0, 0xd9, 0x9c, 0x61,
-	0xdb, 0xf5, 0x69, 0x3e, 0xbe, 0xcd, 0xdc, 0x22, 0xae, 0x5b, 0x22, 0xdf, 0x81, 0x7d, 0xf3, 0xdc,
-	0xee, 0xb6, 0x5d, 0xd6, 0x9c, 0xe6, 0xfb, 0x5b, 0xfb, 0xaf, 0x49, 0x6e, 0xe9, 0xf4, 0xc9, 0xeb,
-	0xab, 0x96, 0xf5, 0xe6, 0xaa, 0x65, 0xfd, 0x75, 0xd5, 0xb2, 0x7e, 0xbe, 0x6e, 0x95, 0xde, 0x5c,
-	0xb7, 0x4a, 0x7f, 0x5c, 0xb7, 0x4a, 0xdf, 0x1f, 0xae, 0x9e, 0xfd, 0xd5, 0xc3, 0x7f, 0x91, 0xa2,
-	0x9c, 0xec, 0x98, 0x47, 0xfd, 0xe9, 0xdf, 0x01, 0x00, 0x00, 0xff, 0xff, 0xef, 0x45, 0x7e, 0xb2,
-	0x17, 0x06, 0x00, 0x00,
+	// 799 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x55, 0x41, 0x6f, 0x1b, 0x45,
+	0x14, 0xf6, 0xd6, 0x76, 0x6a, 0xbf, 0x4d, 0x52, 0x6b, 0x14, 0xc2, 0x36, 0x69, 0x37, 0xee, 0x4a,
+	0xa0, 0x40, 0x2b, 0xbb, 0x4a, 0x41, 0x20, 0x81, 0x90, 0x9a, 0xd8, 0x16, 0x7b, 0x89, 0xac, 0xc1,
+	0x5c, 0xb8, 0xac, 0xc6, 0xbb, 0x2f, 0xeb, 0x95, 0xed, 0x9d, 0xed, 0xcc, 0x18, 0xd5, 0x12, 0x17,
+	0xfe, 0x01, 0xff, 0x81, 0xbf, 0xc0, 0x8f, 0xe8, 0xb1, 0x47, 0xc4, 0xa1, 0x42, 0xc9, 0x99, 0x3b,
+	0x47, 0x34, 0xb3, 0xbb, 0x6e, 0x31, 0x76, 0x40, 0xe2, 0x36, 0xef, 0x7b, 0x9f, 0xdf, 0x7b, 0xfb,
+	0xbd, 0x6f, 0x3c, 0x70, 0x3f, 0x49, 0x15, 0xce, 0x66, 0xc9, 0xcb, 0x6e, 0x26, 0x92, 0x10, 0xbb,
+	0x8a, 0xc9, 0x69, 0x27, 0x13, 0x5c, 0x71, 0xb2, 0x5f, 0xa6, 0x3a, 0x26, 0x75, 0x74, 0x10, 0xf3,
+	0x98, 0x9b, 0x54, 0x57, 0x9f, 0x72, 0x96, 0xf7, 0x47, 0x15, 0xec, 0x11, 0x93, 0x53, 0x8a, 0x2f,
+	0x16, 0x28, 0x15, 0x79, 0x08, 0xa0, 0x6b, 0x04, 0x49, 0x1a, 0xe1, 0x4b, 0xc7, 0x6a, 0x5b, 0xa7,
+	0x7b, 0xb4, 0xa9, 0x11, 0x5f, 0x03, 0x3a, 0x2d, 0x72, 0x66, 0x90, 0x44, 0xce, 0x9d, 0xb6, 0x75,
+	0xba, 0x4b, 0x9b, 0x05, 0xe2, 0x47, 0xe4, 0x18, 0x9a, 0x57, 0x88, 0x81, 0xe2, 0x53, 0x4c, 0x9d,
+	0x6a, 0xdb, 0x3a, 0x6d, 0xd2, 0xc6, 0x15, 0xe2, 0x48, 0xc7, 0xe4, 0x33, 0xb8, 0x9b, 0xb1, 0xe5,
+	0x1c, 0x53, 0xe5, 0xd4, 0x74, 0xea, 0xfc, 0xe1, 0xab, 0x37, 0x27, 0x95, 0xdf, 0xde, 0x9c, 0xbc,
+	0x17, 0x72, 0x39, 0xe7, 0x52, 0x46, 0xd3, 0x4e, 0xc2, 0xbb, 0x73, 0xa6, 0x26, 0x1d, 0x3f, 0x55,
+	0xb4, 0x64, 0x93, 0x47, 0xb0, 0x5b, 0x36, 0x8d, 0x98, 0x62, 0x4e, 0xdd, 0xb4, 0xb5, 0x0b, 0xac,
+	0xc7, 0x14, 0x23, 0x1f, 0x41, 0x2b, 0x64, 0xb3, 0xd9, 0x98, 0x85, 0xd3, 0x80, 0x45, 0x91, 0x40,
+	0x29, 0x9d, 0x1d, 0xd3, 0xff, 0x5e, 0x89, 0x3f, 0xcf, 0x61, 0xf2, 0x14, 0x0e, 0x56, 0xd4, 0xab,
+	0x45, 0x1a, 0xaa, 0x84, 0xa7, 0xfa, 0x63, 0xee, 0x9a, 0xaa, 0xa4, 0xcc, 0x0d, 0x8a, 0x94, 0x1f,
+	0x91, 0x27, 0x40, 0x8c, 0x26, 0xa1, 0x40, 0xa6, 0x30, 0x0a, 0xc6, 0x33, 0x1e, 0x4e, 0x9d, 0x86,
+	0xd1, 0xa6, 0xa5, 0x33, 0x17, 0x79, 0xe2, 0x5c, 0xe3, 0xe4, 0x03, 0xd8, 0x7f, 0xb1, 0xe0, 0x62,
+	0x31, 0x0f, 0xd2, 0xc5, 0x7c, 0x8c, 0x42, 0x3a, 0x4d, 0x53, 0x79, 0x2f, 0x47, 0x2f, 0x73, 0x90,
+	0x7c, 0x05, 0xc7, 0x05, 0x4d, 0x4d, 0x04, 0xca, 0x09, 0x9f, 0x45, 0x41, 0x86, 0x22, 0xc4, 0x54,
+	0xb1, 0x18, 0x1d, 0x30, 0xd5, 0xef, 0xe7, 0x94, 0x51, 0xc9, 0x18, 0xae, 0x08, 0xe4, 0x53, 0x30,
+	0x6b, 0x09, 0xd4, 0x32, 0x43, 0xc7, 0x6e, 0x5b, 0xa7, 0xfb, 0x67, 0x4e, 0xe7, 0xef, 0x2b, 0xef,
+	0xe8, 0xc5, 0x8e, 0x96, 0x19, 0xd2, 0x86, 0x2a, 0x4e, 0xde, 0xcf, 0x16, 0xb8, 0xc5, 0xae, 0x87,
+	0x82, 0x87, 0x28, 0xe5, 0x2a, 0x4a, 0x42, 0x1c, 0x20, 0x46, 0xa4, 0x0b, 0x35, 0x4d, 0x37, 0xcb,
+	0xb7, 0xcf, 0x8e, 0x37, 0x15, 0x2d, 0x7e, 0x43, 0x0d, 0x91, 0x1c, 0xc2, 0xce, 0x04, 0x93, 0x78,
+	0xa2, 0x8c, 0x21, 0xaa, 0xb4, 0x88, 0xc8, 0xe7, 0xd0, 0x08, 0x27, 0x2c, 0x31, 0xea, 0x56, 0xff,
+	0xd3, 0xc6, 0x0d, 0xdd, 0x8f, 0xbc, 0x5f, 0xee, 0xc0, 0xe1, 0xf3, 0x38, 0x16, 0x18, 0x6b, 0x5d,
+	0xdf, 0x9d, 0x70, 0xcd, 0x81, 0xd6, 0xba, 0x03, 0x9f, 0x41, 0xdd, 0x8c, 0x69, 0x46, 0xf9, 0xd7,
+	0x86, 0x39, 0x97, 0x3c, 0x80, 0xa6, 0x4a, 0xe6, 0x28, 0x15, 0x9b, 0x67, 0x66, 0xd2, 0x2a, 0x7d,
+	0x0b, 0x68, 0xfb, 0x49, 0xbe, 0x10, 0x21, 0x06, 0x21, 0x5f, 0x14, 0xe6, 0xad, 0x53, 0x3b, 0xc7,
+	0x2e, 0x34, 0xa4, 0x77, 0xce, 0x33, 0x14, 0x4c, 0x71, 0x51, 0x90, 0xea, 0x86, 0xb4, 0x57, 0xa2,
+	0x39, 0xed, 0x11, 0xec, 0x1a, 0xef, 0x04, 0x85, 0x5c, 0xda, 0xa1, 0x35, 0x6a, 0x1b, 0xec, 0xeb,
+	0x5c, 0xb3, 0x2f, 0x20, 0x0f, 0x03, 0xc1, 0xd2, 0x18, 0x8d, 0x29, 0xed, 0xb3, 0xa3, 0xf5, 0x1d,
+	0x18, 0xa7, 0x51, 0xcd, 0xa0, 0x30, 0x5e, 0x9d, 0xbd, 0x4f, 0x00, 0xde, 0x66, 0xc8, 0x01, 0xd4,
+	0xa5, 0x62, 0x42, 0x19, 0x91, 0x6a, 0x34, 0x0f, 0x48, 0x0b, 0xaa, 0x98, 0xe6, 0x57, 0xb7, 0x46,
+	0xf5, 0xd1, 0xfb, 0xd1, 0x82, 0x13, 0x8a, 0x32, 0xe3, 0xa9, 0xc4, 0x6d, 0x9e, 0xf8, 0xb2, 0x94,
+	0x35, 0x37, 0xc5, 0x87, 0xeb, 0x03, 0x6d, 0x5e, 0x56, 0xa9, 0x6f, 0x1b, 0x6c, 0x13, 0xf7, 0x92,
+	0x18, 0xa5, 0x2a, 0xfe, 0x36, 0xde, 0x85, 0xbc, 0x4b, 0x38, 0x2e, 0x7f, 0xc8, 0xa5, 0xfa, 0xdf,
+	0x96, 0xf4, 0x5c, 0x78, 0xb0, 0xfa, 0xa4, 0x0d, 0x05, 0x3f, 0x7e, 0x0c, 0x8d, 0xf2, 0x72, 0x90,
+	0x7b, 0x60, 0x7f, 0x7b, 0xf9, 0xcd, 0xb0, 0x7f, 0xe1, 0x0f, 0xfc, 0x7e, 0xaf, 0x55, 0x21, 0xfb,
+	0x00, 0x43, 0xea, 0x5f, 0xf4, 0x83, 0x41, 0xbf, 0xdf, 0x6b, 0x59, 0x67, 0x7f, 0x5a, 0x50, 0xed,
+	0x7d, 0x2f, 0xc9, 0x0f, 0xf0, 0xfe, 0x36, 0x7d, 0x3a, 0xeb, 0x23, 0xdd, 0x7e, 0xc7, 0x8e, 0xba,
+	0xff, 0xe4, 0xdf, 0xba, 0x00, 0xaf, 0x42, 0x24, 0x1c, 0x6c, 0xd4, 0xe6, 0xf1, 0xb6, 0xd6, 0x1b,
+	0xc8, 0x47, 0x4f, 0xb6, 0xf6, 0xdd, 0xc0, 0xf6, 0x2a, 0xe7, 0x4f, 0x5f, 0x5d, 0xbb, 0xd6, 0xeb,
+	0x6b, 0xd7, 0xfa, 0xfd, 0xda, 0xb5, 0x7e, 0xba, 0x71, 0x2b, 0xaf, 0x6f, 0xdc, 0xca, 0xaf, 0x37,
+	0x6e, 0xe5, 0xbb, 0xc3, 0xd5, 0xcb, 0xb3, 0x7a, 0x7b, 0x96, 0x19, 0xca, 0xf1, 0x8e, 0x79, 0x57,
+	0x9e, 0xfd, 0x15, 0x00, 0x00, 0xff, 0xff, 0x02, 0x14, 0x3e, 0xc9, 0x9a, 0x06, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -575,8 +584,8 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type DvsClient interface {
-	ProcessDVSRequest(ctx context.Context, in *RequestProcessDVSRequest, opts ...grpc.CallOption) (*ResponseProcessDVSRequest, error)
-	PostRequest(ctx context.Context, in *RequestPostRequest, opts ...grpc.CallOption) (*ResponsePostRequest, error)
+	ProcessRequestPriceFeed(ctx context.Context, in *RequestProcessRequestPriceFeed, opts ...grpc.CallOption) (*ResponseProcessRequestPriceFeed, error)
+	PostRequestPriceFeed(ctx context.Context, in *RequestPostRequestPriceFeed, opts ...grpc.CallOption) (*ResponsePostRequestPriceFeed, error)
 }
 
 type dvsClient struct {
@@ -587,18 +596,18 @@ func NewDvsClient(cc grpc1.ClientConn) DvsClient {
 	return &dvsClient{cc}
 }
 
-func (c *dvsClient) ProcessDVSRequest(ctx context.Context, in *RequestProcessDVSRequest, opts ...grpc.CallOption) (*ResponseProcessDVSRequest, error) {
-	out := new(ResponseProcessDVSRequest)
-	err := c.cc.Invoke(ctx, "/intellix.price.Dvs/ProcessDVSRequest", in, out, opts...)
+func (c *dvsClient) ProcessRequestPriceFeed(ctx context.Context, in *RequestProcessRequestPriceFeed, opts ...grpc.CallOption) (*ResponseProcessRequestPriceFeed, error) {
+	out := new(ResponseProcessRequestPriceFeed)
+	err := c.cc.Invoke(ctx, "/intellix.price.Dvs/ProcessRequestPriceFeed", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *dvsClient) PostRequest(ctx context.Context, in *RequestPostRequest, opts ...grpc.CallOption) (*ResponsePostRequest, error) {
-	out := new(ResponsePostRequest)
-	err := c.cc.Invoke(ctx, "/intellix.price.Dvs/PostRequest", in, out, opts...)
+func (c *dvsClient) PostRequestPriceFeed(ctx context.Context, in *RequestPostRequestPriceFeed, opts ...grpc.CallOption) (*ResponsePostRequestPriceFeed, error) {
+	out := new(ResponsePostRequestPriceFeed)
+	err := c.cc.Invoke(ctx, "/intellix.price.Dvs/PostRequestPriceFeed", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -607,57 +616,57 @@ func (c *dvsClient) PostRequest(ctx context.Context, in *RequestPostRequest, opt
 
 // DvsServer is the server API for Dvs service.
 type DvsServer interface {
-	ProcessDVSRequest(context.Context, *RequestProcessDVSRequest) (*ResponseProcessDVSRequest, error)
-	PostRequest(context.Context, *RequestPostRequest) (*ResponsePostRequest, error)
+	ProcessRequestPriceFeed(context.Context, *RequestProcessRequestPriceFeed) (*ResponseProcessRequestPriceFeed, error)
+	PostRequestPriceFeed(context.Context, *RequestPostRequestPriceFeed) (*ResponsePostRequestPriceFeed, error)
 }
 
 // UnimplementedDvsServer can be embedded to have forward compatible implementations.
 type UnimplementedDvsServer struct {
 }
 
-func (*UnimplementedDvsServer) ProcessDVSRequest(ctx context.Context, req *RequestProcessDVSRequest) (*ResponseProcessDVSRequest, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ProcessDVSRequest not implemented")
+func (*UnimplementedDvsServer) ProcessRequestPriceFeed(ctx context.Context, req *RequestProcessRequestPriceFeed) (*ResponseProcessRequestPriceFeed, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ProcessRequestPriceFeed not implemented")
 }
-func (*UnimplementedDvsServer) PostRequest(ctx context.Context, req *RequestPostRequest) (*ResponsePostRequest, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PostRequest not implemented")
+func (*UnimplementedDvsServer) PostRequestPriceFeed(ctx context.Context, req *RequestPostRequestPriceFeed) (*ResponsePostRequestPriceFeed, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PostRequestPriceFeed not implemented")
 }
 
 func RegisterDvsServer(s grpc1.Server, srv DvsServer) {
 	s.RegisterService(&_Dvs_serviceDesc, srv)
 }
 
-func _Dvs_ProcessDVSRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RequestProcessDVSRequest)
+func _Dvs_ProcessRequestPriceFeed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestProcessRequestPriceFeed)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DvsServer).ProcessDVSRequest(ctx, in)
+		return srv.(DvsServer).ProcessRequestPriceFeed(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/intellix.price.Dvs/ProcessDVSRequest",
+		FullMethod: "/intellix.price.Dvs/ProcessRequestPriceFeed",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DvsServer).ProcessDVSRequest(ctx, req.(*RequestProcessDVSRequest))
+		return srv.(DvsServer).ProcessRequestPriceFeed(ctx, req.(*RequestProcessRequestPriceFeed))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Dvs_PostRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RequestPostRequest)
+func _Dvs_PostRequestPriceFeed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestPostRequestPriceFeed)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DvsServer).PostRequest(ctx, in)
+		return srv.(DvsServer).PostRequestPriceFeed(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/intellix.price.Dvs/PostRequest",
+		FullMethod: "/intellix.price.Dvs/PostRequestPriceFeed",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DvsServer).PostRequest(ctx, req.(*RequestPostRequest))
+		return srv.(DvsServer).PostRequestPriceFeed(ctx, req.(*RequestPostRequestPriceFeed))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -668,12 +677,12 @@ var _Dvs_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*DvsServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "ProcessDVSRequest",
-			Handler:    _Dvs_ProcessDVSRequest_Handler,
+			MethodName: "ProcessRequestPriceFeed",
+			Handler:    _Dvs_ProcessRequestPriceFeed_Handler,
 		},
 		{
-			MethodName: "PostRequest",
-			Handler:    _Dvs_PostRequest_Handler,
+			MethodName: "PostRequestPriceFeed",
+			Handler:    _Dvs_PostRequestPriceFeed_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -700,6 +709,11 @@ func (m *TaskRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.TaskType != 0 {
+		i = encodeVarintTask(dAtA, i, uint64(m.TaskType))
+		i--
+		dAtA[i] = 0x58
+	}
 	if m.QuorumThresholdPercentage != 0 {
 		i = encodeVarintTask(dAtA, i, uint64(m.QuorumThresholdPercentage))
 		i--
@@ -770,7 +784,7 @@ func (m *TaskRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *RequestProcessDVSRequest) Marshal() (dAtA []byte, err error) {
+func (m *RequestProcessRequestPriceFeed) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -780,12 +794,12 @@ func (m *RequestProcessDVSRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *RequestProcessDVSRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *RequestProcessRequestPriceFeed) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *RequestProcessDVSRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *RequestProcessRequestPriceFeed) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -925,7 +939,7 @@ func (m *BlockRange) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *ResponseProcessDVSRequest) Marshal() (dAtA []byte, err error) {
+func (m *ResponseProcessRequestPriceFeed) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -935,12 +949,12 @@ func (m *ResponseProcessDVSRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *ResponseProcessDVSRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *ResponseProcessRequestPriceFeed) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *ResponseProcessDVSRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *ResponseProcessRequestPriceFeed) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -967,7 +981,7 @@ func (m *ResponseProcessDVSRequest) MarshalToSizedBuffer(dAtA []byte) (int, erro
 	return len(dAtA) - i, nil
 }
 
-func (m *RequestPostRequest) Marshal() (dAtA []byte, err error) {
+func (m *RequestPostRequestPriceFeed) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -977,12 +991,12 @@ func (m *RequestPostRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *RequestPostRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *RequestPostRequestPriceFeed) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *RequestPostRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *RequestPostRequestPriceFeed) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1002,7 +1016,7 @@ func (m *RequestPostRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *ResponsePostRequest) Marshal() (dAtA []byte, err error) {
+func (m *ResponsePostRequestPriceFeed) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -1012,12 +1026,12 @@ func (m *ResponsePostRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *ResponsePostRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *ResponsePostRequestPriceFeed) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *ResponsePostRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *ResponsePostRequestPriceFeed) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -1077,10 +1091,13 @@ func (m *TaskRequest) Size() (n int) {
 	if m.QuorumThresholdPercentage != 0 {
 		n += 1 + sovTask(uint64(m.QuorumThresholdPercentage))
 	}
+	if m.TaskType != 0 {
+		n += 1 + sovTask(uint64(m.TaskType))
+	}
 	return n
 }
 
-func (m *RequestProcessDVSRequest) Size() (n int) {
+func (m *RequestProcessRequestPriceFeed) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1144,7 +1161,7 @@ func (m *BlockRange) Size() (n int) {
 	return n
 }
 
-func (m *ResponseProcessDVSRequest) Size() (n int) {
+func (m *ResponseProcessRequestPriceFeed) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1161,7 +1178,7 @@ func (m *ResponseProcessDVSRequest) Size() (n int) {
 	return n
 }
 
-func (m *RequestPostRequest) Size() (n int) {
+func (m *RequestPostRequestPriceFeed) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1174,7 +1191,7 @@ func (m *RequestPostRequest) Size() (n int) {
 	return n
 }
 
-func (m *ResponsePostRequest) Size() (n int) {
+func (m *ResponsePostRequestPriceFeed) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -1509,6 +1526,25 @@ func (m *TaskRequest) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 11:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskType", wireType)
+			}
+			m.TaskType = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTask
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TaskType |= TaskType(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTask(dAtA[iNdEx:])
@@ -1530,7 +1566,7 @@ func (m *TaskRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *RequestProcessDVSRequest) Unmarshal(dAtA []byte) error {
+func (m *RequestProcessRequestPriceFeed) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1553,10 +1589,10 @@ func (m *RequestProcessDVSRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: RequestProcessDVSRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: RequestProcessRequestPriceFeed: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: RequestProcessDVSRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: RequestProcessRequestPriceFeed: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1987,7 +2023,7 @@ func (m *BlockRange) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *ResponseProcessDVSRequest) Unmarshal(dAtA []byte) error {
+func (m *ResponseProcessRequestPriceFeed) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2010,10 +2046,10 @@ func (m *ResponseProcessDVSRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: ResponseProcessDVSRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: ResponseProcessRequestPriceFeed: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ResponseProcessDVSRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ResponseProcessRequestPriceFeed: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2107,7 +2143,7 @@ func (m *ResponseProcessDVSRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *RequestPostRequest) Unmarshal(dAtA []byte) error {
+func (m *RequestPostRequestPriceFeed) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2130,10 +2166,10 @@ func (m *RequestPostRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: RequestPostRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: RequestPostRequestPriceFeed: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: RequestPostRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: RequestPostRequestPriceFeed: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -2193,7 +2229,7 @@ func (m *RequestPostRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *ResponsePostRequest) Unmarshal(dAtA []byte) error {
+func (m *ResponsePostRequestPriceFeed) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -2216,10 +2252,10 @@ func (m *ResponsePostRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: ResponsePostRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: ResponsePostRequestPriceFeed: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: ResponsePostRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ResponsePostRequestPriceFeed: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:

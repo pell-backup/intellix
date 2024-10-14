@@ -148,6 +148,7 @@ func (td *TaskDispatcher) serializeTask(taskIndex uint32, task contractPriceOrac
 		TaskCreatedBlock:          task.TaskCreatedBlock,
 		QuorumNumbers:             task.QuorumNumbers,
 		QuorumThresholdPercentage: task.QuorumThresholdPercentage,
+		TaskType:                  pricetypes.TaskType_PRICE_FEED,
 	}
 
 	return proto.Marshal(taskRequest)

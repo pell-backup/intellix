@@ -6,9 +6,11 @@ import "gogoproto/gogo.proto";
 option go_package = "intellix/x/price/types";
 
 service Dvs {
-  rpc ProcessDVSRequest(RequestProcessDVSRequest) returns (ResponseProcessDVSRequest) {}
+  // ProcessRequestPriceFeed defines avsi logic processing
+  rpc ProcessRequestPriceFeed(RequestProcessRequestPriceFeed) returns (ResponseProcessRequestPriceFeed) {}
 
-  rpc PostRequest(RequestPostRequest) returns (ResponsePostRequest) {}
+  // PostRequestPriceFeed defines avsi logic processing
+  rpc PostRequestPriceFeed(RequestPostRequestPriceFeed) returns (ResponsePostRequestPriceFeed) {}
 }
 
 // TaskType defines the type of task
@@ -32,9 +34,11 @@ message TaskRequest {
   uint32 task_created_block = 8;
   bytes quorum_numbers = 9;
   uint32 quorum_threshold_percentage = 10;
+  // task_type defines the type of task for avsi router
+  TaskType task_type = 11;
 }
 
-message RequestProcessDVSRequest {
+message RequestProcessRequestPriceFeed {
   TaskRequest task = 1;
   int64 height = 2;
   string chain_id = 3[
@@ -42,7 +46,6 @@ message RequestProcessDVSRequest {
     (gogoproto.nullable) = false
   ];
 }
-
 
 // AggregatedRequestPrice
 message AggregatedRequestPrice {
@@ -72,15 +75,15 @@ message BlockRange {
   uint64 end = 2;
 }
 
-message ResponseProcessDVSRequest {
+message ResponseProcessRequestPriceFeed {
   AggregatedRequestPrice price = 1;
   bytes PriceDigest = 2;
 }
 
-message RequestPostRequest{
+message RequestPostRequestPriceFeed{
   TaskRequest task = 1;
 }
 
-message ResponsePostRequest {
+message ResponsePostRequestPriceFeed {
 
 }

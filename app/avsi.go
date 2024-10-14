@@ -18,23 +18,33 @@ func (app *App) ProcessRequest(ctx context.Context, req *avsi.RequestProcessRequ
 	}
 
 	// route
-	response, err := app.DvsServer.ProcessDVSRequest(ctx, &pricetypes.RequestProcessDVSRequest{
-		Task:    &taskReq,
-		Height:  req.Request.Height,
-		ChainId: math.NewIntFromBigInt(req.Request.ChainID),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("ProcessDVSRequest failed to process request: %w", err)
-	}
+	var (
+		data       []byte
+		dataDigest []byte
+	)
 
-	priceData, err := response.Price.Marshal()
-	if err != nil {
-		return nil, fmt.Errorf("ProcessDVSRequest price data marshal failed: %w", err)
+	switch taskReq.TaskType {
+	case pricetypes.TaskType_PRICE_FEED:
+		response, err := app.DvsServer.ProcessRequestPriceFeed(ctx, &pricetypes.RequestProcessRequestPriceFeed{
+			Task:    &taskReq,
+			Height:  req.Request.Height,
+			ChainId: math.NewIntFromBigInt(req.Request.ChainID),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("ProcessDVSRequest failed to process request: %w", err)
+		}
+		data, err = response.Price.Marshal()
+		if err != nil {
+			return nil, fmt.Errorf("ProcessDVSRequest price data marshal failed: %w", err)
+		}
+		dataDigest = response.PriceDigest
+	default:
+		return nil, fmt.Errorf("unknown task type: %d", taskReq.TaskType)
 	}
 
 	var resp = &avsi.ResponseProcessRequest{
-		Reponse:        priceData,
-		ResponseDigest: response.PriceDigest,
+		Reponse:        data,
+		ResponseDigest: dataDigest,
 	}
 
 	return resp, nil
@@ -47,11 +57,16 @@ func (app *App) PostRequest(ctx context.Context, req *avsi.RequestPostRequest) (
 		return nil, fmt.Errorf("failed to unmarshal TaskRequest: %w", err)
 	}
 
-	_, err = app.DvsServer.PostRequest(ctx, &pricetypes.RequestPostRequest{
-		Task: &taskReq,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("PostRequest failed to process request: %w", err)
+	switch taskReq.TaskType {
+	case pricetypes.TaskType_PRICE_FEED:
+		_, err = app.DvsServer.PostRequestPriceFeed(ctx, &pricetypes.RequestPostRequestPriceFeed{
+			Task: &taskReq,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("PostRequest failed to process request: %w", err)
+		}
+	default:
+		return nil, fmt.Errorf("unknown task type: %d", taskReq.TaskType)
 	}
 
 	return &avsi.ResponsePostRequest{}, nil
