@@ -24,7 +24,7 @@ require (
 	cosmossdk.io/x/feegrant v0.1.1
 	cosmossdk.io/x/nft v0.1.0
 	cosmossdk.io/x/upgrade v0.1.4
-	github.com/0xPellNetwork/pelldvs v0.0.1
+	github.com/0xPellNetwork/pelldvs v0.0.2
 	github.com/IntelliXLabs/price-oracle-dvs v0.1.0
 	github.com/bufbuild/buf v1.34.0
 	github.com/cometbft/cometbft v0.38.11
