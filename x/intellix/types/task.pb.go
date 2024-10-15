@@ -25,7 +25,7 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // TaskRequest defines a request for a task
-type TaskRequestRaw struct {
+type TaskRequest struct {
 	TaskIndex                 uint32                `protobuf:"varint,1,opt,name=task_index,json=taskIndex,proto3" json:"task_index,omitempty"`
 	RequestId                 []byte                `protobuf:"bytes,2,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
 	FeeToken                  string                `protobuf:"bytes,3,opt,name=fee_token,json=feeToken,proto3" json:"fee_token,omitempty"`
@@ -38,18 +38,18 @@ type TaskRequestRaw struct {
 	QuorumThresholdPercentage uint32                `protobuf:"varint,10,opt,name=quorum_threshold_percentage,json=quorumThresholdPercentage,proto3" json:"quorum_threshold_percentage,omitempty"`
 }
 
-func (m *TaskRequestRaw) Reset()         { *m = TaskRequestRaw{} }
-func (m *TaskRequestRaw) String() string { return proto.CompactTextString(m) }
-func (*TaskRequestRaw) ProtoMessage()    {}
-func (*TaskRequestRaw) Descriptor() ([]byte, []int) {
+func (m *TaskRequest) Reset()         { *m = TaskRequest{} }
+func (m *TaskRequest) String() string { return proto.CompactTextString(m) }
+func (*TaskRequest) ProtoMessage()    {}
+func (*TaskRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_3d99f53b3a9a3a58, []int{0}
 }
-func (m *TaskRequestRaw) XXX_Unmarshal(b []byte) error {
+func (m *TaskRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *TaskRequestRaw) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *TaskRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_TaskRequestRaw.Marshal(b, m, deterministic)
+		return xxx_messageInfo_TaskRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -59,175 +59,118 @@ func (m *TaskRequestRaw) XXX_Marshal(b []byte, deterministic bool) ([]byte, erro
 		return b[:n], nil
 	}
 }
-func (m *TaskRequestRaw) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_TaskRequestRaw.Merge(m, src)
+func (m *TaskRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TaskRequest.Merge(m, src)
 }
-func (m *TaskRequestRaw) XXX_Size() int {
+func (m *TaskRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *TaskRequestRaw) XXX_DiscardUnknown() {
-	xxx_messageInfo_TaskRequestRaw.DiscardUnknown(m)
+func (m *TaskRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_TaskRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_TaskRequestRaw proto.InternalMessageInfo
+var xxx_messageInfo_TaskRequest proto.InternalMessageInfo
 
-func (m *TaskRequestRaw) GetTaskIndex() uint32 {
+func (m *TaskRequest) GetTaskIndex() uint32 {
 	if m != nil {
 		return m.TaskIndex
 	}
 	return 0
 }
 
-func (m *TaskRequestRaw) GetRequestId() []byte {
+func (m *TaskRequest) GetRequestId() []byte {
 	if m != nil {
 		return m.RequestId
 	}
 	return nil
 }
 
-func (m *TaskRequestRaw) GetFeeToken() string {
+func (m *TaskRequest) GetFeeToken() string {
 	if m != nil {
 		return m.FeeToken
 	}
 	return ""
 }
 
-func (m *TaskRequestRaw) GetRequestData() []byte {
+func (m *TaskRequest) GetRequestData() []byte {
 	if m != nil {
 		return m.RequestData
 	}
 	return nil
 }
 
-func (m *TaskRequestRaw) GetCallbackAddress() string {
+func (m *TaskRequest) GetCallbackAddress() string {
 	if m != nil {
 		return m.CallbackAddress
 	}
 	return ""
 }
 
-func (m *TaskRequestRaw) GetCallbackFunctionId() []byte {
+func (m *TaskRequest) GetCallbackFunctionId() []byte {
 	if m != nil {
 		return m.CallbackFunctionId
 	}
 	return nil
 }
 
-func (m *TaskRequestRaw) GetTaskCreatedBlock() uint32 {
+func (m *TaskRequest) GetTaskCreatedBlock() uint32 {
 	if m != nil {
 		return m.TaskCreatedBlock
 	}
 	return 0
 }
 
-func (m *TaskRequestRaw) GetQuorumNumbers() []byte {
+func (m *TaskRequest) GetQuorumNumbers() []byte {
 	if m != nil {
 		return m.QuorumNumbers
 	}
 	return nil
 }
 
-func (m *TaskRequestRaw) GetQuorumThresholdPercentage() uint32 {
+func (m *TaskRequest) GetQuorumThresholdPercentage() uint32 {
 	if m != nil {
 		return m.QuorumThresholdPercentage
 	}
 	return 0
 }
 
-// PriceFeedParam defines the price feed parameters
-type PriceFeedParam struct {
-	BaseSymbol  string `protobuf:"bytes,1,opt,name=base_symbol,json=baseSymbol,proto3" json:"base_symbol,omitempty"`
-	QuoteSymbol string `protobuf:"bytes,2,opt,name=quote_symbol,json=quoteSymbol,proto3" json:"quote_symbol,omitempty"`
-}
-
-func (m *PriceFeedParam) Reset()         { *m = PriceFeedParam{} }
-func (m *PriceFeedParam) String() string { return proto.CompactTextString(m) }
-func (*PriceFeedParam) ProtoMessage()    {}
-func (*PriceFeedParam) Descriptor() ([]byte, []int) {
-	return fileDescriptor_3d99f53b3a9a3a58, []int{1}
-}
-func (m *PriceFeedParam) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *PriceFeedParam) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_PriceFeedParam.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *PriceFeedParam) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_PriceFeedParam.Merge(m, src)
-}
-func (m *PriceFeedParam) XXX_Size() int {
-	return m.Size()
-}
-func (m *PriceFeedParam) XXX_DiscardUnknown() {
-	xxx_messageInfo_PriceFeedParam.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_PriceFeedParam proto.InternalMessageInfo
-
-func (m *PriceFeedParam) GetBaseSymbol() string {
-	if m != nil {
-		return m.BaseSymbol
-	}
-	return ""
-}
-
-func (m *PriceFeedParam) GetQuoteSymbol() string {
-	if m != nil {
-		return m.QuoteSymbol
-	}
-	return ""
-}
-
 func init() {
-	proto.RegisterType((*TaskRequestRaw)(nil), "intellix.price.TaskRequestRaw")
-	proto.RegisterType((*PriceFeedParam)(nil), "intellix.price.PriceFeedParam")
+	proto.RegisterType((*TaskRequest)(nil), "intellix.price.TaskRequest")
 }
 
 func init() { proto.RegisterFile("intellix/price/task.proto", fileDescriptor_3d99f53b3a9a3a58) }
 
 var fileDescriptor_3d99f53b3a9a3a58 = []byte{
-	// 450 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x3c, 0x92, 0xc1, 0x6a, 0xdb, 0x40,
-	0x10, 0x86, 0xad, 0xa4, 0x4d, 0xa2, 0x75, 0xe2, 0x86, 0x25, 0x2d, 0x9b, 0x86, 0xc8, 0x6e, 0xa0,
-	0xe0, 0x42, 0xb1, 0x03, 0x3d, 0xf4, 0x56, 0xa8, 0x5b, 0x02, 0xbe, 0x14, 0xa3, 0xfa, 0xd4, 0x8b,
-	0x18, 0x69, 0xc7, 0xb6, 0x90, 0xb4, 0x2b, 0xef, 0xae, 0x68, 0xfc, 0x16, 0x7d, 0x9d, 0xbe, 0x41,
-	0x8e, 0x39, 0x96, 0x1e, 0x42, 0xb1, 0x5f, 0xa4, 0xec, 0xca, 0xd2, 0x4d, 0xfa, 0xfe, 0x8f, 0x19,
-	0x76, 0x66, 0xc8, 0x65, 0x2a, 0x0c, 0xe6, 0x79, 0x7a, 0x3f, 0x2e, 0x55, 0x9a, 0xe0, 0xd8, 0x80,
-	0xce, 0x46, 0xa5, 0x92, 0x46, 0xd2, 0x5e, 0x13, 0x8d, 0x5c, 0xf4, 0xfa, 0x62, 0x29, 0x97, 0xd2,
-	0x45, 0x63, 0xfb, 0x55, 0x5b, 0x37, 0xbf, 0x0f, 0x49, 0x6f, 0x0e, 0x3a, 0x0b, 0x71, 0x5d, 0xa1,
-	0x36, 0x21, 0xfc, 0xa4, 0xd7, 0x84, 0xd8, 0x32, 0x51, 0x2a, 0x38, 0xde, 0x33, 0x6f, 0xe0, 0x0d,
-	0xcf, 0x42, 0xdf, 0x92, 0xa9, 0x05, 0x36, 0x56, 0xb5, 0x1c, 0xa5, 0x9c, 0x1d, 0x0c, 0xbc, 0xe1,
-	0x69, 0xe8, 0xef, 0xc9, 0x94, 0xd3, 0x2b, 0xe2, 0x2f, 0x10, 0x23, 0x23, 0x33, 0x14, 0xec, 0x70,
-	0xe0, 0x0d, 0xfd, 0xf0, 0x64, 0x81, 0x38, 0xb7, 0xff, 0xf4, 0x23, 0x39, 0x2e, 0x61, 0x53, 0xa0,
-	0x30, 0xec, 0x99, 0x8d, 0x26, 0xd7, 0x0f, 0x4f, 0xfd, 0xce, 0xdf, 0xa7, 0xfe, 0xcb, 0x44, 0xea,
-	0x42, 0x6a, 0xcd, 0xb3, 0x51, 0x2a, 0xc7, 0x05, 0x98, 0xd5, 0x68, 0x2a, 0x4c, 0xd8, 0xd8, 0xf4,
-	0x0d, 0x39, 0x6d, 0x9a, 0x72, 0x30, 0xc0, 0x9e, 0xbb, 0xb6, 0xdd, 0x3d, 0xfb, 0x0a, 0x06, 0xe8,
-	0x3b, 0x72, 0x9e, 0x40, 0x9e, 0xc7, 0x90, 0x64, 0x11, 0x70, 0xae, 0x50, 0x6b, 0x76, 0xe4, 0xfa,
-	0xbf, 0x68, 0xf8, 0xe7, 0x1a, 0xd3, 0x5b, 0x72, 0xd1, 0xaa, 0x8b, 0x4a, 0x24, 0x26, 0x95, 0xc2,
-	0x3e, 0xe6, 0xd8, 0x55, 0xa5, 0x4d, 0x76, 0xb7, 0x8f, 0xa6, 0x9c, 0xbe, 0x27, 0xd4, 0xcd, 0x24,
-	0x51, 0x08, 0x06, 0x79, 0x14, 0xe7, 0x32, 0xc9, 0xd8, 0x89, 0x9b, 0xcd, 0xb9, 0x4d, 0xbe, 0xd4,
-	0xc1, 0xc4, 0x72, 0xfa, 0x96, 0xf4, 0xd6, 0x95, 0x54, 0x55, 0x11, 0x89, 0xaa, 0x88, 0x51, 0x69,
-	0xe6, 0xbb, 0xca, 0x67, 0x35, 0xfd, 0x56, 0x43, 0xfa, 0x89, 0x5c, 0xed, 0x35, 0xb3, 0x52, 0xa8,
-	0x57, 0x32, 0xe7, 0x51, 0x89, 0x2a, 0x41, 0x61, 0x60, 0x89, 0x8c, 0xb8, 0xea, 0x97, 0xb5, 0x32,
-	0x6f, 0x8c, 0x59, 0x2b, 0xdc, 0xcc, 0x49, 0x6f, 0x66, 0x57, 0x7b, 0x87, 0xc8, 0x67, 0xa0, 0xa0,
-	0xa0, 0x7d, 0xd2, 0x8d, 0x41, 0x63, 0xa4, 0x37, 0x45, 0x2c, 0x73, 0xb7, 0x3b, 0x3f, 0x24, 0x16,
-	0x7d, 0x77, 0xc4, 0xce, 0x71, 0x5d, 0x49, 0xd3, 0x1a, 0x07, 0xce, 0xe8, 0x3a, 0x56, 0x2b, 0x93,
-	0xdb, 0x87, 0x6d, 0xe0, 0x3d, 0x6e, 0x03, 0xef, 0xdf, 0x36, 0xf0, 0x7e, 0xed, 0x82, 0xce, 0xe3,
-	0x2e, 0xe8, 0xfc, 0xd9, 0x05, 0x9d, 0x1f, 0xaf, 0xda, 0x63, 0x6b, 0xcf, 0x6d, 0x53, 0xa2, 0x8e,
-	0x8f, 0xdc, 0x29, 0x7d, 0xf8, 0x1f, 0x00, 0x00, 0xff, 0xff, 0x2b, 0x25, 0x1a, 0x8f, 0x8d, 0x02,
-	0x00, 0x00,
+	// 403 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x3c, 0x92, 0x4d, 0x6b, 0xd4, 0x40,
+	0x18, 0x80, 0x13, 0xab, 0x6d, 0x33, 0xfd, 0xb0, 0x0c, 0x55, 0xa6, 0x96, 0xa6, 0xab, 0x20, 0xac,
+	0x20, 0x49, 0xc1, 0x83, 0x37, 0xc1, 0x55, 0x84, 0x5c, 0x44, 0xc2, 0x9e, 0xbc, 0x84, 0xc9, 0xcc,
+	0xbb, 0xbb, 0x21, 0xc9, 0x4c, 0x3a, 0x33, 0x81, 0xf6, 0x5f, 0xf8, 0x6b, 0xfc, 0x0d, 0x7b, 0xdc,
+	0xa3, 0x78, 0x58, 0x64, 0xf7, 0x8f, 0xc8, 0x4c, 0x3e, 0x6e, 0xc9, 0xf3, 0x3c, 0xbc, 0x2f, 0x99,
+	0x0c, 0xba, 0x2a, 0x84, 0x81, 0xaa, 0x2a, 0x1e, 0xe2, 0x46, 0x15, 0x0c, 0x62, 0x43, 0x75, 0x19,
+	0x35, 0x4a, 0x1a, 0x89, 0xcf, 0x07, 0x15, 0x39, 0xf5, 0xea, 0x72, 0x29, 0x97, 0xd2, 0xa9, 0xd8,
+	0x3e, 0x75, 0xd5, 0x9b, 0xdf, 0x07, 0xe8, 0x64, 0x4e, 0x75, 0x99, 0xc2, 0x7d, 0x0b, 0xda, 0xe0,
+	0x1b, 0x84, 0xec, 0x8c, 0xac, 0x10, 0x1c, 0x1e, 0x88, 0x3f, 0xf1, 0xa7, 0x67, 0x69, 0x60, 0x49,
+	0x62, 0x81, 0xd5, 0xaa, 0x2b, 0xb3, 0x82, 0x93, 0x27, 0x13, 0x7f, 0x7a, 0x9a, 0x06, 0x3d, 0x49,
+	0x38, 0xbe, 0x46, 0xc1, 0x02, 0x20, 0x33, 0xb2, 0x04, 0x41, 0x0e, 0x26, 0xfe, 0x34, 0x48, 0x8f,
+	0x17, 0x00, 0x73, 0xfb, 0x8e, 0x3f, 0xa2, 0xa3, 0x86, 0x3e, 0xd6, 0x20, 0x0c, 0x79, 0x6a, 0xd5,
+	0xec, 0x66, 0xbd, 0xbd, 0xf5, 0xfe, 0x6e, 0x6f, 0x5f, 0x30, 0xa9, 0x6b, 0xa9, 0x35, 0x2f, 0xa3,
+	0x42, 0xc6, 0x35, 0x35, 0xab, 0x28, 0x11, 0x26, 0x1d, 0x6a, 0xfc, 0x1a, 0x9d, 0x0e, 0x4b, 0x39,
+	0x35, 0x94, 0x3c, 0x73, 0x6b, 0x4f, 0x7a, 0xf6, 0x95, 0x1a, 0x8a, 0xdf, 0xa1, 0x0b, 0x46, 0xab,
+	0x2a, 0xa7, 0xac, 0xcc, 0x28, 0xe7, 0x0a, 0xb4, 0x26, 0x87, 0x6e, 0xff, 0xf3, 0x81, 0x7f, 0xee,
+	0x30, 0xbe, 0x43, 0x97, 0x63, 0xba, 0x68, 0x05, 0x33, 0x85, 0x14, 0xf6, 0x63, 0x8e, 0xdc, 0x54,
+	0x3c, 0xb8, 0x6f, 0xbd, 0x4a, 0x38, 0x7e, 0x8f, 0xb0, 0x3b, 0x13, 0xa6, 0x80, 0x1a, 0xe0, 0x59,
+	0x5e, 0x49, 0x56, 0x92, 0x63, 0x77, 0x36, 0x17, 0xd6, 0x7c, 0xe9, 0xc4, 0xcc, 0x72, 0xfc, 0x16,
+	0x9d, 0xdf, 0xb7, 0x52, 0xb5, 0x75, 0x26, 0xda, 0x3a, 0x07, 0xa5, 0x49, 0xe0, 0x26, 0x9f, 0x75,
+	0xf4, 0x7b, 0x07, 0xf1, 0x27, 0x74, 0xdd, 0x67, 0x66, 0xa5, 0x40, 0xaf, 0x64, 0xc5, 0xb3, 0x06,
+	0x14, 0x03, 0x61, 0xe8, 0x12, 0x08, 0x72, 0xd3, 0xaf, 0xba, 0x64, 0x3e, 0x14, 0x3f, 0xc6, 0x60,
+	0x76, 0xb7, 0xde, 0x85, 0xfe, 0x66, 0x17, 0xfa, 0xff, 0x76, 0xa1, 0xff, 0x6b, 0x1f, 0x7a, 0x9b,
+	0x7d, 0xe8, 0xfd, 0xd9, 0x87, 0xde, 0xcf, 0x97, 0xe3, 0x9d, 0x18, 0x6f, 0xc5, 0x63, 0x03, 0x3a,
+	0x3f, 0x74, 0x7f, 0xfc, 0xc3, 0xff, 0x00, 0x00, 0x00, 0xff, 0xff, 0x07, 0x4a, 0x6e, 0xfd, 0x34,
+	0x02, 0x00, 0x00,
 }
 
-func (m *TaskRequestRaw) Marshal() (dAtA []byte, err error) {
+func (m *TaskRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -237,12 +180,12 @@ func (m *TaskRequestRaw) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *TaskRequestRaw) MarshalTo(dAtA []byte) (int, error) {
+func (m *TaskRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *TaskRequestRaw) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *TaskRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -317,43 +260,6 @@ func (m *TaskRequestRaw) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *PriceFeedParam) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *PriceFeedParam) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *PriceFeedParam) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.QuoteSymbol) > 0 {
-		i -= len(m.QuoteSymbol)
-		copy(dAtA[i:], m.QuoteSymbol)
-		i = encodeVarintTask(dAtA, i, uint64(len(m.QuoteSymbol)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.BaseSymbol) > 0 {
-		i -= len(m.BaseSymbol)
-		copy(dAtA[i:], m.BaseSymbol)
-		i = encodeVarintTask(dAtA, i, uint64(len(m.BaseSymbol)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
 func encodeVarintTask(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTask(v)
 	base := offset
@@ -365,7 +271,7 @@ func encodeVarintTask(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *TaskRequestRaw) Size() (n int) {
+func (m *TaskRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -409,30 +315,13 @@ func (m *TaskRequestRaw) Size() (n int) {
 	return n
 }
 
-func (m *PriceFeedParam) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.BaseSymbol)
-	if l > 0 {
-		n += 1 + l + sovTask(uint64(l))
-	}
-	l = len(m.QuoteSymbol)
-	if l > 0 {
-		n += 1 + l + sovTask(uint64(l))
-	}
-	return n
-}
-
 func sovTask(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozTask(x uint64) (n int) {
 	return sovTask(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *TaskRequestRaw) Unmarshal(dAtA []byte) error {
+func (m *TaskRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -455,10 +344,10 @@ func (m *TaskRequestRaw) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: TaskRequestRaw: wiretype end group for non-group")
+			return fmt.Errorf("proto: TaskRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: TaskRequestRaw: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: TaskRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -752,120 +641,6 @@ func (m *TaskRequestRaw) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipTask(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthTask
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *PriceFeedParam) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowTask
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: PriceFeedParam: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: PriceFeedParam: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BaseSymbol", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTask
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTask
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTask
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.BaseSymbol = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field QuoteSymbol", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowTask
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthTask
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthTask
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.QuoteSymbol = string(dAtA[iNdEx:postIndex])
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipTask(dAtA[iNdEx:])

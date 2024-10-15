@@ -3,24 +3,52 @@ package intellix.price;
 
 import "gogoproto/gogo.proto";
 import "intellix/price/task.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
 
 option go_package = "intellix/x/price/types";
 
 service Dvs {
   // ProcessRequestPriceFeed defines avsi logic processing
-  rpc ProcessRequestPriceFeed(RequestProcessRequestPriceFeed) returns (ResponseProcessRequestPriceFeed) {}
+  rpc ProcessRequestPriceFeed(ProcessPriceFeedMsg) returns (ProcessPriceFeedResp) {}
 
   // PostRequestPriceFeed defines avsi logic processing
-  rpc PostRequestPriceFeed(RequestPostRequestPriceFeed) returns (ResponsePostRequestPriceFeed) {}
+  rpc PostRequestPriceFeed(PostPriceFeedMsg) returns (ResponsePostRequestPriceFeed) {}
 }
 
-message RequestProcessRequestPriceFeed {
-  TaskRequest task = 1;
+// ProcessPriceFeedMsg defines task request from task-dispatcher
+message ProcessPriceFeedMsg {
+  option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
+
+  TaskRequestRaw raw = 1;
   int64 height = 2;
   string chain_id = 3[
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
+  bytes data = 4;
+}
+
+// ProcessPriceFeedResp defines response from data that after processing
+message ProcessPriceFeedResp {
+  bytes data = 1;
+}
+
+// PostPriceFeedMsg defines post-price-feed request message
+message PostPriceFeedMsg {
+  option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
+
+  // same as ProcessPriceFeedMsg as context to router
+  TaskRequestRaw raw = 1;
+  int64 height = 2;
+  string chain_id = 3[
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  bytes data = 4;
+
+  // validated data
+  RequestPostRequestPriceFeedValidatedData validated_data = 5;
 }
 
 // AggregatedRequestPrice
@@ -51,15 +79,41 @@ message BlockRange {
   uint64 end = 2;
 }
 
-message ResponseProcessRequestPriceFeed {
-  AggregatedRequestPrice price = 1;
-  bytes PriceDigest = 2;
+message G1Point {
+  bytes x = 1;
+  bytes y = 2;
 }
 
-message RequestPostRequestPriceFeed{
-  TaskRequest task = 1;
+message G2Point {
+  bytes x_real = 1;
+  bytes x_imag = 2;
+  bytes y_real = 3;
+  bytes y_imag = 4;
+}
+
+message Signature {
+  bytes sig = 1;
+}
+
+// UInt32List [][]uint32
+message UInt32List {
+  repeated uint32 values = 1;
+}
+
+message RequestPostRequestPriceFeedValidatedData {
+  bytes data = 1;
+  string error = 2;
+  bytes hash = 3;
+  repeated G1Point non_signers_pubkeys_g1 = 4;
+  repeated G1Point quorum_apks_g1 = 5;
+  G2Point signers_apk_g2 = 6;
+  Signature signers_agg_sig_g1 = 7;
+  repeated uint32 non_signer_quorum_bitmap_indices = 8;
+  repeated uint32 quorum_apk_indices = 9;
+  repeated uint32 total_stake_indices = 10;
+  repeated UInt32List non_signer_stake_indices = 11;
 }
 
 message ResponsePostRequestPriceFeed {
-
+  bytes receipt = 1;
 }

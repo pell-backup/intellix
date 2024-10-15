@@ -77,7 +77,7 @@ import (
 	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
-	intellixmodulekeeper "intellix/x/intellix/keeper"
+	//intellixmodulekeeper "intellix/x/intellix/keeper"
 	dvsmodulekeeper "intellix/x/price/dvs/keeper"
 	pricemodulekeeper "intellix/x/price/keeper"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
@@ -145,9 +145,9 @@ type App struct {
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
 	ScopedKeepers             map[string]capabilitykeeper.ScopedKeeper
 
-	IntellixKeeper intellixmodulekeeper.Keeper
-	PriceKeeper    pricemodulekeeper.Keeper
-	DvsKeeper      dvsmodulekeeper.Keeper
+	//IntellixKeeper intellixmodulekeeper.Keeper
+	PriceKeeper pricemodulekeeper.Keeper
+	DvsKeeper   dvsmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
@@ -255,7 +255,7 @@ func New(
 		&app.NFTKeeper,
 		&app.GroupKeeper,
 		&app.CircuitBreakerKeeper,
-		&app.IntellixKeeper,
+		//&app.IntellixKeeper,
 		&app.PriceKeeper,
 		&app.DvsKeeper,
 		// this line is used by starport scaffolding # stargate/app/keeperDefinition

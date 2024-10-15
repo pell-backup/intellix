@@ -57,6 +57,7 @@ import (
 	pricemodulev1 "intellix/api/intellix/price/module"
 	_ "intellix/x/intellix/module" // import for side-effects
 	intellixmoduletypes "intellix/x/intellix/types"
+	_ "intellix/x/price/dvs"    // import for side-effects
 	_ "intellix/x/price/module" // import for side-effects
 	pricemoduletypes "intellix/x/price/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport

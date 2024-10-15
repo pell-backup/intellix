@@ -5,14 +5,8 @@ import "gogoproto/gogo.proto";
 
 option go_package = "intellix/x/price/types";
 
-// TaskType defines the type of task
-enum TaskType {
-  UNSPECIFIED = 0; // Unspecified
-  PRICE_FEED = 1;  // Price Feed
-}
-
 // TaskRequest defines a request for a task
-message TaskRequest {
+message TaskRequestRaw {
   uint32 task_index = 1;
   bytes request_id = 2;
   string fee_token = 3;
@@ -26,6 +20,10 @@ message TaskRequest {
   uint32 task_created_block = 8;
   bytes quorum_numbers = 9;
   uint32 quorum_threshold_percentage = 10;
-  // task_type defines the type of task for avsi router
-  TaskType task_type = 11;
+}
+
+// PriceFeedParam defines the price feed parameters
+message PriceFeedParam {
+  string base_symbol = 1;
+  string quote_symbol = 2;
 }

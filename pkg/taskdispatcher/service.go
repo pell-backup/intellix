@@ -115,7 +115,13 @@ func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
 func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractPriceOracle.ContractPriceOracleNewTaskCreated) {
 	td.logger.Info("New task created", "chainID", chainID, "TaskIndex", newTask.TaskIndex, "RequestId", newTask.Task.RequestId)
 
-	taskData, err := td.serializeTask(newTask.TaskIndex, newTask.Task)
+	priceFeed, err := ParsePriceFeed(newTask.Task.RequestData)
+	if err != nil {
+		td.logger.Error("Failed to parse price feed", "chainID", chainID, "error", err)
+		return
+	}
+
+	taskData, err := td.serializeTask(newTask.TaskIndex, chainID, int64(newTask.Raw.BlockNumber), priceFeed, newTask.Task)
 	if err != nil {
 		td.logger.Error("Failed to serialize task", "chainID", chainID, "error", err)
 		return
@@ -136,7 +142,7 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractPriceOr
 	td.logger.Info("Task sent to PellDVS successfully", "chainID", chainID, "TaskIndex", newTask.TaskIndex)
 }
 
-func (td *TaskDispatcher) serializeTask(taskIndex uint32, task contractPriceOracle.IPriceOracleTask) ([]byte, error) {
+func (td *TaskDispatcher) serializeTask(taskIndex uint32, chainID uint64, blockHeight int64, priceFeed *PriceFeedParam, task contractPriceOracle.IPriceOracleTask) ([]byte, error) {
 	taskRequest := &pricetypes.TaskRequest{
 		TaskIndex:                 taskIndex,
 		RequestId:                 task.RequestId[:],
@@ -148,10 +154,24 @@ func (td *TaskDispatcher) serializeTask(taskIndex uint32, task contractPriceOrac
 		TaskCreatedBlock:          task.TaskCreatedBlock,
 		QuorumNumbers:             task.QuorumNumbers,
 		QuorumThresholdPercentage: task.QuorumThresholdPercentage,
-		TaskType:                  pricetypes.TaskType_PRICE_FEED,
 	}
 
-	return proto.Marshal(taskRequest)
+	priceFeedData, err := proto.Marshal(&pricetypes.PriceFeedParam{
+		BaseSymbol:  priceFeed.BaseSymbol,
+		QuoteSymbol: priceFeed.QuoteSymbol,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	data := &pricetypes.RequestProcessRequestPriceFeed{
+		Raw:     taskRequest,
+		Height:  blockHeight,
+		ChainId: math.NewIntFromUint64(chainID),
+		Data:    priceFeedData,
+	}
+
+	return proto.Marshal(data)
 }
 
 func (td *TaskDispatcher) OnStart() error {

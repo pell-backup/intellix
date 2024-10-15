@@ -1,7 +1,9 @@
 package taskdispatcher
 
 import (
+	"bytes"
 	"fmt"
+	cbor "github.com/fxamacker/cbor/v2"
 )
 
 type ChainConfig struct {
@@ -22,4 +24,28 @@ func (c ChainConfig) Validate() error {
 		return fmt.Errorf("contract_address cannot be empty")
 	}
 	return nil
+}
+
+type PriceFeedParam struct {
+	BaseSymbol  string
+	QuoteSymbol string
+}
+
+func ParsePriceFeed(data []byte) (*PriceFeedParam, error) {
+	decoder := cbor.NewDecoder(bytes.NewReader(data[:]))
+	var pDecoded1 interface{}
+	taskDataTmp := make([]interface{}, 0)
+	for i := 0; i < 6; i++ {
+		err := decoder.Decode(&pDecoded1)
+		if err != nil {
+			return nil, err
+		}
+
+		taskDataTmp = append(taskDataTmp, pDecoded1)
+	}
+
+	baseSymbol := taskDataTmp[1].(string)
+	quoteSymbol := taskDataTmp[3].(string)
+
+	return &PriceFeedParam{baseSymbol, quoteSymbol}, nil
 }

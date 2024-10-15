@@ -14,6 +14,7 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	modulev1 "intellix/api/intellix/intellix/module"
 	"intellix/x/price/dvs/keeper"
 	dvstypes "intellix/x/price/dvs/types"
 	"intellix/x/price/types"
@@ -39,7 +40,9 @@ func (AppModuleBasic) Name() string {
 func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {}
 
 // RegisterInterfaces registers the module's interface types
-func (AppModuleBasic) RegisterInterfaces(reg cdctypes.InterfaceRegistry) {}
+func (AppModuleBasic) RegisterInterfaces(reg cdctypes.InterfaceRegistry) {
+	dvstypes.RegisterInterfaces(reg)
+}
 
 // DefaultGenesis returns default genesis state as raw bytes for the dvs module.
 func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
@@ -85,6 +88,7 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 
 func init() {
 	appmodule.Register(
+		&modulev1.Module{},
 		appmodule.Provide(ProvideModule),
 	)
 }
