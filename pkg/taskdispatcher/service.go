@@ -9,10 +9,10 @@ import (
 	contractPriceOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/PriceOracle"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cometbft/cometbft/libs/service"
-	"github.com/cosmos/gogoproto/proto"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	"intellix/pkg/pelldvs"
 	pricetypes "intellix/x/price/dvs/types"
 	"math/big"
@@ -143,7 +143,7 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractPriceOr
 }
 
 func (td *TaskDispatcher) serializeTask(taskIndex uint32, chainID uint64, blockHeight int64, priceFeed *PriceFeedParam, task contractPriceOracle.IPriceOracleTask) ([]byte, error) {
-	taskRequest := &pricetypes.TaskRequest{
+	taskRequest := &pricetypes.TaskRequestRaw{
 		TaskIndex:                 taskIndex,
 		RequestId:                 task.RequestId[:],
 		FeeToken:                  task.FeeToken.Hex(),
@@ -156,22 +156,17 @@ func (td *TaskDispatcher) serializeTask(taskIndex uint32, chainID uint64, blockH
 		QuorumThresholdPercentage: task.QuorumThresholdPercentage,
 	}
 
-	priceFeedData, err := proto.Marshal(&pricetypes.PriceFeedParam{
-		BaseSymbol:  priceFeed.BaseSymbol,
-		QuoteSymbol: priceFeed.QuoteSymbol,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	data := &pricetypes.RequestProcessRequestPriceFeed{
+	data := &pricetypes.ProcessPriceFeedMsg{
 		Raw:     taskRequest,
 		Height:  blockHeight,
 		ChainId: math.NewIntFromUint64(chainID),
-		Data:    priceFeedData,
+		PriceFeed: &pricetypes.PriceFeedParam{
+			BaseSymbol:  priceFeed.BaseSymbol,
+			QuoteSymbol: priceFeed.QuoteSymbol,
+		},
 	}
 
-	return proto.Marshal(data)
+	return dvsservermanager.EncodeMsgs(data)
 }
 
 func (td *TaskDispatcher) OnStart() error {

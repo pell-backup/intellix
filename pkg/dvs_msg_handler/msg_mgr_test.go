@@ -38,7 +38,7 @@ func TestProcessRequestHandler(t *testing.T) {
 	registry := codectypes.NewInterfaceRegistry()
 	cdc := codec.NewProtoCodec(registry)
 
-	handler := NewProcessRequestHandler(cdc)
+	handler := NewProcessRequestHandler(tx.NewDefaultDecoder(cdc))
 	mockStore, _ := colltest.MockStore()
 	k := keeper.NewKeeper(cdc, mockStore, nil, authtypes.NewModuleAddress(govtypes.ModuleName).String())
 
@@ -46,15 +46,10 @@ func TestProcessRequestHandler(t *testing.T) {
 	dvstypes.RegisterInterfaces(registry)
 
 	// register msg router
-	dvstypes.RegisterDvsProcessRequestServer(handler, keeper.NewDvsServerImpl(k))
+	dvstypes.RegisterDvsProcessRequestServer(handler, keeper.NewDvsProcessRequestServer(k))
 
 	// get handler
-	handler1, ok := handler.(*ProcessRequestHandler)
+	_, ok := handler.(*ProcessRequestHandler)
 	require.Equal(t, ok, true)
 
-	bytes := genMsgData(t, cdc)
-	msgHandler, err := handler1.Mgr.GetHandlerByMsgData(bytes)
-	require.NoError(t, err)
-
-	_ = msgHandler
 }

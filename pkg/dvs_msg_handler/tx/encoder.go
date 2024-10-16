@@ -22,6 +22,7 @@ import (
 type MsgEncoder interface {
 	Decode(txBytes []byte) (sdk.Tx, error)
 	Encode(tx sdk.Tx) ([]byte, error)
+	EncodeMsgs(msgs ...sdk.Msg) ([]byte, error)
 }
 
 type DefaultCoder struct {
@@ -110,6 +111,16 @@ func (d *DefaultCoder) Encode(tx sdk.Tx) ([]byte, error) {
 	}
 
 	return proto.Marshal(raw)
+}
+
+func (d *DefaultCoder) EncodeMsgs(msgs ...sdk.Msg) ([]byte, error) {
+	builder := NewBuilder(d.cdc)
+	err := builder.SetMsgs(msgs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return d.Encode(builder.GetTx())
 }
 
 // rejectNonADR027TxRaw rejects txBytes that do not follow ADR-027. This is NOT

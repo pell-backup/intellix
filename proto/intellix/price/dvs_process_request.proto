@@ -25,7 +25,7 @@ message ProcessPriceFeedMsg {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
-  bytes data = 4;
+  PriceFeedParam price_feed = 4;
 }
 
 // ProcessPriceFeedResp defines response from data that after processing

@@ -10,12 +10,12 @@ import "amino/amino.proto";
 option go_package = "intellix/x/price/types";
 
 service DvsPostProcessRequest {
-  // PostRequestPriceFeed defines avsi logic processing
-  rpc PostRequestPriceFeed(PostPriceFeedMsg) returns (ResponsePostRequestPriceFeed) {}
+  // PostProcessRequestPriceFeed defines avsi logic processing
+  rpc PostProcessRequestPriceFeed(PostProcessPriceFeedMsg) returns (ResponsePostRequestPriceFeed) {}
 }
 
 // PostPriceFeedMsg defines post-price-feed request message
-message PostPriceFeedMsg {
+message PostProcessPriceFeedMsg {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
   option (amino.name) = "intellix/x/price/dvs/post_price_feed";
 

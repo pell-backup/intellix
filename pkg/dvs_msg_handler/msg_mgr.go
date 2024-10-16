@@ -12,17 +12,24 @@ import (
 
 type MsgHandler func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error)
 
-// MsgRouterMgr
-// defines router for dvs server
+// MsgRouterMgr defines router for dvs server
 type MsgRouterMgr struct {
-	Router  map[string]MsgHandler
-	encoder tx.MsgEncoder
+	Router                 map[string]MsgHandler
+	encoder                tx.MsgEncoder
+	findRouterTypeNameFunc func(msg sdk.Msg) string // ONLY FOR router dispatcher; register use sdk.MsgTypeURL
 }
 
-func NewMsgRouterMgr(encoder tx.MsgEncoder) *MsgRouterMgr {
+func NewMsgRouterMgr(encoder tx.MsgEncoder, getRequestTypeNameFunc func(msg sdk.Msg) string) *MsgRouterMgr {
+	if getRequestTypeNameFunc == nil {
+		getRequestTypeNameFunc = func(msg sdk.Msg) string {
+			return sdk.MsgTypeURL(msg)
+		}
+	}
+
 	return &MsgRouterMgr{
-		Router:  map[string]MsgHandler{},
-		encoder: encoder,
+		Router:                 map[string]MsgHandler{},
+		encoder:                encoder,
+		findRouterTypeNameFunc: getRequestTypeNameFunc,
 	}
 }
 
@@ -79,18 +86,33 @@ func (m *MsgRouterMgr) RegisterMsgHandler(sd *grpc.ServiceDesc, method grpc.Meth
 }
 
 func (m *MsgRouterMgr) GetHandler(msg sdk.Msg) MsgHandler {
-	return m.Router[sdk.MsgTypeURL(msg)]
+	return m.Router[m.findRouterTypeNameFunc(msg)]
 }
 
-func (m *MsgRouterMgr) GetHandlerByMsgData(data []byte) (MsgHandler, error) {
+func (m *MsgRouterMgr) GetHandlerByData(data []byte) MsgHandler {
+	msgTx, err := m.encoder.Decode(data)
+	if err != nil {
+		return nil
+	}
+	for _, msg := range msgTx.GetMsgs() {
+		msgType := m.findRouterTypeNameFunc(msg)
+		if handler, ok := m.Router[msgType]; ok {
+			return handler
+		}
+	}
+
+	return nil
+}
+
+func (m *MsgRouterMgr) HandleByData(sdkCtx sdk.Context, data []byte) (*sdk.Result, error) {
 	msgTx, err := m.encoder.Decode(data)
 	if err != nil {
 		return nil, err
 	}
 	for _, msg := range msgTx.GetMsgs() {
-		msgType := sdk.MsgTypeURL(msg)
-		if router, ok := m.Router[msgType]; ok {
-			return router, nil
+		msgType := m.findRouterTypeNameFunc(msg)
+		if handler, ok := m.Router[msgType]; ok {
+			return handler(sdkCtx, msg)
 		}
 	}
 
