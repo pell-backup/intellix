@@ -1,9 +1,10 @@
 package app
 
 import (
-	"cosmossdk.io/store"
-	dvstypes "intellix/x/price/dvs/types"
+	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	"io"
+
+	"cosmossdk.io/store"
 
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
 	clienthelpers "cosmossdk.io/client/v2/helpers"
@@ -68,6 +69,7 @@ import (
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	_ "github.com/cosmos/cosmos-sdk/x/staking" // import for side-effects
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
+	grpc1 "github.com/cosmos/gogoproto/grpc"
 	_ "github.com/cosmos/ibc-go/modules/capability" // import for side-effects
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	_ "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts" // import for side-effects
@@ -77,9 +79,11 @@ import (
 	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+
 	//intellixmodulekeeper "intellix/x/intellix/keeper"
 	dvsmodulekeeper "intellix/x/price/dvs/keeper"
 	pricemodulekeeper "intellix/x/price/keeper"
+
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	"intellix/docs"
@@ -155,7 +159,9 @@ type App struct {
 	cms    storetypes.CommitMultiStore
 	logger log.Logger
 
-	DvsServer dvstypes.DvsServer
+	// dvs msg server
+	ProcessRequestServer     grpc1.Server
+	PostProcessRequestServer grpc1.Server
 }
 
 func init() {
@@ -309,7 +315,10 @@ func New(
 		return nil, err
 	}
 
-	app.DvsServer = dvsmodulekeeper.NewDvsServerImpl(app.DvsKeeper)
+	dvsservermanager.InitDvsMsgHelper(app.appCodec)
+
+	app.PostProcessRequestServer = dvsservermanager.GetPostProcessRequestHandler()
+	app.ProcessRequestServer = dvsservermanager.GetProcessRequestHandler()
 
 	return app, nil
 }

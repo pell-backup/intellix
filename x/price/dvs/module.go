@@ -1,23 +1,26 @@
 package dvs
 
 import (
+	"encoding/json"
+	"fmt"
+	modulev1 "intellix/api/intellix/intellix/module"
+	dvsservermanager "intellix/pkg/dvs_msg_handler"
+	"intellix/x/price/dvs/keeper"
+	dvstypes "intellix/x/price/dvs/types"
+	"intellix/x/price/types"
+
 	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/core/store"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
-	"encoding/json"
-	"fmt"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	grpc1 "github.com/cosmos/gogoproto/grpc"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	modulev1 "intellix/api/intellix/intellix/module"
-	"intellix/x/price/dvs/keeper"
-	dvstypes "intellix/x/price/dvs/types"
-	"intellix/x/price/types"
 )
 
 var (
@@ -61,7 +64,9 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncod
 // AppModule implements an application module for the dvs module.
 type AppModule struct {
 	AppModuleBasic
-	keeper keeper.Keeper
+	keeper                   keeper.Keeper
+	ProcessRequestServer     grpc1.Server
+	PostProcessRequestServer grpc1.Server
 }
 
 func (am AppModule) IsOnePerModuleType() {
@@ -74,16 +79,27 @@ func (am AppModule) RegisterGRPCGatewayRoutes(context client.Context, mux *runti
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(k keeper.Keeper) AppModule {
+func NewAppModule(k keeper.Keeper, cdc codec.Codec) AppModule {
 	return AppModule{
-		AppModuleBasic: AppModuleBasic{},
-		keeper:         k,
+		AppModuleBasic:           AppModuleBasic{},
+		keeper:                   k,
+		ProcessRequestServer:     dvsservermanager.GetProcessRequestHandler(),
+		PostProcessRequestServer: dvsservermanager.GetPostProcessRequestHandler(),
 	}
 }
 
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	dvstypes.RegisterDvsServer(cfg.MsgServer(), keeper.NewDvsServerImpl(am.keeper))
+	dvsProcessRequestServer := keeper.NewDvsProcessRequestServer(am.keeper)
+	dvsPostProcessRequestServer := keeper.NewDvsPostProcessRequestServer(am.keeper)
+
+	// register cosmos-sdk handler server
+	dvstypes.RegisterDvsProcessRequestServer(cfg.MsgServer(), dvsProcessRequestServer)
+	dvstypes.RegisterDvsPostProcessRequestServer(cfg.MsgServer(), dvsPostProcessRequestServer)
+
+	// register dvs-msg handler server
+	dvstypes.RegisterDvsProcessRequestServer(am.ProcessRequestServer, dvsProcessRequestServer)
+	dvstypes.RegisterDvsPostProcessRequestServer(am.PostProcessRequestServer, dvsPostProcessRequestServer)
 }
 
 func init() {
@@ -120,7 +136,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.Logger,
 		authority.String(),
 	)
-	m := NewAppModule(k)
+	m := NewAppModule(k, in.Cdc)
 
 	return ModuleOutputs{PriceKeeper: k, Module: m}
 }

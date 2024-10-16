@@ -8,12 +8,9 @@ import (
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	// this line is used by starport scaffolding # 3
+	registry.RegisterImplementations((*sdk.Msg)(nil), &ProcessPriceFeedMsg{})
+	msgservice.RegisterMsgServiceDesc(registry, &_DvsProcessRequest_serviceDesc)
 
-	registry.RegisterImplementations((*sdk.Msg)(nil),
-		&ProcessPriceFeedMsg{},
-		&ResponsePostRequestPriceFeed{},
-		&PostPriceFeedMsg{},
-		&ResponsePostRequestPriceFeed{},
-	)
-	msgservice.RegisterMsgServiceDesc(registry, &_Dvs_serviceDesc)
+	registry.RegisterImplementations((*sdk.Msg)(nil), &PostPriceFeedMsg{})
+	msgservice.RegisterMsgServiceDesc(registry, &_DvsPostProcessRequest_serviceDesc)
 }
