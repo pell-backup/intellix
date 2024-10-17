@@ -30,7 +30,7 @@ func (app *App) ProcessRequest(ctx context.Context, req *avsi.RequestProcessRequ
 	resData, err := handlerSrc.InvokeRouterByData(sdkCtx, req.Request.Data)
 	return &avsi.ResponseProcessRequest{
 		Reponse:        resData,
-		ResponseDigest: nil,
+		ResponseDigest: calcDigest(resData),
 	}, err
 }
 
@@ -60,9 +60,7 @@ func (app *App) PostRequest(ctx context.Context, req *avsi.RequestPostRequest) (
 	sdkCtx = sdkCtx.WithChainID(req.Request.ChainID.String())
 
 	handlerSrc := dvsservermanager.GetPostProcessRequestHandlerSrc()
-	data, err := handlerSrc.InvokeRouterByData(sdkCtx, req.Request.Data, &pricetypes.RequestPostRequestPriceFeedValidatedData{
-		// TODO: fill data
-	})
+	data, err := handlerSrc.InvokeRouterByData(sdkCtx, req.Request.Data, convertValidatedResponse(&req.Response))
 	if err != nil {
 		return nil, err
 	}

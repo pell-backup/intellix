@@ -18,18 +18,8 @@ service DvsPostProcessRequest {
 message PostProcessPriceFeedMsg {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
   option (amino.name) = "intellix/x/price/dvs/post_price_feed";
-
-  // same as ProcessPriceFeedMsg as context to router
-  TaskRequestRaw raw = 1;
-  int64 height = 2;
-  string chain_id = 3[
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false
-  ];
-  bytes data = 4;
-
   // validated data
-  RequestPostRequestPriceFeedValidatedData validated_data = 5;
+  RequestPostRequestPriceFeedValidatedData validated_data = 1;
 }
 
 // AggregatedRequestPrice
