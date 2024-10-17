@@ -315,8 +315,8 @@ func New(
 		return nil, err
 	}
 
+	// dvs server manager
 	dvsservermanager.InitDvsMsgHelper(app.appCodec)
-
 	app.PostProcessRequestServer = dvsservermanager.GetPostProcessRequestHandler()
 	app.ProcessRequestServer = dvsservermanager.GetProcessRequestHandler()
 

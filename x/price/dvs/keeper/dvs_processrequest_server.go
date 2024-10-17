@@ -1,8 +1,17 @@
 package keeper
 
 import (
+	"bytes"
 	"context"
+	"cosmossdk.io/math"
+	"fmt"
+	cmttypes "github.com/cometbft/cometbft/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"intellix/x/price/dvs/types"
+	"math/big"
+	"time"
+
+	"sort"
 )
 
 type DvsProcessRequestServer struct {
@@ -12,10 +21,180 @@ type DvsProcessRequestServer struct {
 // NewDvsProcessRequestServer returns an implementation of the DvsProcessRequestServer interface
 // for the provided Keeper.
 func NewDvsProcessRequestServer(keeper Keeper) types.DvsProcessRequestServer {
-	return &DvsProcessRequestServer{Keeper: keeper}
+	return &DvsProcessRequestServer{
+		Keeper: keeper,
+	}
 }
 
 func (d *DvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, request *types.ProcessPriceFeedMsg) (*types.ProcessPriceFeedResp, error) {
-	// TODO: add biz logic
-	return nil, nil
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	// fetch raw price from chain
+	rawPrices, err := fetchRawPrices(sdkCtx, d.Logger(), request.PriceFeed.BaseSymbol, request.PriceFeed.QuoteSymbol)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch raw prices: %w", err)
+	}
+
+	// sign data and broadcast VoteRequestPriceFeed
+	err = d.broadcastVoteRequestPriceFeed(sdkCtx, request.Raw, request.GetPriceFeed(), rawPrices)
+	if err != nil {
+		return nil, fmt.Errorf("failed to broadcast VoteRequestPriceFeed: %w", err)
+	}
+
+	// listen and collect [N-N+M] block
+	priceFeedTxs, err := d.collectVoteRequestPriceFeedTxs(sdkCtx, request.Raw.RequestId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to collect VoteRequestPriceFeed transactions: %w", err)
+	}
+
+	// aggregate [N-N+M] block prices
+	_, err = d.aggregatePrices(sdkCtx, request.Raw.RequestId, priceFeedTxs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to aggregate prices: %w", err)
+	}
+
+	return &types.ProcessPriceFeedResp{}, nil
+}
+
+func (d *DvsProcessRequestServer) broadcastVoteRequestPriceFeed(ctx sdk.Context, task *types.TaskRequestRaw, priceFeed *types.PriceFeedParam, rawPrices map[string]*big.Int) error {
+	for dataSource, price := range rawPrices {
+		msg := types.MsgVoteRequestPriceFeed{
+			OperatorId:  d.Keeper.GetOperatorAddress(ctx),
+			RequestId:   task.RequestId,
+			BaseSymbol:  priceFeed.BaseSymbol,
+			QuoteSymbol: priceFeed.QuoteSymbol,
+			Price:       math.LegacyNewDecFromBigInt(price),
+			Timestamp:   time.Now().Unix(),
+			BlockHeight: uint64(ctx.BlockHeight()),
+		}
+
+		if err := d.Keeper.SignAndBroadcastTx(ctx, &msg); err != nil {
+			return fmt.Errorf("failed to broadcast VoteRequestPriceFeed for data source %s: %w", dataSource, err)
+		}
+	}
+	return nil
+}
+
+func (d *DvsProcessRequestServer) collectVoteRequestPriceFeedTxs(ctx sdk.Context, requestID []byte) ([]types.MsgVoteRequestPriceFeed, error) {
+	var priceFeedTxs []types.MsgVoteRequestPriceFeed
+	firstTxBlock := int64(0)
+
+	for {
+		block, err := d.Keeper.GetLatestBlock(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get latest block: %w", err)
+		}
+
+		newTxs := d.processBlockTxs(ctx, block, requestID)
+		priceFeedTxs = append(priceFeedTxs, newTxs...)
+
+		if firstTxBlock == 0 && len(newTxs) > 0 {
+			firstTxBlock = block.Header.Height
+		}
+
+		// check N-N+M
+		if d.shouldStopCollecting(ctx, firstTxBlock, block.Header.Height) {
+			break
+		}
+
+		// wait for next block
+		ctx = ctx.WithBlockHeight(block.Header.Height + 1)
+	}
+
+	return priceFeedTxs, nil
+}
+
+func (d *DvsProcessRequestServer) processBlockTxs(ctx sdk.Context, block *cmttypes.Block, requestID []byte) []types.MsgVoteRequestPriceFeed {
+	var priceFeedTxs []types.MsgVoteRequestPriceFeed
+
+	for _, tx := range block.Data.Txs {
+		// only collect VoteRequestPriceFeed && current requestId data
+		if msg, ok := d.isVoteRequestPriceFeedTx(tx); ok && bytes.Equal(msg.RequestId, requestID) {
+			priceFeedTxs = append(priceFeedTxs, types.MsgVoteRequestPriceFeed{
+				OperatorId:  msg.OperatorId,
+				RequestId:   msg.RequestId,
+				BaseSymbol:  msg.BaseSymbol,
+				QuoteSymbol: msg.QuoteSymbol,
+				Price:       msg.Price,
+				Timestamp:   msg.Timestamp,
+				BlockHeight: uint64(block.Header.Height),
+			})
+		}
+	}
+
+	return priceFeedTxs
+}
+
+func (d *DvsProcessRequestServer) isVoteRequestPriceFeedTx(tx cmttypes.Tx) (*types.MsgVoteRequestPriceFeed, bool) {
+	// check tx is VoteRequestPriceFeed
+	decoder := d.clientCtx.TxConfig.TxDecoder()
+	data, err := decoder(tx)
+	if err != nil {
+		d.Logger().Error("TxDecoder decode tx error: " + err.Error())
+		return nil, false
+	}
+
+	msgs := data.GetMsgs()
+	if len(msgs) == 0 {
+		return nil, false
+	}
+
+	msg := msgs[0]
+	voteMsg, ok := msg.(*types.MsgVoteRequestPriceFeed)
+	if !ok {
+		return nil, false
+	}
+
+	return voteMsg, true
+}
+
+func (d *DvsProcessRequestServer) shouldStopCollecting(ctx sdk.Context, firstTxBlock, currentBlock int64) bool {
+	if firstTxBlock == 0 {
+		return false
+	}
+	return currentBlock >= firstTxBlock+d.waitBlockCount
+}
+
+func (d *DvsProcessRequestServer) aggregatePrices(ctx sdk.Context, requestID []byte, priceFeedTxs []types.MsgVoteRequestPriceFeed) (*types.AggregatedRequestPrice, error) {
+	operatorPrices := make(map[string][]math.LegacyDec)
+
+	// calc avg the prices of different data sources within each Operator
+	for _, tx := range priceFeedTxs {
+		operatorID := tx.OperatorId
+		operatorPrices[operatorID] = append(operatorPrices[operatorID], tx.Price)
+	}
+
+	var averagePrices []math.LegacyDec
+	for _, prices := range operatorPrices {
+		sum := math.LegacyZeroDec()
+		for _, price := range prices {
+			sum = sum.Add(price)
+		}
+
+		average := sum.Quo(math.LegacyNewDec(int64(len(prices))))
+		averagePrices = append(averagePrices, average)
+	}
+
+	// median of the average prices of different Operators
+	sort.Slice(averagePrices, func(i, j int) bool {
+		return averagePrices[i].LT(averagePrices[j])
+	})
+
+	medianPrice := averagePrices[len(averagePrices)/2]
+
+	blockRange := &types.BlockRange{}
+	if len(priceFeedTxs) > 0 {
+		blockRange.Start = priceFeedTxs[0].BlockHeight
+		blockRange.End = priceFeedTxs[len(priceFeedTxs)-1].BlockHeight
+	}
+
+	return &types.AggregatedRequestPrice{
+		RequestId:     requestID,
+		Price:         math.NewIntFromBigInt(medianPrice.BigInt()),
+		Timestamp:     ctx.BlockTime().Unix(),
+		SourceCount:   int32(len(priceFeedTxs)),
+		OperatorCount: int32(len(operatorPrices)),
+		BlockHeight:   uint64(ctx.BlockHeight()),
+		BlockRange:    blockRange,
+	}, nil
 }
