@@ -35,7 +35,7 @@ message AggregatedRequestPrice {
   uint32 task_index = 2;
   // Aggregated final price
   string price = 3 [
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
   // Timestamp when aggregation was completed

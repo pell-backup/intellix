@@ -188,7 +188,7 @@ func (d *DvsProcessRequestServer) aggregatePrices(ctx sdk.Context, taskIndex uin
 	return &types.AggregatedRequestPrice{
 		RequestId:     requestID,
 		TaskIndex:     taskIndex,
-		Price:         math.NewIntFromBigInt(medianPrice.BigInt()),
+		Price:         medianPrice,
 		Timestamp:     ctx.BlockTime().Unix(),
 		SourceCount:   int32(len(priceFeedTxs)),
 		OperatorCount: int32(len(operatorPrices)),

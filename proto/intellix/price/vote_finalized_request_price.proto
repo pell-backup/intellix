@@ -14,7 +14,7 @@ message MsgVoteFinalizedRequestPrice {
   uint32 task_index = 1;
   bytes request_id = 2;
   string price = 3 [
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
   int64 timestamp = 4;
