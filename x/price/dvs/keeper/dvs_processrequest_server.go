@@ -48,7 +48,7 @@ func (d *DvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, r
 	}
 
 	// aggregate [N-N+M] block prices
-	return d.aggregatePrices(sdkCtx, request.Raw.RequestId, priceFeedTxs)
+	return d.aggregatePrices(sdkCtx, request.Raw.TaskIndex, request.Raw.RequestId, priceFeedTxs)
 }
 
 func (d *DvsProcessRequestServer) broadcastVoteRequestPriceFeed(ctx sdk.Context, task *types.TaskRequestRaw, priceFeed *types.PriceFeedParam, rawPrices map[string]*big.Int) error {
@@ -152,7 +152,7 @@ func (d *DvsProcessRequestServer) shouldStopCollecting(ctx sdk.Context, firstTxB
 	return currentBlock >= firstTxBlock+d.waitBlockCount
 }
 
-func (d *DvsProcessRequestServer) aggregatePrices(ctx sdk.Context, requestID []byte, priceFeedTxs []types.MsgVoteRequestPriceFeed) (*types.AggregatedRequestPrice, error) {
+func (d *DvsProcessRequestServer) aggregatePrices(ctx sdk.Context, taskIndex uint32, requestID []byte, priceFeedTxs []types.MsgVoteRequestPriceFeed) (*types.AggregatedRequestPrice, error) {
 	operatorPrices := make(map[string][]math.LegacyDec)
 
 	// calc avg the prices of different data sources within each Operator
@@ -187,6 +187,7 @@ func (d *DvsProcessRequestServer) aggregatePrices(ctx sdk.Context, requestID []b
 
 	return &types.AggregatedRequestPrice{
 		RequestId:     requestID,
+		TaskIndex:     taskIndex,
 		Price:         math.NewIntFromBigInt(medianPrice.BigInt()),
 		Timestamp:     ctx.BlockTime().Unix(),
 		SourceCount:   int32(len(priceFeedTxs)),

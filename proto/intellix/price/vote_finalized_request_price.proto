@@ -11,4 +11,11 @@ option go_package = "intellix/x/price/types";
 message MsgVoteFinalizedRequestPrice {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
 
+  uint32 task_index = 1;
+  bytes request_id = 2;
+  string price = 3 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  int64 timestamp = 4;
 }

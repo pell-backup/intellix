@@ -38,7 +38,14 @@ func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Con
 }
 
 func (d DvsPostProcessRequestServer) sendVoteFinalizedRequestPriceTx(ctx sdk.Context, raw *types.RequestPostRequestPriceFeedValidatedData, priceData *types.AggregatedRequestPrice) error {
-	if err := d.Keeper.SignAndBroadcastTx(ctx, priceData); err != nil {
+	msg := &types.MsgVoteFinalizedRequestPrice{
+		TaskIndex: priceData.TaskIndex,
+		RequestId: priceData.RequestId,
+		Price:     priceData.Price,
+		Timestamp: priceData.Timestamp,
+	}
+
+	if err := d.Keeper.SignAndBroadcastTx(ctx, msg); err != nil {
 		return err
 	}
 	return nil
