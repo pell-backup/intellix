@@ -54,6 +54,7 @@ func (d *DvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, r
 func (d *DvsProcessRequestServer) broadcastVoteRequestPriceFeed(ctx sdk.Context, task *types.TaskRequestRaw, priceFeed *types.PriceFeedParam, rawPrices map[string]*big.Int) error {
 	for dataSource, price := range rawPrices {
 		msg := types.MsgVoteRequestPriceFeed{
+			TaskIndex:   task.TaskIndex,
 			OperatorId:  d.Keeper.GetOperatorAddress(ctx),
 			RequestId:   task.RequestId,
 			BaseSymbol:  priceFeed.BaseSymbol,
@@ -106,6 +107,7 @@ func (d *DvsProcessRequestServer) processBlockTxs(ctx sdk.Context, block *cmttyp
 		// only collect VoteRequestPriceFeed && current requestId data
 		if msg, ok := d.isVoteRequestPriceFeedTx(tx); ok && bytes.Equal(msg.RequestId, requestID) {
 			priceFeedTxs = append(priceFeedTxs, types.MsgVoteRequestPriceFeed{
+				TaskIndex:   msg.TaskIndex,
 				OperatorId:  msg.OperatorId,
 				RequestId:   msg.RequestId,
 				BaseSymbol:  msg.BaseSymbol,
