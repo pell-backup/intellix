@@ -11,15 +11,7 @@ option go_package = "intellix/x/price/types";
 
 service DvsPostProcessRequest {
   // PostProcessRequestPriceFeed defines avsi logic processing
-  rpc PostProcessRequestPriceFeed(PostProcessPriceFeedMsg) returns (ResponsePostRequestPriceFeed) {}
-}
-
-// PostPriceFeedMsg defines post-price-feed request message
-message PostProcessPriceFeedMsg {
-  option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
-  option (amino.name) = "intellix/x/price/dvs/post_price_feed";
-  // validated data
-  RequestPostRequestPriceFeedValidatedData validated_data = 1;
+  rpc PostProcessRequestPriceFeed(RequestPostRequestPriceFeedValidatedData) returns (ResponsePostRequestPriceFeed) {}
 }
 
 // AggregatedRequestPrice
@@ -72,6 +64,8 @@ message UInt32List {
 }
 
 message RequestPostRequestPriceFeedValidatedData {
+  option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
+  option (amino.name) = "intellix/x/price/dvs/post_price_feed";
   bytes data = 1;
   string error = 2;
   bytes hash = 3;

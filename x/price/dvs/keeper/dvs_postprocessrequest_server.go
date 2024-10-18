@@ -13,7 +13,7 @@ func NewDvsPostProcessRequestServer(keeper Keeper) types.DvsPostProcessRequestSe
 	return &DvsPostProcessRequestServer{Keeper: keeper}
 }
 
-func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Context, msg *types.PostProcessPriceFeedMsg) (*types.ResponsePostRequestPriceFeed, error) {
+func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Context, msg *types.RequestPostRequestPriceFeedValidatedData) (*types.ResponsePostRequestPriceFeed, error) {
 	// TODO: add biz logic
 	return nil, nil
 }

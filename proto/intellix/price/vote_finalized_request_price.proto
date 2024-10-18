@@ -1,0 +1,14 @@
+syntax = "proto3";
+package intellix.price;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+
+option go_package = "intellix/x/price/types";
+
+message MsgVoteFinalizedRequestPrice {
+  option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
+
+}
