@@ -26,7 +26,7 @@ func NewDvsProcessRequestServer(keeper Keeper) types.DvsProcessRequestServer {
 	}
 }
 
-func (d *DvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, request *types.ProcessPriceFeedMsg) (*types.ProcessPriceFeedResp, error) {
+func (d *DvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, request *types.ProcessPriceFeedMsg) (*types.AggregatedRequestPrice, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	// fetch raw price from chain
@@ -48,12 +48,7 @@ func (d *DvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, r
 	}
 
 	// aggregate [N-N+M] block prices
-	_, err = d.aggregatePrices(sdkCtx, request.Raw.RequestId, priceFeedTxs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to aggregate prices: %w", err)
-	}
-
-	return &types.ProcessPriceFeedResp{}, nil
+	return d.aggregatePrices(sdkCtx, request.Raw.RequestId, priceFeedTxs)
 }
 
 func (d *DvsProcessRequestServer) broadcastVoteRequestPriceFeed(ctx sdk.Context, task *types.TaskRequestRaw, priceFeed *types.PriceFeedParam, rawPrices map[string]*big.Int) error {

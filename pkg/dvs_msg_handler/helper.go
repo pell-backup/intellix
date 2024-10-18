@@ -1,6 +1,7 @@
 package dvsservermanager
 
 import (
+	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
@@ -60,4 +61,16 @@ func GetProcessRequestHandlerSrc() *ProcessRequestHandler {
 
 func EncodeMsgs(msgs ...sdk.Msg) ([]byte, error) {
 	return helper.encoder.EncodeMsgs(msgs...)
+}
+
+func DecodeMsg(data []byte) (sdk.Msg, error) {
+	tx, err := helper.encoder.Decode(data)
+	if err != nil {
+		return nil, err
+	}
+	if len(tx.GetMsgs()) == 0 {
+		return nil, fmt.Errorf("DecodeMsg invalid tx")
+	}
+
+	return tx.GetMsgs()[0], nil
 }

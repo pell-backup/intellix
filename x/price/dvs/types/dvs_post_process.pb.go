@@ -5,7 +5,6 @@ package types
 
 import (
 	context "context"
-	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
@@ -32,153 +31,6 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// AggregatedRequestPrice
-type AggregatedRequestPrice struct {
-	RequestId []byte `protobuf:"bytes,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
-	// Aggregated final price
-	Price cosmossdk_io_math.Int `protobuf:"bytes,2,opt,name=price,proto3,customtype=cosmossdk.io/math.Int" json:"price"`
-	// Timestamp when aggregation was completed
-	Timestamp int64 `protobuf:"varint,3,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	// Number of data sources participated in aggregation
-	SourceCount int32 `protobuf:"varint,4,opt,name=source_count,json=sourceCount,proto3" json:"source_count,omitempty"`
-	// Number of operators participated in aggregation
-	OperatorCount int32 `protobuf:"varint,5,opt,name=operator_count,json=operatorCount,proto3" json:"operator_count,omitempty"`
-	// Block height at which aggregation was completed
-	BlockHeight uint64 `protobuf:"varint,6,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	// Block range used for aggregation
-	BlockRange *BlockRange `protobuf:"bytes,7,opt,name=block_range,json=blockRange,proto3" json:"block_range,omitempty"`
-}
-
-func (m *AggregatedRequestPrice) Reset()         { *m = AggregatedRequestPrice{} }
-func (m *AggregatedRequestPrice) String() string { return proto.CompactTextString(m) }
-func (*AggregatedRequestPrice) ProtoMessage()    {}
-func (*AggregatedRequestPrice) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d7cc5be1c013db4b, []int{0}
-}
-func (m *AggregatedRequestPrice) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *AggregatedRequestPrice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_AggregatedRequestPrice.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *AggregatedRequestPrice) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AggregatedRequestPrice.Merge(m, src)
-}
-func (m *AggregatedRequestPrice) XXX_Size() int {
-	return m.Size()
-}
-func (m *AggregatedRequestPrice) XXX_DiscardUnknown() {
-	xxx_messageInfo_AggregatedRequestPrice.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_AggregatedRequestPrice proto.InternalMessageInfo
-
-func (m *AggregatedRequestPrice) GetRequestId() []byte {
-	if m != nil {
-		return m.RequestId
-	}
-	return nil
-}
-
-func (m *AggregatedRequestPrice) GetTimestamp() int64 {
-	if m != nil {
-		return m.Timestamp
-	}
-	return 0
-}
-
-func (m *AggregatedRequestPrice) GetSourceCount() int32 {
-	if m != nil {
-		return m.SourceCount
-	}
-	return 0
-}
-
-func (m *AggregatedRequestPrice) GetOperatorCount() int32 {
-	if m != nil {
-		return m.OperatorCount
-	}
-	return 0
-}
-
-func (m *AggregatedRequestPrice) GetBlockHeight() uint64 {
-	if m != nil {
-		return m.BlockHeight
-	}
-	return 0
-}
-
-func (m *AggregatedRequestPrice) GetBlockRange() *BlockRange {
-	if m != nil {
-		return m.BlockRange
-	}
-	return nil
-}
-
-// BlockRange defines the range of blocks used for price aggregation
-type BlockRange struct {
-	// Start block height for aggregation
-	Start uint64 `protobuf:"varint,1,opt,name=start,proto3" json:"start,omitempty"`
-	// End block height for aggregation
-	End uint64 `protobuf:"varint,2,opt,name=end,proto3" json:"end,omitempty"`
-}
-
-func (m *BlockRange) Reset()         { *m = BlockRange{} }
-func (m *BlockRange) String() string { return proto.CompactTextString(m) }
-func (*BlockRange) ProtoMessage()    {}
-func (*BlockRange) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d7cc5be1c013db4b, []int{1}
-}
-func (m *BlockRange) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *BlockRange) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_BlockRange.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *BlockRange) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BlockRange.Merge(m, src)
-}
-func (m *BlockRange) XXX_Size() int {
-	return m.Size()
-}
-func (m *BlockRange) XXX_DiscardUnknown() {
-	xxx_messageInfo_BlockRange.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_BlockRange proto.InternalMessageInfo
-
-func (m *BlockRange) GetStart() uint64 {
-	if m != nil {
-		return m.Start
-	}
-	return 0
-}
-
-func (m *BlockRange) GetEnd() uint64 {
-	if m != nil {
-		return m.End
-	}
-	return 0
-}
-
 type G1Point struct {
 	X []byte `protobuf:"bytes,1,opt,name=x,proto3" json:"x,omitempty"`
 	Y []byte `protobuf:"bytes,2,opt,name=y,proto3" json:"y,omitempty"`
@@ -188,7 +40,7 @@ func (m *G1Point) Reset()         { *m = G1Point{} }
 func (m *G1Point) String() string { return proto.CompactTextString(m) }
 func (*G1Point) ProtoMessage()    {}
 func (*G1Point) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d7cc5be1c013db4b, []int{2}
+	return fileDescriptor_d7cc5be1c013db4b, []int{0}
 }
 func (m *G1Point) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -242,7 +94,7 @@ func (m *G2Point) Reset()         { *m = G2Point{} }
 func (m *G2Point) String() string { return proto.CompactTextString(m) }
 func (*G2Point) ProtoMessage()    {}
 func (*G2Point) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d7cc5be1c013db4b, []int{3}
+	return fileDescriptor_d7cc5be1c013db4b, []int{1}
 }
 func (m *G2Point) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -307,7 +159,7 @@ func (m *Signature) Reset()         { *m = Signature{} }
 func (m *Signature) String() string { return proto.CompactTextString(m) }
 func (*Signature) ProtoMessage()    {}
 func (*Signature) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d7cc5be1c013db4b, []int{4}
+	return fileDescriptor_d7cc5be1c013db4b, []int{2}
 }
 func (m *Signature) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -352,7 +204,7 @@ func (m *UInt32List) Reset()         { *m = UInt32List{} }
 func (m *UInt32List) String() string { return proto.CompactTextString(m) }
 func (*UInt32List) ProtoMessage()    {}
 func (*UInt32List) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d7cc5be1c013db4b, []int{5}
+	return fileDescriptor_d7cc5be1c013db4b, []int{3}
 }
 func (m *UInt32List) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -408,7 +260,7 @@ func (m *RequestPostRequestPriceFeedValidatedData) Reset() {
 func (m *RequestPostRequestPriceFeedValidatedData) String() string { return proto.CompactTextString(m) }
 func (*RequestPostRequestPriceFeedValidatedData) ProtoMessage()    {}
 func (*RequestPostRequestPriceFeedValidatedData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d7cc5be1c013db4b, []int{6}
+	return fileDescriptor_d7cc5be1c013db4b, []int{4}
 }
 func (m *RequestPostRequestPriceFeedValidatedData) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -515,14 +367,13 @@ func (m *RequestPostRequestPriceFeedValidatedData) GetNonSignerStakeIndices() []
 }
 
 type ResponsePostRequestPriceFeed struct {
-	Receipt []byte `protobuf:"bytes,1,opt,name=receipt,proto3" json:"receipt,omitempty"`
 }
 
 func (m *ResponsePostRequestPriceFeed) Reset()         { *m = ResponsePostRequestPriceFeed{} }
 func (m *ResponsePostRequestPriceFeed) String() string { return proto.CompactTextString(m) }
 func (*ResponsePostRequestPriceFeed) ProtoMessage()    {}
 func (*ResponsePostRequestPriceFeed) Descriptor() ([]byte, []int) {
-	return fileDescriptor_d7cc5be1c013db4b, []int{7}
+	return fileDescriptor_d7cc5be1c013db4b, []int{5}
 }
 func (m *ResponsePostRequestPriceFeed) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -551,16 +402,7 @@ func (m *ResponsePostRequestPriceFeed) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_ResponsePostRequestPriceFeed proto.InternalMessageInfo
 
-func (m *ResponsePostRequestPriceFeed) GetReceipt() []byte {
-	if m != nil {
-		return m.Receipt
-	}
-	return nil
-}
-
 func init() {
-	proto.RegisterType((*AggregatedRequestPrice)(nil), "intellix.price.AggregatedRequestPrice")
-	proto.RegisterType((*BlockRange)(nil), "intellix.price.BlockRange")
 	proto.RegisterType((*G1Point)(nil), "intellix.price.G1Point")
 	proto.RegisterType((*G2Point)(nil), "intellix.price.G2Point")
 	proto.RegisterType((*Signature)(nil), "intellix.price.Signature")
@@ -574,64 +416,50 @@ func init() {
 }
 
 var fileDescriptor_d7cc5be1c013db4b = []byte{
-	// 898 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x95, 0xcf, 0x6f, 0x1b, 0x45,
-	0x14, 0xc7, 0xb3, 0xb5, 0x9d, 0xe0, 0x67, 0x37, 0xb4, 0xd3, 0x26, 0xdd, 0x86, 0xc4, 0x75, 0xad,
-	0x46, 0xb2, 0x50, 0x59, 0x63, 0x87, 0x43, 0x05, 0xe2, 0x90, 0x10, 0xc5, 0x58, 0x2a, 0x52, 0x58,
-	0x0b, 0x0e, 0x5c, 0x56, 0x63, 0xef, 0x30, 0x1e, 0xd9, 0xbb, 0xb3, 0x9d, 0x19, 0x5b, 0xf6, 0x5f,
-	0x80, 0xc4, 0x89, 0x7f, 0x81, 0xff, 0x80, 0x43, 0xaf, 0xdc, 0x2b, 0x4e, 0x3d, 0x22, 0x0e, 0x15,
-	0x4a, 0x0e, 0xfc, 0x1b, 0x68, 0x7e, 0xec, 0x3a, 0x4d, 0x0a, 0xea, 0x25, 0x99, 0xf7, 0xde, 0xe7,
-	0xfb, 0xe6, 0xcd, 0x9b, 0xb7, 0x63, 0x38, 0x64, 0xa9, 0x22, 0xb3, 0x19, 0x5b, 0x76, 0x32, 0xc1,
-	0xc6, 0xa4, 0x13, 0x2f, 0x64, 0x94, 0x71, 0xa9, 0xa2, 0x4c, 0xf0, 0x31, 0x91, 0x32, 0xc8, 0x04,
-	0x57, 0x1c, 0x6d, 0xe7, 0x58, 0x60, 0xb0, 0xbd, 0xfb, 0x94, 0x53, 0x6e, 0x42, 0x1d, 0xbd, 0xb2,
-	0xd4, 0xde, 0xc3, 0x6b, 0xc9, 0x14, 0x96, 0x53, 0x17, 0x7a, 0x30, 0xe6, 0x32, 0xe1, 0xb2, 0x93,
-	0x48, 0xda, 0x59, 0x74, 0xf5, 0xbf, 0x5c, 0x63, 0x03, 0x91, 0x4d, 0x66, 0x0d, 0x17, 0xba, 0x8b,
-	0x13, 0x96, 0xf2, 0x8e, 0xf9, 0x6b, 0x5d, 0xad, 0x97, 0xb7, 0x60, 0xf7, 0x98, 0x52, 0x41, 0x28,
-	0x56, 0x24, 0x0e, 0xc9, 0x8b, 0x39, 0x91, 0xea, 0x5c, 0x6f, 0x86, 0x0e, 0x00, 0x84, 0xb5, 0x23,
-	0x16, 0xfb, 0x5e, 0xd3, 0x6b, 0xd7, 0xc3, 0xaa, 0xf3, 0x0c, 0x62, 0x74, 0x04, 0x15, 0x53, 0x94,
-	0x7f, 0xab, 0xe9, 0xb5, 0xab, 0x27, 0x07, 0xaf, 0xde, 0x3c, 0xda, 0xf8, 0xeb, 0xcd, 0xa3, 0x1d,
-	0xbb, 0xa3, 0x8c, 0xa7, 0x01, 0xe3, 0x9d, 0x04, 0xab, 0x49, 0x30, 0x48, 0x55, 0x68, 0x59, 0xb4,
-	0x0f, 0x55, 0xc5, 0x12, 0x22, 0x15, 0x4e, 0x32, 0xbf, 0xd4, 0xf4, 0xda, 0xa5, 0x70, 0xed, 0x40,
-	0x8f, 0xa1, 0x2e, 0xf9, 0x5c, 0x8c, 0x49, 0x34, 0xe6, 0xf3, 0x54, 0xf9, 0xe5, 0xa6, 0xd7, 0xae,
-	0x84, 0x35, 0xeb, 0xfb, 0x4a, 0xbb, 0xd0, 0x21, 0x6c, 0xf3, 0x8c, 0x08, 0xac, 0xb8, 0x70, 0x50,
-	0xc5, 0x40, 0xb7, 0x73, 0xaf, 0xc5, 0x1e, 0x43, 0x7d, 0x34, 0xe3, 0xe3, 0x69, 0x34, 0x21, 0x8c,
-	0x4e, 0x94, 0xbf, 0xd9, 0xf4, 0xda, 0xe5, 0xb0, 0x66, 0x7c, 0x5f, 0x1b, 0x17, 0xfa, 0x02, 0xac,
-	0x19, 0x09, 0x9c, 0x52, 0xe2, 0x6f, 0x35, 0xbd, 0x76, 0xad, 0xb7, 0x17, 0xbc, 0x7d, 0x2f, 0xc1,
-	0x89, 0x46, 0x42, 0x4d, 0x84, 0x30, 0x2a, 0xd6, 0xad, 0xcf, 0x00, 0xd6, 0x11, 0x74, 0x1f, 0x2a,
-	0x52, 0x61, 0xa1, 0x4c, 0x93, 0xca, 0xa1, 0x35, 0xd0, 0x1d, 0x28, 0x91, 0x34, 0x36, 0xed, 0x29,
-	0x87, 0x7a, 0xd9, 0x3a, 0x84, 0xad, 0x7e, 0xf7, 0x9c, 0xb3, 0x54, 0xa1, 0x3a, 0x78, 0x4b, 0xd7,
-	0x53, 0x6f, 0xa9, 0xad, 0x95, 0x01, 0xeb, 0xa1, 0xb7, 0x6a, 0x11, 0xd8, 0xea, 0xf7, 0x2c, 0xb6,
-	0x03, 0x9b, 0xcb, 0x48, 0x10, 0x3c, 0x73, 0x6c, 0x65, 0x19, 0x12, 0x3c, 0xb3, 0x6e, 0x96, 0x60,
-	0xea, 0x44, 0x95, 0xe5, 0x20, 0xc1, 0x54, 0xbb, 0x57, 0x96, 0x2e, 0x59, 0xf7, 0x2a, 0xa7, 0x57,
-	0x96, 0x2e, 0x3b, 0xb7, 0xa6, 0x5b, 0x07, 0x50, 0x1d, 0x32, 0x9a, 0x62, 0x35, 0x17, 0x44, 0x17,
-	0x2b, 0x19, 0x75, 0xbb, 0xe8, 0x65, 0xeb, 0x09, 0xc0, 0x77, 0x83, 0x54, 0x1d, 0xf5, 0x9e, 0x33,
-	0xa9, 0xd0, 0x2e, 0x6c, 0x2e, 0xf0, 0x6c, 0x4e, 0xa4, 0xef, 0x35, 0x4b, 0xed, 0xdb, 0xa1, 0xb3,
-	0x5a, 0xbf, 0x57, 0xa0, 0x9d, 0x4f, 0x0d, 0x97, 0xea, 0xea, 0x00, 0x9d, 0x11, 0x12, 0x7f, 0x8f,
-	0x67, 0x2c, 0xd6, 0x93, 0x75, 0x8a, 0x15, 0x46, 0x08, 0xca, 0x31, 0x56, 0xd8, 0xed, 0x62, 0xd6,
-	0xba, 0x77, 0x44, 0x08, 0x2e, 0xec, 0x18, 0x85, 0xd6, 0xd0, 0xe4, 0x04, 0xcb, 0x89, 0x3b, 0x87,
-	0x59, 0xa3, 0xe7, 0xb0, 0x9b, 0xf2, 0x34, 0x92, 0x8c, 0xa6, 0x44, 0xc8, 0x28, 0x9b, 0x8f, 0xa6,
-	0x64, 0x25, 0x23, 0xda, 0xf5, 0xcb, 0xcd, 0x52, 0xbb, 0xd6, 0x7b, 0x70, 0xfd, 0xee, 0x5c, 0xaf,
-	0xc3, 0x7b, 0x29, 0x4f, 0x87, 0x56, 0x75, 0x6e, 0x45, 0xfd, 0x2e, 0xfa, 0x12, 0xb6, 0x5f, 0xcc,
-	0xb9, 0x98, 0x27, 0x11, 0xce, 0xa6, 0x26, 0x4b, 0xe5, 0xff, 0xb3, 0xd4, 0x2d, 0x7e, 0x9c, 0x4d,
-	0x9d, 0x3c, 0x2f, 0x04, 0x67, 0xd3, 0x88, 0xf6, 0xcc, 0x88, 0xbd, 0x4b, 0xde, 0x73, 0x72, 0x87,
-	0x1f, 0x67, 0xd3, 0x7e, 0x0f, 0x9d, 0x01, 0x2a, 0xe4, 0x94, 0xea, 0x33, 0xe9, 0x0a, 0xec, 0x0c,
-	0x3e, 0xbc, 0x9e, 0xa2, 0xb8, 0xa5, 0xf0, 0xc3, 0x3c, 0x09, 0xa5, 0x43, 0x46, 0xfb, 0x5d, 0x74,
-	0x06, 0xcd, 0x75, 0x4f, 0x22, 0x77, 0xa0, 0x11, 0x53, 0x09, 0xce, 0x22, 0x96, 0xc6, 0x6c, 0x4c,
-	0xa4, 0xff, 0x81, 0xb9, 0xb0, 0xfd, 0xa2, 0x09, 0xdf, 0x1a, 0xea, 0xc4, 0x40, 0x03, 0xcb, 0xa0,
-	0xa7, 0x80, 0xd6, 0xdd, 0x28, 0x94, 0x55, 0xa3, 0xbc, 0x53, 0x1c, 0x3c, 0xa7, 0x03, 0xb8, 0xa7,
-	0xb8, 0xc2, 0xb3, 0x48, 0x2a, 0x3c, 0x25, 0x05, 0x0e, 0x06, 0xbf, 0x6b, 0x42, 0x43, 0x1d, 0xc9,
-	0xf9, 0x21, 0xf8, 0x57, 0xaa, 0x7c, 0x5b, 0x54, 0x33, 0x5d, 0xbf, 0xf1, 0xdd, 0xad, 0x47, 0x2f,
-	0xdc, 0x29, 0x2a, 0xbf, 0x9a, 0xf4, 0xf3, 0xd3, 0x3f, 0x5e, 0x7e, 0xe2, 0x1e, 0xc1, 0x60, 0x84,
-	0x25, 0x09, 0x16, 0xdd, 0x11, 0x51, 0xb8, 0x1b, 0x7c, 0x23, 0xe9, 0xcf, 0xff, 0xfc, 0xf6, 0xf1,
-	0x93, 0xe2, 0xed, 0xbc, 0xf2, 0x14, 0x77, 0xdc, 0x53, 0xcc, 0xc6, 0x24, 0xfa, 0x91, 0x90, 0xb8,
-	0xf5, 0x0c, 0xf6, 0x43, 0x22, 0x33, 0x9e, 0x4a, 0xf2, 0xae, 0xf9, 0x45, 0x3e, 0x6c, 0x09, 0x32,
-	0x26, 0x2c, 0x53, 0x6e, 0x6a, 0x73, 0xb3, 0xf7, 0xab, 0x07, 0x3b, 0xa7, 0x0b, 0xa9, 0x55, 0xe7,
-	0xf6, 0x69, 0x77, 0x62, 0xf4, 0x93, 0x07, 0x1f, 0xdd, 0x74, 0xaf, 0x73, 0x3e, 0xbb, 0x7e, 0xd8,
-	0xf7, 0xfd, 0x80, 0xf6, 0x9e, 0xde, 0x54, 0xfe, 0x77, 0xed, 0xad, 0x8d, 0x93, 0x4f, 0x5f, 0x5d,
-	0x34, 0xbc, 0xd7, 0x17, 0x0d, 0xef, 0xef, 0x8b, 0x86, 0xf7, 0xcb, 0x65, 0x63, 0xe3, 0xf5, 0x65,
-	0x63, 0xe3, 0xcf, 0xcb, 0xc6, 0xc6, 0x0f, 0xbb, 0x37, 0xba, 0xa3, 0x56, 0x19, 0x91, 0xa3, 0x4d,
-	0xf3, 0xb3, 0x70, 0xf4, 0x6f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x6e, 0xab, 0xb4, 0x75, 0xc7, 0x06,
-	0x00, 0x00,
+	// 686 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x94, 0x4d, 0x4f, 0x13, 0x41,
+	0x18, 0xc7, 0xbb, 0x96, 0x16, 0x19, 0x10, 0x61, 0x78, 0x2b, 0x15, 0x9b, 0xa6, 0x81, 0xa4, 0x31,
+	0xb8, 0x75, 0x97, 0x8b, 0x31, 0xf1, 0x00, 0x21, 0x34, 0x24, 0x98, 0xd4, 0x6d, 0xf4, 0xe0, 0x65,
+	0x33, 0xed, 0x8e, 0xc3, 0x64, 0x5f, 0x66, 0xd9, 0x99, 0x36, 0xdd, 0x4f, 0x60, 0xe2, 0xc9, 0xaf,
+	0xe0, 0x37, 0xf0, 0xe0, 0xd5, 0xbb, 0xf1, 0xc4, 0xd1, 0xa3, 0x81, 0x83, 0x5f, 0xc3, 0xec, 0xcc,
+	0xec, 0x02, 0x05, 0x8d, 0x97, 0xf6, 0x79, 0xf9, 0xfd, 0x9f, 0x7d, 0x9e, 0x67, 0x77, 0x06, 0xec,
+	0xd0, 0x48, 0xe0, 0x20, 0xa0, 0x93, 0x4e, 0x9c, 0xd0, 0x21, 0xee, 0x78, 0x63, 0xee, 0xc6, 0x8c,
+	0x0b, 0x37, 0x4e, 0xd8, 0x10, 0x73, 0x6e, 0xc6, 0x09, 0x13, 0x0c, 0x2e, 0xe6, 0x98, 0x29, 0xb1,
+	0xfa, 0x2a, 0x61, 0x84, 0xc9, 0x54, 0x27, 0xb3, 0x14, 0x55, 0xdf, 0x9c, 0x2a, 0x26, 0x10, 0xf7,
+	0x75, 0x6a, 0x63, 0xc8, 0x78, 0xc8, 0x78, 0x27, 0xe4, 0xa4, 0x33, 0xb6, 0xb2, 0xbf, 0x5c, 0xa3,
+	0x12, 0xae, 0x2a, 0xa6, 0x1c, 0x9d, 0x5a, 0x46, 0x21, 0x8d, 0x58, 0x47, 0xfe, 0xaa, 0x50, 0x6b,
+	0x07, 0xcc, 0x76, 0xad, 0x1e, 0xa3, 0x91, 0x80, 0x0b, 0xc0, 0x98, 0xd4, 0x8c, 0xa6, 0xd1, 0x5e,
+	0x70, 0x8c, 0x49, 0xe6, 0xa5, 0xb5, 0x7b, 0xca, 0x4b, 0x5b, 0x18, 0xcc, 0x76, 0x6d, 0x85, 0xad,
+	0x81, 0xea, 0xc4, 0x4d, 0x30, 0x0a, 0x34, 0x5b, 0x99, 0x38, 0x18, 0x05, 0x2a, 0x4c, 0x43, 0x44,
+	0xb4, 0xa8, 0x32, 0x39, 0x0e, 0x11, 0xc9, 0xc2, 0xa9, 0xa2, 0xcb, 0x2a, 0x9c, 0xe6, 0x74, 0xaa,
+	0xe8, 0x19, 0x1d, 0xce, 0xe8, 0xd6, 0x63, 0x30, 0xd7, 0xa7, 0x24, 0x42, 0x62, 0x94, 0x60, 0xb8,
+	0x04, 0xca, 0x9c, 0x12, 0xfd, 0x94, 0xcc, 0x6c, 0x6d, 0x03, 0xf0, 0xe6, 0x38, 0x12, 0x7b, 0xf6,
+	0x09, 0xe5, 0x02, 0xae, 0x83, 0xea, 0x18, 0x05, 0x23, 0xcc, 0x6b, 0x46, 0xb3, 0xdc, 0x7e, 0xe0,
+	0x68, 0xaf, 0xf5, 0xad, 0x02, 0xda, 0x0e, 0x3e, 0x1b, 0x61, 0x2e, 0x7a, 0x8c, 0x8b, 0xdc, 0xcc,
+	0x16, 0x78, 0x84, 0xb1, 0xf7, 0x16, 0x05, 0xd4, 0x43, 0x02, 0x7b, 0x87, 0x48, 0x20, 0x08, 0xc1,
+	0x8c, 0x87, 0x04, 0xd2, 0x4f, 0x91, 0x36, 0x5c, 0x05, 0x15, 0x9c, 0x24, 0x2c, 0x91, 0x93, 0xcc,
+	0x39, 0xca, 0xc9, 0xc8, 0x53, 0xc4, 0x4f, 0xf5, 0x1c, 0xd2, 0x86, 0x27, 0x60, 0x3d, 0x62, 0x91,
+	0xcb, 0x29, 0x89, 0x70, 0xc2, 0xdd, 0x78, 0x34, 0xf0, 0x71, 0xca, 0x5d, 0x62, 0xd5, 0x66, 0x9a,
+	0xe5, 0xf6, 0xbc, 0xbd, 0x61, 0xde, 0x7c, 0xcd, 0xa6, 0xde, 0xb5, 0xb3, 0x12, 0xb1, 0xa8, 0xaf,
+	0x54, 0x3d, 0x25, 0xea, 0x5a, 0xf0, 0x25, 0x58, 0x3c, 0x1b, 0xb1, 0x64, 0x14, 0xba, 0x28, 0xf6,
+	0x65, 0x95, 0xca, 0xbf, 0xab, 0x2c, 0x28, 0x7c, 0x3f, 0xf6, 0xb5, 0x3c, 0x6f, 0x04, 0xc5, 0xbe,
+	0x4b, 0xec, 0x5a, 0xb5, 0x69, 0xdc, 0x29, 0xb7, 0xb5, 0x5c, 0xe3, 0xfb, 0xb1, 0xdf, 0xb5, 0xe1,
+	0x11, 0x80, 0x85, 0x9c, 0x90, 0x6c, 0xa6, 0xac, 0x83, 0x59, 0x59, 0x62, 0x73, 0xba, 0x44, 0xf1,
+	0x96, 0x9c, 0x87, 0x79, 0x11, 0x42, 0xfa, 0x94, 0x74, 0x2d, 0x78, 0x04, 0x9a, 0x57, 0x3b, 0x71,
+	0xf5, 0x40, 0x03, 0x2a, 0x42, 0x14, 0xbb, 0x34, 0xf2, 0xe8, 0x10, 0xf3, 0xda, 0x7d, 0xf9, 0xc2,
+	0xb6, 0x8a, 0x25, 0xbc, 0x96, 0xd4, 0x81, 0x84, 0x8e, 0x15, 0x03, 0x77, 0x01, 0xbc, 0xda, 0x46,
+	0xa1, 0x9c, 0x93, 0xca, 0xa5, 0x62, 0xf0, 0x9c, 0x36, 0xc1, 0x8a, 0x60, 0x02, 0x05, 0x2e, 0x17,
+	0xc8, 0xc7, 0x05, 0x0e, 0x24, 0xbe, 0x2c, 0x53, 0xfd, 0x2c, 0x93, 0xf3, 0x7d, 0x50, 0xbb, 0xd6,
+	0xe5, 0x4d, 0xd1, 0xbc, 0xdc, 0x7a, 0x7d, 0x7a, 0xe6, 0xab, 0x4f, 0xcf, 0x59, 0x2b, 0x3a, 0xbf,
+	0x5e, 0xf4, 0xc5, 0xe1, 0x8f, 0xaf, 0x4f, 0xf5, 0xb9, 0x34, 0x07, 0x88, 0x63, 0x73, 0x6c, 0x0d,
+	0xb0, 0x40, 0x96, 0xf9, 0x8a, 0x93, 0x8f, 0xbf, 0xbf, 0x3c, 0xd9, 0x2e, 0x8e, 0xf3, 0xb5, 0xdb,
+	0xa1, 0xa3, 0x6f, 0x07, 0x3a, 0xc4, 0xee, 0x7b, 0x8c, 0xbd, 0x56, 0x03, 0x6c, 0x39, 0x98, 0xc7,
+	0x2c, 0xe2, 0xf8, 0xae, 0xef, 0xd7, 0xfe, 0x6c, 0x80, 0xb5, 0xc3, 0x31, 0xcf, 0x72, 0x3d, 0x75,
+	0xa7, 0x68, 0x04, 0x7e, 0x30, 0xc0, 0xa3, 0xdb, 0xe1, 0x42, 0x09, 0x9f, 0x4f, 0x8f, 0xf4, 0xbf,
+	0xc7, 0xa4, 0xbe, 0x7b, 0x5b, 0xf9, 0xf7, 0x0e, 0x5b, 0xa5, 0x83, 0x67, 0xdf, 0x2f, 0x1a, 0xc6,
+	0xf9, 0x45, 0xc3, 0xf8, 0x75, 0xd1, 0x30, 0x3e, 0x5d, 0x36, 0x4a, 0xe7, 0x97, 0x8d, 0xd2, 0xcf,
+	0xcb, 0x46, 0xe9, 0xdd, 0xfa, 0xad, 0x1d, 0x88, 0x34, 0xc6, 0x7c, 0x50, 0x95, 0xf7, 0xd1, 0xde,
+	0x9f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xa6, 0xb4, 0xd3, 0xaf, 0x40, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -715,111 +543,6 @@ var _DvsPostProcessRequest_serviceDesc = grpc.ServiceDesc{
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "intellix/price/dvs_post_process.proto",
-}
-
-func (m *AggregatedRequestPrice) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *AggregatedRequestPrice) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *AggregatedRequestPrice) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.BlockRange != nil {
-		{
-			size, err := m.BlockRange.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintDvsPostProcess(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x3a
-	}
-	if m.BlockHeight != 0 {
-		i = encodeVarintDvsPostProcess(dAtA, i, uint64(m.BlockHeight))
-		i--
-		dAtA[i] = 0x30
-	}
-	if m.OperatorCount != 0 {
-		i = encodeVarintDvsPostProcess(dAtA, i, uint64(m.OperatorCount))
-		i--
-		dAtA[i] = 0x28
-	}
-	if m.SourceCount != 0 {
-		i = encodeVarintDvsPostProcess(dAtA, i, uint64(m.SourceCount))
-		i--
-		dAtA[i] = 0x20
-	}
-	if m.Timestamp != 0 {
-		i = encodeVarintDvsPostProcess(dAtA, i, uint64(m.Timestamp))
-		i--
-		dAtA[i] = 0x18
-	}
-	{
-		size := m.Price.Size()
-		i -= size
-		if _, err := m.Price.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintDvsPostProcess(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x12
-	if len(m.RequestId) > 0 {
-		i -= len(m.RequestId)
-		copy(dAtA[i:], m.RequestId)
-		i = encodeVarintDvsPostProcess(dAtA, i, uint64(len(m.RequestId)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *BlockRange) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *BlockRange) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *BlockRange) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.End != 0 {
-		i = encodeVarintDvsPostProcess(dAtA, i, uint64(m.End))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.Start != 0 {
-		i = encodeVarintDvsPostProcess(dAtA, i, uint64(m.Start))
-		i--
-		dAtA[i] = 0x8
-	}
-	return len(dAtA) - i, nil
 }
 
 func (m *G1Point) Marshal() (dAtA []byte, err error) {
@@ -961,20 +684,20 @@ func (m *UInt32List) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	var l int
 	_ = l
 	if len(m.Values) > 0 {
-		dAtA3 := make([]byte, len(m.Values)*10)
-		var j2 int
+		dAtA2 := make([]byte, len(m.Values)*10)
+		var j1 int
 		for _, num := range m.Values {
 			for num >= 1<<7 {
-				dAtA3[j2] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA2[j1] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j2++
+				j1++
 			}
-			dAtA3[j2] = uint8(num)
-			j2++
+			dAtA2[j1] = uint8(num)
+			j1++
 		}
-		i -= j2
-		copy(dAtA[i:], dAtA3[:j2])
-		i = encodeVarintDvsPostProcess(dAtA, i, uint64(j2))
+		i -= j1
+		copy(dAtA[i:], dAtA2[:j1])
+		i = encodeVarintDvsPostProcess(dAtA, i, uint64(j1))
 		i--
 		dAtA[i] = 0xa
 	}
@@ -1016,56 +739,56 @@ func (m *RequestPostRequestPriceFeedValidatedData) MarshalToSizedBuffer(dAtA []b
 		}
 	}
 	if len(m.TotalStakeIndices) > 0 {
-		dAtA5 := make([]byte, len(m.TotalStakeIndices)*10)
-		var j4 int
+		dAtA4 := make([]byte, len(m.TotalStakeIndices)*10)
+		var j3 int
 		for _, num := range m.TotalStakeIndices {
 			for num >= 1<<7 {
-				dAtA5[j4] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA4[j3] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j4++
+				j3++
 			}
-			dAtA5[j4] = uint8(num)
-			j4++
+			dAtA4[j3] = uint8(num)
+			j3++
 		}
-		i -= j4
-		copy(dAtA[i:], dAtA5[:j4])
-		i = encodeVarintDvsPostProcess(dAtA, i, uint64(j4))
+		i -= j3
+		copy(dAtA[i:], dAtA4[:j3])
+		i = encodeVarintDvsPostProcess(dAtA, i, uint64(j3))
 		i--
 		dAtA[i] = 0x52
 	}
 	if len(m.QuorumApkIndices) > 0 {
-		dAtA7 := make([]byte, len(m.QuorumApkIndices)*10)
-		var j6 int
+		dAtA6 := make([]byte, len(m.QuorumApkIndices)*10)
+		var j5 int
 		for _, num := range m.QuorumApkIndices {
 			for num >= 1<<7 {
-				dAtA7[j6] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA6[j5] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j6++
+				j5++
 			}
-			dAtA7[j6] = uint8(num)
-			j6++
+			dAtA6[j5] = uint8(num)
+			j5++
 		}
-		i -= j6
-		copy(dAtA[i:], dAtA7[:j6])
-		i = encodeVarintDvsPostProcess(dAtA, i, uint64(j6))
+		i -= j5
+		copy(dAtA[i:], dAtA6[:j5])
+		i = encodeVarintDvsPostProcess(dAtA, i, uint64(j5))
 		i--
 		dAtA[i] = 0x4a
 	}
 	if len(m.NonSignerQuorumBitmapIndices) > 0 {
-		dAtA9 := make([]byte, len(m.NonSignerQuorumBitmapIndices)*10)
-		var j8 int
+		dAtA8 := make([]byte, len(m.NonSignerQuorumBitmapIndices)*10)
+		var j7 int
 		for _, num := range m.NonSignerQuorumBitmapIndices {
 			for num >= 1<<7 {
-				dAtA9[j8] = uint8(uint64(num)&0x7f | 0x80)
+				dAtA8[j7] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
-				j8++
+				j7++
 			}
-			dAtA9[j8] = uint8(num)
-			j8++
+			dAtA8[j7] = uint8(num)
+			j7++
 		}
-		i -= j8
-		copy(dAtA[i:], dAtA9[:j8])
-		i = encodeVarintDvsPostProcess(dAtA, i, uint64(j8))
+		i -= j7
+		copy(dAtA[i:], dAtA8[:j7])
+		i = encodeVarintDvsPostProcess(dAtA, i, uint64(j7))
 		i--
 		dAtA[i] = 0x42
 	}
@@ -1165,13 +888,6 @@ func (m *ResponsePostRequestPriceFeed) MarshalToSizedBuffer(dAtA []byte) (int, e
 	_ = i
 	var l int
 	_ = l
-	if len(m.Receipt) > 0 {
-		i -= len(m.Receipt)
-		copy(dAtA[i:], m.Receipt)
-		i = encodeVarintDvsPostProcess(dAtA, i, uint64(len(m.Receipt)))
-		i--
-		dAtA[i] = 0xa
-	}
 	return len(dAtA) - i, nil
 }
 
@@ -1186,52 +902,6 @@ func encodeVarintDvsPostProcess(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *AggregatedRequestPrice) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.RequestId)
-	if l > 0 {
-		n += 1 + l + sovDvsPostProcess(uint64(l))
-	}
-	l = m.Price.Size()
-	n += 1 + l + sovDvsPostProcess(uint64(l))
-	if m.Timestamp != 0 {
-		n += 1 + sovDvsPostProcess(uint64(m.Timestamp))
-	}
-	if m.SourceCount != 0 {
-		n += 1 + sovDvsPostProcess(uint64(m.SourceCount))
-	}
-	if m.OperatorCount != 0 {
-		n += 1 + sovDvsPostProcess(uint64(m.OperatorCount))
-	}
-	if m.BlockHeight != 0 {
-		n += 1 + sovDvsPostProcess(uint64(m.BlockHeight))
-	}
-	if m.BlockRange != nil {
-		l = m.BlockRange.Size()
-		n += 1 + l + sovDvsPostProcess(uint64(l))
-	}
-	return n
-}
-
-func (m *BlockRange) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Start != 0 {
-		n += 1 + sovDvsPostProcess(uint64(m.Start))
-	}
-	if m.End != 0 {
-		n += 1 + sovDvsPostProcess(uint64(m.End))
-	}
-	return n
-}
-
 func (m *G1Point) Size() (n int) {
 	if m == nil {
 		return 0
@@ -1377,10 +1047,6 @@ func (m *ResponsePostRequestPriceFeed) Size() (n int) {
 	}
 	var l int
 	_ = l
-	l = len(m.Receipt)
-	if l > 0 {
-		n += 1 + l + sovDvsPostProcess(uint64(l))
-	}
 	return n
 }
 
@@ -1389,324 +1055,6 @@ func sovDvsPostProcess(x uint64) (n int) {
 }
 func sozDvsPostProcess(x uint64) (n int) {
 	return sovDvsPostProcess(uint64((x << 1) ^ uint64((int64(x) >> 63))))
-}
-func (m *AggregatedRequestPrice) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowDvsPostProcess
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: AggregatedRequestPrice: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: AggregatedRequestPrice: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RequestId", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcess
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthDvsPostProcess
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDvsPostProcess
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.RequestId = append(m.RequestId[:0], dAtA[iNdEx:postIndex]...)
-			if m.RequestId == nil {
-				m.RequestId = []byte{}
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Price", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcess
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthDvsPostProcess
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDvsPostProcess
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Price.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Timestamp", wireType)
-			}
-			m.Timestamp = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcess
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Timestamp |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SourceCount", wireType)
-			}
-			m.SourceCount = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcess
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.SourceCount |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperatorCount", wireType)
-			}
-			m.OperatorCount = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcess
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.OperatorCount |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 6:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
-			}
-			m.BlockHeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcess
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockHeight |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 7:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockRange", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcess
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthDvsPostProcess
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthDvsPostProcess
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.BlockRange == nil {
-				m.BlockRange = &BlockRange{}
-			}
-			if err := m.BlockRange.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipDvsPostProcess(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthDvsPostProcess
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *BlockRange) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowDvsPostProcess
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: BlockRange: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BlockRange: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Start", wireType)
-			}
-			m.Start = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcess
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Start |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field End", wireType)
-			}
-			m.End = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcess
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.End |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipDvsPostProcess(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthDvsPostProcess
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
 }
 func (m *G1Point) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -2803,40 +2151,6 @@ func (m *ResponsePostRequestPriceFeed) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: ResponsePostRequestPriceFeed: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Receipt", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcess
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthDvsPostProcess
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDvsPostProcess
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Receipt = append(m.Receipt[:0], dAtA[iNdEx:postIndex]...)
-			if m.Receipt == nil {
-				m.Receipt = []byte{}
-			}
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipDvsPostProcess(dAtA[iNdEx:])

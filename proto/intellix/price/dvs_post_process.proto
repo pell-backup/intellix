@@ -14,34 +14,6 @@ service DvsPostProcessRequest {
   rpc PostProcessRequestPriceFeed(RequestPostRequestPriceFeedValidatedData) returns (ResponsePostRequestPriceFeed) {}
 }
 
-// AggregatedRequestPrice
-message AggregatedRequestPrice {
-  bytes request_id = 1;
-  // Aggregated final price
-  string price = 2 [
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false
-  ];
-  // Timestamp when aggregation was completed
-  int64 timestamp = 3;
-  // Number of data sources participated in aggregation
-  int32 source_count = 4;
-  // Number of operators participated in aggregation
-  int32 operator_count = 5;
-  // Block height at which aggregation was completed
-  uint64 block_height = 6;
-  // Block range used for aggregation
-  BlockRange block_range = 7;
-}
-
-// BlockRange defines the range of blocks used for price aggregation
-message BlockRange {
-  // Start block height for aggregation
-  uint64 start = 1;
-  // End block height for aggregation
-  uint64 end = 2;
-}
-
 message G1Point {
   bytes x = 1;
   bytes y = 2;
@@ -80,5 +52,4 @@ message RequestPostRequestPriceFeedValidatedData {
 }
 
 message ResponsePostRequestPriceFeed {
-  bytes receipt = 1;
 }

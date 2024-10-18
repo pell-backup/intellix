@@ -2,11 +2,12 @@ package app
 
 import (
 	"context"
+	dvsservermanager "intellix/pkg/dvs_msg_handler"
+	pricetypes "intellix/x/price/dvs/types"
+
 	"github.com/0xPellNetwork/pelldvs/aggregator"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"golang.org/x/crypto/sha3"
-	dvsservermanager "intellix/pkg/dvs_msg_handler"
-	pricetypes "intellix/x/price/dvs/types"
 
 	avsi "github.com/0xPellNetwork/pelldvs/application"
 )
@@ -35,20 +36,68 @@ func (app *App) ProcessRequest(ctx context.Context, req *avsi.RequestProcessRequ
 }
 
 func convertValidatedResponse(validatedData *aggregator.ValidatedResponse) *pricetypes.RequestPostRequestPriceFeedValidatedData {
-	resp := &pricetypes.RequestPostRequestPriceFeedValidatedData{}
-	resp.Data = validatedData.Data
-	resp.Error = validatedData.Err.Error()
-	resp.Hash = validatedData.Hash
-	resp.NonSignerQuorumBitmapIndices = validatedData.NonSignerQuorumBitmapIndices
-	resp.QuorumApkIndices = validatedData.QuorumApkIndices
-	resp.TotalStakeIndices = validatedData.TotalStakeIndices
+	var nonSignersPubkeysG1 []*pricetypes.G1Point
+	for _, pubkey := range validatedData.NonSignersPubkeysG1 {
+		x := pubkey.X.Bytes()
+		y := pubkey.Y.Bytes()
+		nonSignersPubkeysG1 = append(nonSignersPubkeysG1, &pricetypes.G1Point{
+			X: x[:],
+			Y: y[:],
+		})
+	}
+
+	var quorumApksG1 []*pricetypes.G1Point
+	for _, pubkey := range validatedData.QuorumApksG1 {
+		x := pubkey.X.Bytes()
+		y := pubkey.Y.Bytes()
+		quorumApksG1 = append(quorumApksG1, &pricetypes.G1Point{
+			X: x[:],
+			Y: y[:],
+		})
+	}
+
+	var signersApkG2 *pricetypes.G2Point
+	if validatedData.SignersApkG2 != nil {
+		xReal := validatedData.SignersApkG2.X.A0.Bytes()
+		xImag := validatedData.SignersApkG2.X.A1.Bytes()
+		yReal := validatedData.SignersApkG2.Y.A0.Bytes()
+		yImag := validatedData.SignersApkG2.Y.A1.Bytes()
+		signersApkG2 = &pricetypes.G2Point{
+			XReal: xReal[:],
+			XImag: xImag[:],
+			YReal: yReal[:],
+			YImag: yImag[:],
+		}
+	}
+
+	var signersAggSigG1 *pricetypes.Signature
+	if validatedData.SignersAggSigG1 != nil {
+		s := validatedData.SignersAggSigG1.Bytes()
+		signersAggSigG1 = &pricetypes.Signature{
+			Sig: s[:],
+		}
+	}
+
 	var nonSignerStakeIndices []*pricetypes.UInt32List
 	for _, stakeIndices := range validatedData.NonSignerStakeIndices {
 		nonSignerStakeIndices = append(nonSignerStakeIndices, &pricetypes.UInt32List{
 			Values: stakeIndices,
 		})
 	}
-	resp.NonSignerStakeIndices = nonSignerStakeIndices
+
+	resp := &pricetypes.RequestPostRequestPriceFeedValidatedData{
+		Data:                         validatedData.Data,
+		Error:                        validatedData.Err.Error(),
+		Hash:                         validatedData.Hash,
+		NonSignersPubkeysG1:          nonSignersPubkeysG1,
+		QuorumApksG1:                 quorumApksG1,
+		SignersApkG2:                 signersApkG2,
+		SignersAggSigG1:              signersAggSigG1,
+		NonSignerQuorumBitmapIndices: validatedData.NonSignerQuorumBitmapIndices,
+		QuorumApkIndices:             validatedData.QuorumApkIndices,
+		TotalStakeIndices:            validatedData.TotalStakeIndices,
+		NonSignerStakeIndices:        nonSignerStakeIndices,
+	}
 
 	return resp
 }
