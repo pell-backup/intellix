@@ -29,7 +29,8 @@ func (app *App) ProcessRequest(ctx context.Context, req *avsi.RequestProcessRequ
 	handlerSrc := dvsservermanager.GetProcessRequestHandlerSrc()
 	resData, err := handlerSrc.InvokeRouterByData(sdkCtx, req.Request.Data)
 	return &avsi.ResponseProcessRequest{
-		Reponse:        resData,
+		Reponse: resData,
+		// TODO: move calcDigest to biz
 		ResponseDigest: calcDigest(resData),
 	}, err
 }

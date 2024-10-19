@@ -1,7 +1,6 @@
 package app
 
 import (
-	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	"io"
 
 	"cosmossdk.io/store"
@@ -80,8 +79,8 @@ import (
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
-	//intellixmodulekeeper "intellix/x/intellix/keeper"
-	dvsmodulekeeper "intellix/x/price/dvs/keeper"
+	dvsservermanager "intellix/pkg/dvs_msg_handler"
+	dvsmodulekeeper "intellix/x/price/dvs/server"
 	pricemodulekeeper "intellix/x/price/keeper"
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport

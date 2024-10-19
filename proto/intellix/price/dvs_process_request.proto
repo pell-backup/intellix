@@ -20,12 +20,6 @@ message ProcessPriceFeedMsg {
   option (amino.name) = "intellix/x/price/dvs/process_price_feed";
 
   TaskRequestRaw raw = 1;
-  int64 height = 2;
-  string chain_id = 3[
-    (gogoproto.customtype) = "cosmossdk.io/math.Int",
-    (gogoproto.nullable) = false
-  ];
-  PriceFeedParam price_feed = 4;
 }
 
 // ProcessPriceFeedResp defines response from data that after processing

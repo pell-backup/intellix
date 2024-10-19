@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"intellix/pkg/dvs_msg_handler/tx"
 	"intellix/proto/intellix/x/price/types"
-	"intellix/x/price/dvs/keeper"
+	"intellix/x/price/dvs/server"
 	dvstypes "intellix/x/price/dvs/types"
 	"testing"
 )
@@ -40,13 +40,13 @@ func TestProcessRequestHandler(t *testing.T) {
 
 	handler := NewProcessRequestHandler(tx.NewDefaultDecoder(cdc))
 	mockStore, _ := colltest.MockStore()
-	k := keeper.NewKeeper(cdc, mockStore, nil, authtypes.NewModuleAddress(govtypes.ModuleName).String())
+	k := server.NewKeeper(cdc, mockStore, nil, authtypes.NewModuleAddress(govtypes.ModuleName).String())
 
 	// register interface
 	dvstypes.RegisterInterfaces(registry)
 
 	// register msg router
-	dvstypes.RegisterDvsProcessRequestServer(handler, keeper.NewDvsProcessRequestServer(k))
+	dvstypes.RegisterDvsProcessRequestServer(handler, server.NewDvsProcessRequestServer(k))
 
 	// get handler
 	_, ok := handler.(*ProcessRequestHandler)

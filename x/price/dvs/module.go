@@ -5,7 +5,7 @@ import (
 	"fmt"
 	modulev1 "intellix/api/intellix/intellix/module"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
-	"intellix/x/price/dvs/keeper"
+	"intellix/x/price/dvs/server"
 	dvstypes "intellix/x/price/dvs/types"
 	"intellix/x/price/types"
 
@@ -64,7 +64,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncod
 // AppModule implements an application module for the dvs module.
 type AppModule struct {
 	AppModuleBasic
-	keeper                   keeper.Keeper
+	keeper                   server.Keeper
 	ProcessRequestServer     grpc1.Server
 	PostProcessRequestServer grpc1.Server
 }
@@ -79,7 +79,7 @@ func (am AppModule) RegisterGRPCGatewayRoutes(context client.Context, mux *runti
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(k keeper.Keeper, cdc codec.Codec) AppModule {
+func NewAppModule(k server.Keeper, cdc codec.Codec) AppModule {
 	return AppModule{
 		AppModuleBasic:           AppModuleBasic{},
 		keeper:                   k,
@@ -90,8 +90,8 @@ func NewAppModule(k keeper.Keeper, cdc codec.Codec) AppModule {
 
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	dvsProcessRequestServer := keeper.NewDvsProcessRequestServer(am.keeper)
-	dvsPostProcessRequestServer := keeper.NewDvsPostProcessRequestServer(am.keeper)
+	dvsProcessRequestServer := server.NewDvsProcessRequestServer(am.keeper)
+	dvsPostProcessRequestServer := server.NewDvsPostProcessRequestServer(am.keeper)
 
 	// register cosmos-sdk handler server
 	dvstypes.RegisterDvsProcessRequestServer(cfg.MsgServer(), dvsProcessRequestServer)
@@ -123,14 +123,14 @@ type ModuleInputs struct {
 type ModuleOutputs struct {
 	depinject.Out
 
-	PriceKeeper keeper.Keeper
+	PriceKeeper server.Keeper
 	Module      appmodule.AppModule
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
 	// default to governance authority if not provided
 	authority := authtypes.NewModuleAddress(govtypes.ModuleName)
-	k := keeper.NewKeeper(
+	k := server.NewKeeper(
 		in.Cdc,
 		in.StoreService,
 		in.Logger,
