@@ -5,7 +5,6 @@ package types
 
 import (
 	context "context"
-	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
@@ -34,10 +33,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // ProcessPriceFeedMsg defines task request from task-dispatcher
 type ProcessPriceFeedMsg struct {
-	Raw       *TaskRequestRaw       `protobuf:"bytes,1,opt,name=raw,proto3" json:"raw,omitempty"`
-	Height    int64                 `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
-	ChainId   cosmossdk_io_math.Int `protobuf:"bytes,3,opt,name=chain_id,json=chainId,proto3,customtype=cosmossdk.io/math.Int" json:"chain_id"`
-	PriceFeed *PriceFeedParam       `protobuf:"bytes,4,opt,name=price_feed,json=priceFeed,proto3" json:"price_feed,omitempty"`
+	Raw *TaskRequestRaw `protobuf:"bytes,1,opt,name=raw,proto3" json:"raw,omitempty"`
 }
 
 func (m *ProcessPriceFeedMsg) Reset()         { *m = ProcessPriceFeedMsg{} }
@@ -80,50 +76,23 @@ func (m *ProcessPriceFeedMsg) GetRaw() *TaskRequestRaw {
 	return nil
 }
 
-func (m *ProcessPriceFeedMsg) GetHeight() int64 {
-	if m != nil {
-		return m.Height
-	}
-	return 0
+// ProcessPriceFeedResp defines response from data that after processing
+type ProcessPriceFeedResp struct {
+	Data []byte `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
 }
 
-func (m *ProcessPriceFeedMsg) GetPriceFeed() *PriceFeedParam {
-	if m != nil {
-		return m.PriceFeed
-	}
-	return nil
-}
-
-// AggregatedRequestPrice
-type AggregatedRequestPrice struct {
-	RequestId []byte `protobuf:"bytes,1,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
-	TaskIndex uint32 `protobuf:"varint,2,opt,name=task_index,json=taskIndex,proto3" json:"task_index,omitempty"`
-	// Aggregated final price
-	Price cosmossdk_io_math.LegacyDec `protobuf:"bytes,3,opt,name=price,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"price"`
-	// Timestamp when aggregation was completed
-	Timestamp int64 `protobuf:"varint,4,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	// Number of data sources participated in aggregation
-	SourceCount int32 `protobuf:"varint,5,opt,name=source_count,json=sourceCount,proto3" json:"source_count,omitempty"`
-	// Number of operators participated in aggregation
-	OperatorCount int32 `protobuf:"varint,6,opt,name=operator_count,json=operatorCount,proto3" json:"operator_count,omitempty"`
-	// Block height at which aggregation was completed
-	BlockHeight uint64 `protobuf:"varint,7,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
-	// Block range used for aggregation
-	BlockRange *BlockRange `protobuf:"bytes,8,opt,name=block_range,json=blockRange,proto3" json:"block_range,omitempty"`
-}
-
-func (m *AggregatedRequestPrice) Reset()         { *m = AggregatedRequestPrice{} }
-func (m *AggregatedRequestPrice) String() string { return proto.CompactTextString(m) }
-func (*AggregatedRequestPrice) ProtoMessage()    {}
-func (*AggregatedRequestPrice) Descriptor() ([]byte, []int) {
+func (m *ProcessPriceFeedResp) Reset()         { *m = ProcessPriceFeedResp{} }
+func (m *ProcessPriceFeedResp) String() string { return proto.CompactTextString(m) }
+func (*ProcessPriceFeedResp) ProtoMessage()    {}
+func (*ProcessPriceFeedResp) Descriptor() ([]byte, []int) {
 	return fileDescriptor_42b868a4210c4bda, []int{1}
 }
-func (m *AggregatedRequestPrice) XXX_Unmarshal(b []byte) error {
+func (m *ProcessPriceFeedResp) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *AggregatedRequestPrice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *ProcessPriceFeedResp) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_AggregatedRequestPrice.Marshal(b, m, deterministic)
+		return xxx_messageInfo_ProcessPriceFeedResp.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -133,126 +102,28 @@ func (m *AggregatedRequestPrice) XXX_Marshal(b []byte, deterministic bool) ([]by
 		return b[:n], nil
 	}
 }
-func (m *AggregatedRequestPrice) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_AggregatedRequestPrice.Merge(m, src)
+func (m *ProcessPriceFeedResp) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ProcessPriceFeedResp.Merge(m, src)
 }
-func (m *AggregatedRequestPrice) XXX_Size() int {
+func (m *ProcessPriceFeedResp) XXX_Size() int {
 	return m.Size()
 }
-func (m *AggregatedRequestPrice) XXX_DiscardUnknown() {
-	xxx_messageInfo_AggregatedRequestPrice.DiscardUnknown(m)
+func (m *ProcessPriceFeedResp) XXX_DiscardUnknown() {
+	xxx_messageInfo_ProcessPriceFeedResp.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_AggregatedRequestPrice proto.InternalMessageInfo
+var xxx_messageInfo_ProcessPriceFeedResp proto.InternalMessageInfo
 
-func (m *AggregatedRequestPrice) GetRequestId() []byte {
+func (m *ProcessPriceFeedResp) GetData() []byte {
 	if m != nil {
-		return m.RequestId
+		return m.Data
 	}
 	return nil
-}
-
-func (m *AggregatedRequestPrice) GetTaskIndex() uint32 {
-	if m != nil {
-		return m.TaskIndex
-	}
-	return 0
-}
-
-func (m *AggregatedRequestPrice) GetTimestamp() int64 {
-	if m != nil {
-		return m.Timestamp
-	}
-	return 0
-}
-
-func (m *AggregatedRequestPrice) GetSourceCount() int32 {
-	if m != nil {
-		return m.SourceCount
-	}
-	return 0
-}
-
-func (m *AggregatedRequestPrice) GetOperatorCount() int32 {
-	if m != nil {
-		return m.OperatorCount
-	}
-	return 0
-}
-
-func (m *AggregatedRequestPrice) GetBlockHeight() uint64 {
-	if m != nil {
-		return m.BlockHeight
-	}
-	return 0
-}
-
-func (m *AggregatedRequestPrice) GetBlockRange() *BlockRange {
-	if m != nil {
-		return m.BlockRange
-	}
-	return nil
-}
-
-// BlockRange defines the range of blocks used for price aggregation
-type BlockRange struct {
-	// Start block height for aggregation
-	Start uint64 `protobuf:"varint,1,opt,name=start,proto3" json:"start,omitempty"`
-	// End block height for aggregation
-	End uint64 `protobuf:"varint,2,opt,name=end,proto3" json:"end,omitempty"`
-}
-
-func (m *BlockRange) Reset()         { *m = BlockRange{} }
-func (m *BlockRange) String() string { return proto.CompactTextString(m) }
-func (*BlockRange) ProtoMessage()    {}
-func (*BlockRange) Descriptor() ([]byte, []int) {
-	return fileDescriptor_42b868a4210c4bda, []int{2}
-}
-func (m *BlockRange) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *BlockRange) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_BlockRange.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *BlockRange) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BlockRange.Merge(m, src)
-}
-func (m *BlockRange) XXX_Size() int {
-	return m.Size()
-}
-func (m *BlockRange) XXX_DiscardUnknown() {
-	xxx_messageInfo_BlockRange.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_BlockRange proto.InternalMessageInfo
-
-func (m *BlockRange) GetStart() uint64 {
-	if m != nil {
-		return m.Start
-	}
-	return 0
-}
-
-func (m *BlockRange) GetEnd() uint64 {
-	if m != nil {
-		return m.End
-	}
-	return 0
 }
 
 func init() {
 	proto.RegisterType((*ProcessPriceFeedMsg)(nil), "intellix.price.ProcessPriceFeedMsg")
-	proto.RegisterType((*AggregatedRequestPrice)(nil), "intellix.price.AggregatedRequestPrice")
-	proto.RegisterType((*BlockRange)(nil), "intellix.price.BlockRange")
+	proto.RegisterType((*ProcessPriceFeedResp)(nil), "intellix.price.ProcessPriceFeedResp")
 }
 
 func init() {
@@ -260,45 +131,28 @@ func init() {
 }
 
 var fileDescriptor_42b868a4210c4bda = []byte{
-	// 605 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x53, 0xcb, 0x6e, 0xd3, 0x40,
-	0x14, 0x8d, 0x9b, 0xa4, 0x6d, 0xa6, 0x0f, 0xd1, 0xa1, 0xb4, 0x26, 0x50, 0x37, 0x4d, 0x05, 0x58,
-	0x48, 0xd8, 0x6d, 0x61, 0xc1, 0x43, 0x2c, 0x28, 0x15, 0x10, 0x89, 0x4a, 0xd5, 0x88, 0x15, 0x1b,
-	0x6b, 0x62, 0x0f, 0x8e, 0x95, 0xd8, 0x63, 0x66, 0x26, 0x69, 0xbb, 0xe0, 0x07, 0x58, 0xf1, 0x0b,
-	0xfc, 0x01, 0x0b, 0x3e, 0xa2, 0x62, 0xd5, 0x25, 0xb0, 0xa8, 0x50, 0xb2, 0xe0, 0x37, 0xd0, 0x3c,
-	0x92, 0xd0, 0xa4, 0x9b, 0x64, 0xee, 0xb9, 0x67, 0xe6, 0xde, 0x7b, 0xce, 0x35, 0x70, 0x93, 0x4c,
-	0x90, 0x4e, 0x27, 0x39, 0xf1, 0x73, 0x96, 0x84, 0xc4, 0x8f, 0x7a, 0x3c, 0xc8, 0x19, 0x0d, 0x09,
-	0xe7, 0x01, 0x23, 0x1f, 0xbb, 0x84, 0x0b, 0x2f, 0x67, 0x54, 0x50, 0xb8, 0x3c, 0x64, 0x7a, 0x8a,
-	0x59, 0x5d, 0x8d, 0x69, 0x4c, 0x55, 0xca, 0x97, 0x27, 0xcd, 0xaa, 0xde, 0x9c, 0x78, 0x4f, 0x60,
-	0xde, 0x36, 0xa9, 0xf5, 0x90, 0xf2, 0x94, 0x72, 0x3f, 0xe5, 0xb1, 0xdf, 0xdb, 0x95, 0x7f, 0xc3,
-	0x3b, 0x3a, 0x11, 0xe8, 0xc7, 0x74, 0x60, 0x52, 0x2b, 0x38, 0x4d, 0x32, 0xea, 0xab, 0x5f, 0x0d,
-	0xd5, 0xbf, 0xce, 0x80, 0xeb, 0x47, 0xba, 0xc3, 0x23, 0x59, 0xe2, 0x15, 0x21, 0xd1, 0x21, 0x8f,
-	0xe1, 0x0e, 0x28, 0x32, 0x7c, 0x6c, 0x5b, 0x35, 0xcb, 0x5d, 0xd8, 0x73, 0xbc, 0xcb, 0xdd, 0x7a,
-	0xef, 0x30, 0x6f, 0x23, 0x3d, 0x0f, 0xc2, 0xc7, 0x48, 0x52, 0xe1, 0x1a, 0x98, 0x6d, 0x91, 0x24,
-	0x6e, 0x09, 0x7b, 0xa6, 0x66, 0xb9, 0x45, 0x64, 0x22, 0xf8, 0x18, 0xcc, 0x87, 0x2d, 0x9c, 0x64,
-	0x41, 0x12, 0xd9, 0xc5, 0x9a, 0xe5, 0x56, 0xf6, 0x37, 0xce, 0x2e, 0x36, 0x0b, 0xbf, 0x2f, 0x36,
-	0x6f, 0xe8, 0xe6, 0x78, 0xd4, 0xf6, 0x12, 0xea, 0xa7, 0x58, 0xb4, 0xbc, 0x46, 0x26, 0xd0, 0x9c,
-	0xa2, 0x37, 0x22, 0xf8, 0x1c, 0x00, 0x55, 0x2e, 0xf8, 0x40, 0x48, 0x64, 0x97, 0xae, 0x6e, 0x65,
-	0xd4, 0xf5, 0x11, 0x66, 0x38, 0x45, 0x95, 0x7c, 0x18, 0x3f, 0x7d, 0xfd, 0xe3, 0xfb, 0x03, 0xa3,
-	0x92, 0xd7, 0xc4, 0x9c, 0x78, 0xbd, 0xdd, 0x26, 0x11, 0x78, 0xd7, 0x3b, 0xe4, 0xf1, 0xe7, 0xbf,
-	0xdf, 0xee, 0xdf, 0x1b, 0x89, 0xfb, 0x9f, 0x5d, 0xfe, 0xd0, 0xae, 0x71, 0xe5, 0xfa, 0xaf, 0x19,
-	0xb0, 0xf6, 0x22, 0x8e, 0x19, 0x89, 0xb1, 0x20, 0x91, 0x99, 0x5b, 0xd5, 0x85, 0x1b, 0x00, 0x18,
-	0x5f, 0xe5, 0x78, 0x52, 0xad, 0x45, 0x54, 0x31, 0x48, 0x23, 0x92, 0x69, 0x69, 0x59, 0x90, 0x64,
-	0x11, 0x39, 0x51, 0xba, 0x2c, 0xa1, 0x8a, 0x44, 0x1a, 0x12, 0x80, 0x4f, 0x40, 0x59, 0x95, 0x31,
-	0xba, 0x6c, 0x1b, 0x5d, 0x6e, 0x4d, 0xeb, 0xf2, 0x96, 0xc4, 0x38, 0x3c, 0x3d, 0x20, 0x21, 0xd2,
-	0x37, 0xe0, 0x6d, 0x50, 0x11, 0x49, 0x4a, 0xb8, 0xc0, 0x69, 0xae, 0xa4, 0x29, 0xa2, 0x31, 0x00,
-	0xb7, 0xc0, 0x22, 0xa7, 0x5d, 0x16, 0x92, 0x20, 0xa4, 0xdd, 0x4c, 0xd8, 0xe5, 0x9a, 0xe5, 0x96,
-	0xd1, 0x82, 0xc6, 0x5e, 0x4a, 0x08, 0xde, 0x01, 0xcb, 0x34, 0x27, 0x0c, 0x0b, 0xca, 0x0c, 0x69,
-	0x56, 0x91, 0x96, 0x86, 0xa8, 0xa6, 0x6d, 0x81, 0xc5, 0x66, 0x87, 0x86, 0xed, 0xc0, 0x78, 0x3b,
-	0x57, 0xb3, 0xdc, 0x12, 0x5a, 0x50, 0xd8, 0x1b, 0x6d, 0xf0, 0x33, 0xa0, 0xc3, 0x80, 0xe1, 0x2c,
-	0x26, 0xf6, 0xbc, 0xf2, 0xa9, 0x3a, 0xe9, 0xd3, 0xbe, 0xa4, 0x20, 0xc9, 0x40, 0xa0, 0x39, 0x3a,
-	0xd7, 0x1f, 0x01, 0x30, 0xce, 0xc0, 0x55, 0x50, 0xe6, 0x02, 0x33, 0xa1, 0x94, 0x2c, 0x21, 0x1d,
-	0xc0, 0x6b, 0xa0, 0x48, 0xb2, 0x48, 0xc9, 0x57, 0x42, 0xf2, 0xb8, 0xf7, 0x09, 0xac, 0x1c, 0xf4,
-	0xb8, 0xd9, 0x5b, 0x63, 0x08, 0x6c, 0x81, 0xf5, 0xcb, 0xc8, 0x68, 0x35, 0xe0, 0xf6, 0xf4, 0xd6,
-	0x4c, 0xad, 0x7c, 0xf5, 0xee, 0x24, 0xe9, 0x6a, 0xcf, 0xeb, 0x85, 0xfd, 0x9d, 0xb3, 0xbe, 0x63,
-	0x9d, 0xf7, 0x1d, 0xeb, 0x4f, 0xdf, 0xb1, 0xbe, 0x0c, 0x9c, 0xc2, 0xf9, 0xc0, 0x29, 0xfc, 0x1c,
-	0x38, 0x85, 0xf7, 0x6b, 0x53, 0x3b, 0x25, 0x4e, 0x73, 0xc2, 0x9b, 0xb3, 0xea, 0x6b, 0x7b, 0xf8,
-	0x2f, 0x00, 0x00, 0xff, 0xff, 0xf9, 0x84, 0xca, 0xb2, 0x21, 0x04, 0x00, 0x00,
+	// 330 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xd2, 0xc8, 0xcc, 0x2b, 0x49,
+	0xcd, 0xc9, 0xc9, 0xac, 0xd0, 0x2f, 0x28, 0xca, 0x4c, 0x4e, 0xd5, 0x4f, 0x29, 0x2b, 0x8e, 0x2f,
+	0x28, 0xca, 0x4f, 0x4e, 0x2d, 0x2e, 0x8e, 0x2f, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0xd1, 0x2b,
+	0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x83, 0xa9, 0xd4, 0x03, 0xab, 0x94, 0x12, 0x49, 0xcf, 0x4f,
+	0xcf, 0x07, 0x4b, 0xe9, 0x83, 0x58, 0x10, 0x55, 0x52, 0x92, 0x68, 0xe6, 0x95, 0x24, 0x16, 0x67,
+	0x43, 0xa5, 0xc4, 0x93, 0xf3, 0x8b, 0x73, 0xf3, 0x8b, 0xf5, 0x73, 0x8b, 0xd3, 0xf5, 0xcb, 0x0c,
+	0x41, 0x14, 0x4c, 0x0f, 0x44, 0x22, 0x1e, 0x62, 0x18, 0x84, 0x03, 0x95, 0x12, 0x4c, 0xcc, 0xcd,
+	0xcc, 0xcb, 0xd7, 0x07, 0x93, 0x10, 0x21, 0xa5, 0x09, 0x8c, 0x5c, 0xc2, 0x01, 0x10, 0x17, 0x06,
+	0x80, 0xac, 0x70, 0x4b, 0x4d, 0x4d, 0xf1, 0x2d, 0x4e, 0x17, 0x32, 0xe0, 0x62, 0x2e, 0x4a, 0x2c,
+	0x97, 0x60, 0x54, 0x60, 0xd4, 0xe0, 0x36, 0x92, 0xd3, 0x43, 0x75, 0xad, 0x5e, 0x48, 0x62, 0x71,
+	0x76, 0x10, 0xc4, 0x3f, 0x41, 0x89, 0xe5, 0x41, 0x20, 0xa5, 0x56, 0xee, 0xa7, 0xb6, 0xe8, 0x42,
+	0x1d, 0xa5, 0x97, 0x94, 0x58, 0x9c, 0xaa, 0x57, 0x66, 0x98, 0x94, 0x5a, 0x92, 0x68, 0xa8, 0xe7,
+	0x5b, 0x9c, 0xde, 0xf5, 0x7c, 0x83, 0x96, 0x3a, 0xdc, 0x2f, 0x48, 0xa1, 0xa3, 0x0f, 0x0b, 0x1d,
+	0xb0, 0x48, 0x7c, 0x5a, 0x6a, 0x6a, 0x8a, 0x92, 0x16, 0x97, 0x08, 0xba, 0x8b, 0x82, 0x52, 0x8b,
+	0x0b, 0x84, 0x84, 0xb8, 0x58, 0x52, 0x12, 0x4b, 0x12, 0xc1, 0x6e, 0xe2, 0x09, 0x02, 0xb3, 0x8d,
+	0xaa, 0xb9, 0x04, 0x5d, 0xca, 0x8a, 0xa1, 0xca, 0xa1, 0x2e, 0x12, 0x4a, 0xe3, 0x12, 0x47, 0x15,
+	0x81, 0x9b, 0x23, 0xa4, 0x8c, 0xee, 0x13, 0x2c, 0x7e, 0x97, 0x52, 0x21, 0xa4, 0x08, 0xe4, 0x1c,
+	0x25, 0x06, 0x27, 0x83, 0x13, 0x8f, 0xe4, 0x18, 0x2f, 0x3c, 0x92, 0x63, 0x7c, 0xf0, 0x48, 0x8e,
+	0x71, 0xc2, 0x63, 0x39, 0x86, 0x0b, 0x8f, 0xe5, 0x18, 0x6e, 0x3c, 0x96, 0x63, 0x88, 0x12, 0xc3,
+	0xf0, 0x6b, 0x49, 0x65, 0x41, 0x6a, 0x71, 0x12, 0x1b, 0x38, 0xd0, 0x8d, 0x01, 0x01, 0x00, 0x00,
+	0xff, 0xff, 0x9f, 0xf3, 0xfb, 0x28, 0x28, 0x02, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -314,7 +168,7 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type DvsProcessRequestClient interface {
 	// ProcessRequestPriceFeed defines avsi logic processing
-	ProcessRequestPriceFeed(ctx context.Context, in *ProcessPriceFeedMsg, opts ...grpc.CallOption) (*AggregatedRequestPrice, error)
+	ProcessRequestPriceFeed(ctx context.Context, in *ProcessPriceFeedMsg, opts ...grpc.CallOption) (*ProcessPriceFeedResp, error)
 }
 
 type dvsProcessRequestClient struct {
@@ -325,8 +179,8 @@ func NewDvsProcessRequestClient(cc grpc1.ClientConn) DvsProcessRequestClient {
 	return &dvsProcessRequestClient{cc}
 }
 
-func (c *dvsProcessRequestClient) ProcessRequestPriceFeed(ctx context.Context, in *ProcessPriceFeedMsg, opts ...grpc.CallOption) (*AggregatedRequestPrice, error) {
-	out := new(AggregatedRequestPrice)
+func (c *dvsProcessRequestClient) ProcessRequestPriceFeed(ctx context.Context, in *ProcessPriceFeedMsg, opts ...grpc.CallOption) (*ProcessPriceFeedResp, error) {
+	out := new(ProcessPriceFeedResp)
 	err := c.cc.Invoke(ctx, "/intellix.price.DvsProcessRequest/ProcessRequestPriceFeed", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -337,14 +191,14 @@ func (c *dvsProcessRequestClient) ProcessRequestPriceFeed(ctx context.Context, i
 // DvsProcessRequestServer is the server API for DvsProcessRequest service.
 type DvsProcessRequestServer interface {
 	// ProcessRequestPriceFeed defines avsi logic processing
-	ProcessRequestPriceFeed(context.Context, *ProcessPriceFeedMsg) (*AggregatedRequestPrice, error)
+	ProcessRequestPriceFeed(context.Context, *ProcessPriceFeedMsg) (*ProcessPriceFeedResp, error)
 }
 
 // UnimplementedDvsProcessRequestServer can be embedded to have forward compatible implementations.
 type UnimplementedDvsProcessRequestServer struct {
 }
 
-func (*UnimplementedDvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, req *ProcessPriceFeedMsg) (*AggregatedRequestPrice, error) {
+func (*UnimplementedDvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, req *ProcessPriceFeedMsg) (*ProcessPriceFeedResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ProcessRequestPriceFeed not implemented")
 }
 
@@ -404,33 +258,6 @@ func (m *ProcessPriceFeedMsg) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
-	if m.PriceFeed != nil {
-		{
-			size, err := m.PriceFeed.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintDvsProcessRequest(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x22
-	}
-	{
-		size := m.ChainId.Size()
-		i -= size
-		if _, err := m.ChainId.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintDvsProcessRequest(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x1a
-	if m.Height != 0 {
-		i = encodeVarintDvsProcessRequest(dAtA, i, uint64(m.Height))
-		i--
-		dAtA[i] = 0x10
-	}
 	if m.Raw != nil {
 		{
 			size, err := m.Raw.MarshalToSizedBuffer(dAtA[:i])
@@ -446,7 +273,7 @@ func (m *ProcessPriceFeedMsg) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *AggregatedRequestPrice) Marshal() (dAtA []byte, err error) {
+func (m *ProcessPriceFeedResp) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -456,102 +283,22 @@ func (m *AggregatedRequestPrice) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *AggregatedRequestPrice) MarshalTo(dAtA []byte) (int, error) {
+func (m *ProcessPriceFeedResp) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *AggregatedRequestPrice) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *ProcessPriceFeedResp) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
 	_ = l
-	if m.BlockRange != nil {
-		{
-			size, err := m.BlockRange.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintDvsProcessRequest(dAtA, i, uint64(size))
-		}
-		i--
-		dAtA[i] = 0x42
-	}
-	if m.BlockHeight != 0 {
-		i = encodeVarintDvsProcessRequest(dAtA, i, uint64(m.BlockHeight))
-		i--
-		dAtA[i] = 0x38
-	}
-	if m.OperatorCount != 0 {
-		i = encodeVarintDvsProcessRequest(dAtA, i, uint64(m.OperatorCount))
-		i--
-		dAtA[i] = 0x30
-	}
-	if m.SourceCount != 0 {
-		i = encodeVarintDvsProcessRequest(dAtA, i, uint64(m.SourceCount))
-		i--
-		dAtA[i] = 0x28
-	}
-	if m.Timestamp != 0 {
-		i = encodeVarintDvsProcessRequest(dAtA, i, uint64(m.Timestamp))
-		i--
-		dAtA[i] = 0x20
-	}
-	{
-		size := m.Price.Size()
-		i -= size
-		if _, err := m.Price.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
-		}
-		i = encodeVarintDvsProcessRequest(dAtA, i, uint64(size))
-	}
-	i--
-	dAtA[i] = 0x1a
-	if m.TaskIndex != 0 {
-		i = encodeVarintDvsProcessRequest(dAtA, i, uint64(m.TaskIndex))
-		i--
-		dAtA[i] = 0x10
-	}
-	if len(m.RequestId) > 0 {
-		i -= len(m.RequestId)
-		copy(dAtA[i:], m.RequestId)
-		i = encodeVarintDvsProcessRequest(dAtA, i, uint64(len(m.RequestId)))
+	if len(m.Data) > 0 {
+		i -= len(m.Data)
+		copy(dAtA[i:], m.Data)
+		i = encodeVarintDvsProcessRequest(dAtA, i, uint64(len(m.Data)))
 		i--
 		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *BlockRange) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *BlockRange) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *BlockRange) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if m.End != 0 {
-		i = encodeVarintDvsProcessRequest(dAtA, i, uint64(m.End))
-		i--
-		dAtA[i] = 0x10
-	}
-	if m.Start != 0 {
-		i = encodeVarintDvsProcessRequest(dAtA, i, uint64(m.Start))
-		i--
-		dAtA[i] = 0x8
 	}
 	return len(dAtA) - i, nil
 }
@@ -577,63 +324,18 @@ func (m *ProcessPriceFeedMsg) Size() (n int) {
 		l = m.Raw.Size()
 		n += 1 + l + sovDvsProcessRequest(uint64(l))
 	}
-	if m.Height != 0 {
-		n += 1 + sovDvsProcessRequest(uint64(m.Height))
-	}
-	l = m.ChainId.Size()
-	n += 1 + l + sovDvsProcessRequest(uint64(l))
-	if m.PriceFeed != nil {
-		l = m.PriceFeed.Size()
-		n += 1 + l + sovDvsProcessRequest(uint64(l))
-	}
 	return n
 }
 
-func (m *AggregatedRequestPrice) Size() (n int) {
+func (m *ProcessPriceFeedResp) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	l = len(m.RequestId)
+	l = len(m.Data)
 	if l > 0 {
 		n += 1 + l + sovDvsProcessRequest(uint64(l))
-	}
-	if m.TaskIndex != 0 {
-		n += 1 + sovDvsProcessRequest(uint64(m.TaskIndex))
-	}
-	l = m.Price.Size()
-	n += 1 + l + sovDvsProcessRequest(uint64(l))
-	if m.Timestamp != 0 {
-		n += 1 + sovDvsProcessRequest(uint64(m.Timestamp))
-	}
-	if m.SourceCount != 0 {
-		n += 1 + sovDvsProcessRequest(uint64(m.SourceCount))
-	}
-	if m.OperatorCount != 0 {
-		n += 1 + sovDvsProcessRequest(uint64(m.OperatorCount))
-	}
-	if m.BlockHeight != 0 {
-		n += 1 + sovDvsProcessRequest(uint64(m.BlockHeight))
-	}
-	if m.BlockRange != nil {
-		l = m.BlockRange.Size()
-		n += 1 + l + sovDvsProcessRequest(uint64(l))
-	}
-	return n
-}
-
-func (m *BlockRange) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if m.Start != 0 {
-		n += 1 + sovDvsProcessRequest(uint64(m.Start))
-	}
-	if m.End != 0 {
-		n += 1 + sovDvsProcessRequest(uint64(m.End))
 	}
 	return n
 }
@@ -709,95 +411,6 @@ func (m *ProcessPriceFeedMsg) Unmarshal(dAtA []byte) error {
 				return err
 			}
 			iNdEx = postIndex
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Height", wireType)
-			}
-			m.Height = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsProcessRequest
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Height |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainId", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsProcessRequest
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthDvsProcessRequest
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDvsProcessRequest
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.ChainId.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field PriceFeed", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsProcessRequest
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthDvsProcessRequest
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthDvsProcessRequest
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.PriceFeed == nil {
-				m.PriceFeed = &PriceFeedParam{}
-			}
-			if err := m.PriceFeed.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipDvsProcessRequest(dAtA[iNdEx:])
@@ -819,7 +432,7 @@ func (m *ProcessPriceFeedMsg) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *AggregatedRequestPrice) Unmarshal(dAtA []byte) error {
+func (m *ProcessPriceFeedResp) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -842,15 +455,15 @@ func (m *AggregatedRequestPrice) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: AggregatedRequestPrice: wiretype end group for non-group")
+			return fmt.Errorf("proto: ProcessPriceFeedResp: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: AggregatedRequestPrice: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: ProcessPriceFeedResp: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
 			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field RequestId", wireType)
+				return fmt.Errorf("proto: wrong wireType = %d for field Data", wireType)
 			}
 			var byteLen int
 			for shift := uint(0); ; shift += 7 {
@@ -877,264 +490,11 @@ func (m *AggregatedRequestPrice) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.RequestId = append(m.RequestId[:0], dAtA[iNdEx:postIndex]...)
-			if m.RequestId == nil {
-				m.RequestId = []byte{}
+			m.Data = append(m.Data[:0], dAtA[iNdEx:postIndex]...)
+			if m.Data == nil {
+				m.Data = []byte{}
 			}
 			iNdEx = postIndex
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field TaskIndex", wireType)
-			}
-			m.TaskIndex = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsProcessRequest
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.TaskIndex |= uint32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Price", wireType)
-			}
-			var stringLen uint64
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsProcessRequest
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				stringLen |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			intStringLen := int(stringLen)
-			if intStringLen < 0 {
-				return ErrInvalidLengthDvsProcessRequest
-			}
-			postIndex := iNdEx + intStringLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDvsProcessRequest
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if err := m.Price.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Timestamp", wireType)
-			}
-			m.Timestamp = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsProcessRequest
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Timestamp |= int64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 5:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field SourceCount", wireType)
-			}
-			m.SourceCount = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsProcessRequest
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.SourceCount |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 6:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field OperatorCount", wireType)
-			}
-			m.OperatorCount = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsProcessRequest
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.OperatorCount |= int32(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 7:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockHeight", wireType)
-			}
-			m.BlockHeight = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsProcessRequest
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.BlockHeight |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 8:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field BlockRange", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsProcessRequest
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthDvsProcessRequest
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthDvsProcessRequest
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.BlockRange == nil {
-				m.BlockRange = &BlockRange{}
-			}
-			if err := m.BlockRange.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipDvsProcessRequest(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthDvsProcessRequest
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *BlockRange) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowDvsProcessRequest
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: BlockRange: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: BlockRange: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Start", wireType)
-			}
-			m.Start = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsProcessRequest
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.Start |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field End", wireType)
-			}
-			m.End = 0
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsProcessRequest
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				m.End |= uint64(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipDvsProcessRequest(dAtA[iNdEx:])

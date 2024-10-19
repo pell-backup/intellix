@@ -115,13 +115,7 @@ func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
 func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractPriceOracle.ContractPriceOracleNewTaskCreated) {
 	td.logger.Info("New task created", "chainID", chainID, "TaskIndex", newTask.TaskIndex, "RequestId", newTask.Task.RequestId)
 
-	priceFeed, err := ParsePriceFeed(newTask.Task.RequestData)
-	if err != nil {
-		td.logger.Error("Failed to parse price feed", "chainID", chainID, "error", err)
-		return
-	}
-
-	taskData, err := td.serializeTask(newTask.TaskIndex, chainID, int64(newTask.Raw.BlockNumber), priceFeed, newTask.Task)
+	taskData, err := td.serializeTask(chainID, newTask)
 	if err != nil {
 		td.logger.Error("Failed to serialize task", "chainID", chainID, "error", err)
 		return
@@ -142,9 +136,15 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractPriceOr
 	td.logger.Info("Task sent to PellDVS successfully", "chainID", chainID, "TaskIndex", newTask.TaskIndex)
 }
 
-func (td *TaskDispatcher) serializeTask(taskIndex uint32, chainID uint64, blockHeight int64, priceFeed *PriceFeedParam, task contractPriceOracle.IPriceOracleTask) ([]byte, error) {
+func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractPriceOracle.ContractPriceOracleNewTaskCreated) ([]byte, error) {
+	priceFeed, err := ParsePriceFeed(newTask.Task.RequestData)
+	if err != nil {
+		td.logger.Error("Failed to parse price feed", "chainID", chainID, "error", err)
+		return nil, err
+	}
+	task := newTask.Task
 	taskRequest := &pricetypes.TaskRequestRaw{
-		TaskIndex:                 taskIndex,
+		TaskIndex:                 newTask.TaskIndex,
 		RequestId:                 task.RequestId[:],
 		FeeToken:                  task.FeeToken.Hex(),
 		Payment:                   math.NewIntFromBigInt(task.Payment),
@@ -154,19 +154,15 @@ func (td *TaskDispatcher) serializeTask(taskIndex uint32, chainID uint64, blockH
 		TaskCreatedBlock:          task.TaskCreatedBlock,
 		QuorumNumbers:             task.QuorumNumbers,
 		QuorumThresholdPercentage: task.QuorumThresholdPercentage,
-	}
-
-	data := &pricetypes.ProcessPriceFeedMsg{
-		Raw:     taskRequest,
-		Height:  blockHeight,
-		ChainId: math.NewIntFromUint64(chainID),
 		PriceFeed: &pricetypes.PriceFeedParam{
 			BaseSymbol:  priceFeed.BaseSymbol,
 			QuoteSymbol: priceFeed.QuoteSymbol,
 		},
 	}
 
-	return dvsservermanager.EncodeMsgs(data)
+	return dvsservermanager.EncodeMsgs(&pricetypes.ProcessPriceFeedMsg{
+		Raw: taskRequest,
+	})
 }
 
 func (td *TaskDispatcher) OnStart() error {

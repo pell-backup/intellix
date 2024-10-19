@@ -20,6 +20,7 @@ message TaskRequestRaw {
   uint32 task_created_block = 8;
   bytes quorum_numbers = 9;
   uint32 quorum_threshold_percentage = 10;
+  PriceFeedParam price_feed = 11;
 }
 
 // PriceFeedParam defines the price feed parameters
