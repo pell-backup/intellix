@@ -32,5 +32,6 @@ EXPOSE 8545
 EXPOSE 22
 
 # run hardhat node
-CMD ./scripts/docker_init.sh
+ADD scripts/docker_init_local.sh ./scripts/docker_init_local.sh
+CMD ./scripts/docker_init_local.sh
 

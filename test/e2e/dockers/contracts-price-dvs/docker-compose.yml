@@ -12,15 +12,16 @@ services:
         - HTTPS_PROXY=$HTTPS_PROXY
         - GITHUB_TOKEN=$GITHUB_TOKEN
     environment:
-      - LOCALHOST_URL=http://eth:8545
+      - LOCALHOST_URL=http://intellix_price_dvs_e2e_eth:8545
     depends_on:
-      - eth
+      - intellix_price_dvs_e2e_eth
     labels:
       - "intellix-price-dvs-e2e=true"
+      - "intellix-price-dvs-e2e-contracts=true"
     image: intellix/e2e-price-oracle-dvs:local-version
     networks:
       - intellix_price_dvs_e2e
-  eth:
+  intellix_price_dvs_e2e_eth:
     image: ghcr.io/foundry-rs/foundry:latest
     ports:
       - "8545"
@@ -28,5 +29,6 @@ services:
     entrypoint: [ "anvil", "--host", "0.0.0.0", "--chain-id", "1337" ]
     labels:
       - "intellix-price-dvs-e2e=true"
+      - "intellix-price-dvs-e2e-contracts=true"
     networks:
       - intellix_price_dvs_e2e
