@@ -1,145 +1,41 @@
 package dvs
 
 import (
-	"encoding/json"
-	"fmt"
-	modulev1 "intellix/api/intellix/intellix/module"
-	dvsservermanager "intellix/pkg/dvs_msg_handler"
-	"intellix/x/price/dvs/server"
-	dvstypes "intellix/x/price/dvs/types"
-	"intellix/x/price/types"
-
-	"cosmossdk.io/core/appmodule"
-	"cosmossdk.io/core/store"
-	"cosmossdk.io/depinject"
-	"cosmossdk.io/log"
-	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/codec"
-	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/types/module"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	dvsservermanager "intellix/pkg/dvs_msg_handler"
+	resulthandlers "intellix/x/price/dvs/result_handlers"
+	"intellix/x/price/dvs/server"
+	"intellix/x/price/dvs/types"
 )
-
-var (
-	_ appmodule.AppModule   = (*AppModule)(nil)
-	_ module.AppModuleBasic = (*AppModule)(nil)
-)
-
-// AppModuleBasic defines the basic application module used by the dvs module.
-type AppModuleBasic struct{}
-
-func (b AppModuleBasic) RegisterGRPCGatewayRoutes(context client.Context, mux *runtime.ServeMux) {
-}
-
-// Name returns the dvs module's name.
-func (AppModuleBasic) Name() string {
-	return types.ModuleName
-}
-
-// RegisterLegacyAminoCodec registers the dvs module's types on the given LegacyAmino codec.
-func (AppModuleBasic) RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {}
-
-// RegisterInterfaces registers the module's interface types
-func (AppModuleBasic) RegisterInterfaces(reg cdctypes.InterfaceRegistry) {
-	dvstypes.RegisterInterfaces(reg)
-}
-
-// DefaultGenesis returns default genesis state as raw bytes for the dvs module.
-func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
-	return cdc.MustMarshalJSON(types.DefaultGenesis())
-}
-
-// ValidateGenesis performs genesis state validation for the dvs module.
-func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
-	var genState types.GenesisState
-	if err := cdc.UnmarshalJSON(bz, &genState); err != nil {
-		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
-	}
-	return genState.Validate()
-}
 
 // AppModule implements an application module for the dvs module.
 type AppModule struct {
-	AppModuleBasic
-	keeper                   server.Keeper
+	server                   server.Server
 	ProcessRequestServer     grpc1.Server
 	PostProcessRequestServer grpc1.Server
 }
 
-func (am AppModule) IsOnePerModuleType() {
-}
-
-func (am AppModule) IsAppModule() {
-}
-
-func (am AppModule) RegisterGRPCGatewayRoutes(context client.Context, mux *runtime.ServeMux) {
-}
-
 // NewAppModule creates a new AppModule object
-func NewAppModule(k server.Keeper, cdc codec.Codec) AppModule {
+func NewAppModule(s server.Server) AppModule {
 	return AppModule{
-		AppModuleBasic:           AppModuleBasic{},
-		keeper:                   k,
+		server:                   s,
 		ProcessRequestServer:     dvsservermanager.GetProcessRequestHandler(),
 		PostProcessRequestServer: dvsservermanager.GetPostProcessRequestHandler(),
 	}
 }
 
 // RegisterServices registers module services.
-func (am AppModule) RegisterServices(cfg module.Configurator) {
-	dvsProcessRequestServer := server.NewDvsProcessRequestServer(am.keeper)
-	dvsPostProcessRequestServer := server.NewDvsPostProcessRequestServer(am.keeper)
-
-	// register cosmos-sdk handler server
-	dvstypes.RegisterDvsProcessRequestServer(cfg.MsgServer(), dvsProcessRequestServer)
-	dvstypes.RegisterDvsPostProcessRequestServer(cfg.MsgServer(), dvsPostProcessRequestServer)
+func (am AppModule) RegisterServices() {
+	dvsProcessRequestServer := server.NewDvsProcessRequestServer(am.server)
+	dvsPostProcessRequestServer := server.NewDvsPostProcessRequestServer(am.server)
 
 	// register dvs-msg handler server
-	dvstypes.RegisterDvsProcessRequestServer(am.ProcessRequestServer, dvsProcessRequestServer)
-	dvstypes.RegisterDvsPostProcessRequestServer(am.PostProcessRequestServer, dvsPostProcessRequestServer)
-}
+	types.RegisterDvsProcessRequestServer(am.ProcessRequestServer, dvsProcessRequestServer)
+	types.RegisterDvsPostProcessRequestServer(am.PostProcessRequestServer, dvsPostProcessRequestServer)
 
-func init() {
-	appmodule.Register(
-		&modulev1.Module{},
-		appmodule.Provide(ProvideModule),
-	)
-}
+	// register dvs-msg result handler
+	if r, ok := am.ProcessRequestServer.(*dvsservermanager.ProcessRequestHandler); ok {
+		r.RegisterResultHandler(&types.AggregatedRequestPrice{}, resulthandlers.NewProcessRequestPriceFeedResultHandler())
+	}
 
-type ModuleInputs struct {
-	depinject.In
-
-	StoreService store.KVStoreService
-	Cdc          codec.Codec
-	Logger       log.Logger
-
-	AccountKeeper types.AccountKeeper
-	BankKeeper    types.BankKeeper
-
-	clientCtx client.Context
-}
-
-type ModuleOutputs struct {
-	depinject.Out
-
-	PriceKeeper server.Keeper
-	Module      appmodule.AppModule
-}
-
-func ProvideModule(in ModuleInputs) ModuleOutputs {
-	// TODO: configurable operator and so on
-	k := server.NewKeeper(
-		in.Cdc,
-		in.StoreService,
-		in.Logger,
-		in.clientCtx,
-		"",
-		10,
-		"",
-		0,
-	)
-	m := NewAppModule(k, in.Cdc)
-
-	return ModuleOutputs{PriceKeeper: k, Module: m}
 }

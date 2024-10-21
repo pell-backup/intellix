@@ -1,6 +1,7 @@
 package app
 
 import (
+	"intellix/x/price/dvs"
 	"io"
 
 	"cosmossdk.io/store"
@@ -80,7 +81,7 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
-	dvsmodulekeeper "intellix/x/price/dvs/server"
+	dvsserver "intellix/x/price/dvs/server"
 	pricemodulekeeper "intellix/x/price/keeper"
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
@@ -150,7 +151,7 @@ type App struct {
 
 	//IntellixKeeper intellixmodulekeeper.Keeper
 	PriceKeeper pricemodulekeeper.Keeper
-	DvsKeeper   dvsmodulekeeper.Keeper
+	DvsServer   dvsserver.Server
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
@@ -262,7 +263,6 @@ func New(
 		&app.CircuitBreakerKeeper,
 		//&app.IntellixKeeper,
 		&app.PriceKeeper,
-		&app.DvsKeeper,
 		// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	); err != nil {
 		panic(err)
@@ -315,11 +315,20 @@ func New(
 	}
 
 	// dvs server manager
-	dvsservermanager.InitDvsMsgHelper(app.appCodec)
-	app.PostProcessRequestServer = dvsservermanager.GetPostProcessRequestHandler()
-	app.ProcessRequestServer = dvsservermanager.GetProcessRequestHandler()
+	{
+		app.DvsServer = dvsserver.NewServer(app.logger, NewClientContext(), "", 10, "", 0)
+		dvsservermanager.InitDvsMsgHelper(app.appCodec)
+		app.PostProcessRequestServer = dvsservermanager.GetPostProcessRequestHandler()
+		app.ProcessRequestServer = dvsservermanager.GetProcessRequestHandler()
+		dvs.NewAppModule(app.DvsServer).RegisterServices()
+	}
 
 	return app, nil
+}
+
+func NewClientContext() client.Context {
+	// TODO: read config
+	return client.Context{}
 }
 
 // LegacyAmino returns App's amino codec.

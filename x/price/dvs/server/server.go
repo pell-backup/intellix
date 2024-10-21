@@ -1,13 +1,11 @@
 package server
 
 import (
-	"cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	"fmt"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/spf13/pflag"
@@ -15,11 +13,9 @@ import (
 )
 
 type (
-	Keeper struct {
-		cdc          codec.BinaryCodec
-		storeService store.KVStoreService
-		logger       log.Logger
-		clientCtx    client.Context
+	Server struct {
+		logger    log.Logger
+		clientCtx client.Context
 
 		operatorAddress string
 		gasPrices       string
@@ -29,9 +25,7 @@ type (
 	}
 )
 
-func NewKeeper(
-	cdc codec.BinaryCodec,
-	storeService store.KVStoreService,
+func NewServer(
 	logger log.Logger,
 	clientCtx client.Context,
 
@@ -40,7 +34,7 @@ func NewKeeper(
 
 	gasPrices string,
 	gasAdjustment float64,
-) Keeper {
+) Server {
 	if gasPrices == "" {
 		gasPrices = "0.1uatom"
 	}
@@ -51,11 +45,9 @@ func NewKeeper(
 		panic("waitBlockCount can't be nil or zero")
 	}
 
-	k := Keeper{
-		cdc:          cdc,
-		storeService: storeService,
-		logger:       logger,
-		clientCtx:    clientCtx,
+	k := Server{
+		logger:    logger,
+		clientCtx: clientCtx,
 
 		operatorAddress: operatorAddress,
 		waitBlockCount:  waitBlockCount,
@@ -68,25 +60,25 @@ func NewKeeper(
 }
 
 // Logger returns a module-specific logger.
-func (k Keeper) Logger() log.Logger {
+func (k *Server) Logger() log.Logger {
 	return k.logger.With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k Keeper) GetOperatorAddress(ctx sdk.Context) string {
+func (k *Server) GetOperatorAddress(ctx sdk.Context) string {
 	if k.operatorAddress == "" {
 		panic("Operator address not set")
 	}
 	return k.operatorAddress
 }
 
-func (k *Keeper) SetOperatorAddress(address string) {
+func (k *Server) SetOperatorAddress(address string) {
 	if err := sdk.VerifyAddressFormat(sdk.AccAddress(address)); err != nil {
 		panic(err)
 	}
 	k.operatorAddress = address
 }
 
-func (k Keeper) GetLatestBlock(ctx sdk.Context) (*cmttypes.Block, error) {
+func (k *Server) GetLatestBlock(ctx sdk.Context) (*cmttypes.Block, error) {
 	node, err := k.clientCtx.GetNode()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get node: %w", err)
@@ -108,7 +100,7 @@ func (k Keeper) GetLatestBlock(ctx sdk.Context) (*cmttypes.Block, error) {
 }
 
 // SignAndBroadcastTx signs and broadcasts a transaction
-func (k Keeper) SignAndBroadcastTx(ctx sdk.Context, msg sdk.Msg) error {
+func (k *Server) SignAndBroadcastTx(ctx sdk.Context, msg sdk.Msg) error {
 	txf, err := k.prepareTxFactory(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to prepare tx factory: %w", err)
@@ -142,7 +134,7 @@ func (k Keeper) SignAndBroadcastTx(ctx sdk.Context, msg sdk.Msg) error {
 }
 
 // prepareTxFactory prepare tx factory
-func (k Keeper) prepareTxFactory(ctx sdk.Context) (tx.Factory, error) {
+func (k *Server) prepareTxFactory(ctx sdk.Context) (tx.Factory, error) {
 	txf, err := tx.NewFactoryCLI(k.clientCtx, &pflag.FlagSet{})
 	if err != nil {
 		return tx.Factory{}, err

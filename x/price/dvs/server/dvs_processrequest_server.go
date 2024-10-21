@@ -15,14 +15,14 @@ import (
 )
 
 type DvsProcessRequestServer struct {
-	Keeper
+	Server
 }
 
 // NewDvsProcessRequestServer returns an implementation of the DvsProcessRequestServer interface
-// for the provided Keeper.
-func NewDvsProcessRequestServer(keeper Keeper) types.DvsProcessRequestServer {
+// for the provided Server.
+func NewDvsProcessRequestServer(server Server) types.DvsProcessRequestServer {
 	return &DvsProcessRequestServer{
-		Keeper: keeper,
+		Server: server,
 	}
 }
 
@@ -30,13 +30,13 @@ func (d *DvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, r
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	// fetch raw price from chain
-	rawPrices, err := fetchRawPrices(sdkCtx, d.Logger(), request.PriceFeed.BaseSymbol, request.PriceFeed.QuoteSymbol)
+	rawPrices, err := fetchRawPrices(sdkCtx, d.Logger(), request.Raw.PriceFeed.BaseSymbol, request.Raw.PriceFeed.QuoteSymbol)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch raw prices: %w", err)
 	}
 
 	// sign data and broadcast VoteRequestPriceFeed
-	err = d.broadcastVoteRequestPriceFeed(sdkCtx, request.Raw, request.GetPriceFeed(), rawPrices)
+	err = d.broadcastVoteRequestPriceFeed(sdkCtx, request.Raw, request.Raw.GetPriceFeed(), rawPrices)
 	if err != nil {
 		return nil, fmt.Errorf("failed to broadcast VoteRequestPriceFeed: %w", err)
 	}
@@ -55,7 +55,7 @@ func (d *DvsProcessRequestServer) broadcastVoteRequestPriceFeed(ctx sdk.Context,
 	for dataSource, price := range rawPrices {
 		msg := types.MsgVoteRequestPriceFeed{
 			TaskIndex:   task.TaskIndex,
-			OperatorId:  d.Keeper.GetOperatorAddress(ctx),
+			OperatorId:  d.Server.GetOperatorAddress(ctx),
 			RequestId:   task.RequestId,
 			BaseSymbol:  priceFeed.BaseSymbol,
 			QuoteSymbol: priceFeed.QuoteSymbol,
@@ -64,7 +64,7 @@ func (d *DvsProcessRequestServer) broadcastVoteRequestPriceFeed(ctx sdk.Context,
 			BlockHeight: uint64(ctx.BlockHeight()),
 		}
 
-		if err := d.Keeper.SignAndBroadcastTx(ctx, &msg); err != nil {
+		if err := d.Server.SignAndBroadcastTx(ctx, &msg); err != nil {
 			return fmt.Errorf("failed to broadcast VoteRequestPriceFeed for data source %s: %w", dataSource, err)
 		}
 	}
@@ -76,7 +76,7 @@ func (d *DvsProcessRequestServer) collectVoteRequestPriceFeedTxs(ctx sdk.Context
 	firstTxBlock := int64(0)
 
 	for {
-		block, err := d.Keeper.GetLatestBlock(ctx)
+		block, err := d.Server.GetLatestBlock(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get latest block: %w", err)
 		}

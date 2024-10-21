@@ -1,0 +1,64 @@
+package resulthandler
+
+import (
+	abci "github.com/cometbft/cometbft/abci/types"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"github.com/cosmos/gogoproto/proto"
+)
+
+type ResultCustomizedMgr struct {
+	customizedResMap map[string]ResultCustomizedIFace
+}
+
+func NewResultCustomizedMgr() *ResultCustomizedMgr {
+	return &ResultCustomizedMgr{
+		customizedResMap: make(map[string]ResultCustomizedIFace),
+	}
+}
+
+func (r *ResultCustomizedMgr) RegisterCustomizedFunc(t proto.Message, f ResultCustomizedIFace) {
+	r.customizedResMap[sdk.MsgTypeURL(t)] = f
+}
+
+// WrapServiceResult wraps a result from a protobuf RPC service method call (res proto.Message, err error)
+// in a Result object or error. This method takes care of marshaling the res param to
+// protobuf and attaching any events on the ctx.EventManager() to the Result.
+func (r *ResultCustomizedMgr) WrapServiceResult(ctx sdk.Context, res proto.Message, err error) (*Result, error) {
+	if err != nil {
+		return nil, err
+	}
+
+	any, err := codectypes.NewAnyWithValue(res)
+	if err != nil {
+		return nil, err
+	}
+
+	var data []byte
+	if res != nil {
+		data, err = proto.Marshal(res)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var events []abci.Event
+	if evtMgr := ctx.EventManager(); evtMgr != nil {
+		events = evtMgr.ABCIEvents()
+	}
+
+	outResult := &Result{
+		Result: &sdk.Result{
+			Data:         data,
+			Events:       events,
+			MsgResponses: []*codectypes.Any{any},
+		},
+	}
+
+	if resHandler, ok := r.customizedResMap[sdk.MsgTypeURL(res)]; ok {
+		outResult.CustomData, _ = resHandler.GetData(res)
+		outResult.CustomDigest, _ = resHandler.GetDigest(res)
+	}
+
+	return outResult, nil
+}

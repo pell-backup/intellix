@@ -3,23 +3,13 @@ package app
 import (
 	"context"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
-	pricetypes "intellix/x/price/dvs/types"
+	dvstypes "intellix/pkg/pelldvs/types"
 
 	"github.com/0xPellNetwork/pelldvs/aggregator"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"golang.org/x/crypto/sha3"
 
 	avsi "github.com/0xPellNetwork/pelldvs/application"
 )
-
-func calcDigest(data []byte) []byte {
-	var taskResponseDigest [32]byte
-	hasher := sha3.NewLegacyKeccak256()
-	hasher.Write(data)
-	copy(taskResponseDigest[:], hasher.Sum(nil)[:32])
-
-	return taskResponseDigest[:]
-}
 
 func (app *App) ProcessRequest(ctx context.Context, req *avsi.RequestProcessRequest) (*avsi.ResponseProcessRequest, error) {
 	// new SDK context
@@ -28,42 +18,45 @@ func (app *App) ProcessRequest(ctx context.Context, req *avsi.RequestProcessRequ
 	sdkCtx = sdkCtx.WithChainID(req.Request.ChainID.String())
 
 	handlerSrc := dvsservermanager.GetProcessRequestHandlerSrc()
-	resData, err := handlerSrc.InvokeRouterByData(sdkCtx, req.Request.Data)
+	res, err := handlerSrc.InvokeRouterRawByData(sdkCtx, req.Request.Data)
+	if err != nil {
+		return nil, err
+	}
+
 	return &avsi.ResponseProcessRequest{
-		Reponse: resData,
-		// TODO: move calcDigest to biz
-		ResponseDigest: calcDigest(resData),
+		Reponse:        res.CustomData,
+		ResponseDigest: res.CustomDigest,
 	}, err
 }
 
-func convertValidatedResponse(validatedData *aggregator.ValidatedResponse) *pricetypes.RequestPostRequestPriceFeedValidatedData {
-	var nonSignersPubkeysG1 []*pricetypes.G1Point
+func convertValidatedResponse(validatedData *aggregator.ValidatedResponse) *dvstypes.RequestPostRequestValidatedData {
+	var nonSignersPubkeysG1 []*dvstypes.G1Point
 	for _, pubkey := range validatedData.NonSignersPubkeysG1 {
 		x := pubkey.X.Bytes()
 		y := pubkey.Y.Bytes()
-		nonSignersPubkeysG1 = append(nonSignersPubkeysG1, &pricetypes.G1Point{
+		nonSignersPubkeysG1 = append(nonSignersPubkeysG1, &dvstypes.G1Point{
 			X: x[:],
 			Y: y[:],
 		})
 	}
 
-	var quorumApksG1 []*pricetypes.G1Point
+	var quorumApksG1 []*dvstypes.G1Point
 	for _, pubkey := range validatedData.QuorumApksG1 {
 		x := pubkey.X.Bytes()
 		y := pubkey.Y.Bytes()
-		quorumApksG1 = append(quorumApksG1, &pricetypes.G1Point{
+		quorumApksG1 = append(quorumApksG1, &dvstypes.G1Point{
 			X: x[:],
 			Y: y[:],
 		})
 	}
 
-	var signersApkG2 *pricetypes.G2Point
+	var signersApkG2 *dvstypes.G2Point
 	if validatedData.SignersApkG2 != nil {
 		xReal := validatedData.SignersApkG2.X.A0.Bytes()
 		xImag := validatedData.SignersApkG2.X.A1.Bytes()
 		yReal := validatedData.SignersApkG2.Y.A0.Bytes()
 		yImag := validatedData.SignersApkG2.Y.A1.Bytes()
-		signersApkG2 = &pricetypes.G2Point{
+		signersApkG2 = &dvstypes.G2Point{
 			XReal: xReal[:],
 			XImag: xImag[:],
 			YReal: yReal[:],
@@ -71,22 +64,22 @@ func convertValidatedResponse(validatedData *aggregator.ValidatedResponse) *pric
 		}
 	}
 
-	var signersAggSigG1 *pricetypes.Signature
+	var signersAggSigG1 *dvstypes.Signature
 	if validatedData.SignersAggSigG1 != nil {
 		s := validatedData.SignersAggSigG1.Bytes()
-		signersAggSigG1 = &pricetypes.Signature{
+		signersAggSigG1 = &dvstypes.Signature{
 			Sig: s[:],
 		}
 	}
 
-	var nonSignerStakeIndices []*pricetypes.UInt32List
+	var nonSignerStakeIndices []*dvstypes.UInt32List
 	for _, stakeIndices := range validatedData.NonSignerStakeIndices {
-		nonSignerStakeIndices = append(nonSignerStakeIndices, &pricetypes.UInt32List{
+		nonSignerStakeIndices = append(nonSignerStakeIndices, &dvstypes.UInt32List{
 			Values: stakeIndices,
 		})
 	}
 
-	resp := &pricetypes.RequestPostRequestPriceFeedValidatedData{
+	resp := &dvstypes.RequestPostRequestValidatedData{
 		Data:                         validatedData.Data,
 		Error:                        validatedData.Err.Error(),
 		Hash:                         validatedData.Hash,
@@ -108,14 +101,15 @@ func (app *App) PostRequest(ctx context.Context, req *avsi.RequestPostRequest) (
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx = sdkCtx.WithBlockHeight(req.Request.Height)
 	sdkCtx = sdkCtx.WithChainID(req.Request.ChainID.String())
+	sdkCtx = dvsservermanager.CtxWithDvsRequestData(sdkCtx, &req.Request)
 
 	handlerSrc := dvsservermanager.GetPostProcessRequestHandlerSrc()
-	data, err := handlerSrc.InvokeRouterByData(sdkCtx, req.Request.Data, convertValidatedResponse(&req.Response))
+	res, err := handlerSrc.InvokeRouterRawByData(sdkCtx, req.Request.Data, convertValidatedResponse(&req.Response))
 	if err != nil {
 		return nil, err
 	}
 
 	return &avsi.ResponsePostRequest{
-		Receipt: data,
+		Receipt: res.CustomData,
 	}, nil
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
+	result "intellix/pkg/dvs_msg_handler/result_handler"
 	"intellix/pkg/dvs_msg_handler/tx"
 	"sync"
 )
@@ -36,10 +37,10 @@ func InitDvsMsgHelper(cdc codec.Codec) {
 	}
 
 	if helper.ProcessRequestHandler == nil {
-		helper.ProcessRequestHandler = NewProcessRequestHandler(helper.encoder)
+		helper.ProcessRequestHandler = NewProcessRequestHandler(helper.encoder, result.NewResultCustomizedMgr())
 	}
 	if helper.PostProcessRequestHandler == nil {
-		helper.PostProcessRequestHandler = NewPostProcessRequestHandler(helper.encoder)
+		helper.PostProcessRequestHandler = NewPostProcessRequestHandler(helper.encoder, result.NewResultCustomizedMgr())
 	}
 }
 

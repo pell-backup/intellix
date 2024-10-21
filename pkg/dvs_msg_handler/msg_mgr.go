@@ -7,19 +7,25 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/ethereum/go-ethereum/log"
 	"google.golang.org/grpc"
+	result "intellix/pkg/dvs_msg_handler/result_handler"
 	"intellix/pkg/dvs_msg_handler/tx"
 )
 
-type MsgHandler func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error)
+type MsgHandler func(ctx sdk.Context, msg sdk.Msg) (*result.Result, error)
 
 // MsgRouterMgr defines router for dvs server
 type MsgRouterMgr struct {
 	Router                 map[string]MsgHandler
 	encoder                tx.MsgEncoder
 	findRouterTypeNameFunc func(msg sdk.Msg) string // ONLY FOR router dispatcher; register use sdk.MsgTypeURL
+	resultHandler          *result.ResultCustomizedMgr
 }
 
-func NewMsgRouterMgr(encoder tx.MsgEncoder, getRequestTypeNameFunc func(msg sdk.Msg) string) *MsgRouterMgr {
+func NewMsgRouterMgr(
+	encoder tx.MsgEncoder,
+	getRequestTypeNameFunc func(msg sdk.Msg) string,
+	resultHandler *result.ResultCustomizedMgr,
+) *MsgRouterMgr {
 	if getRequestTypeNameFunc == nil {
 		getRequestTypeNameFunc = func(msg sdk.Msg) string {
 			return sdk.MsgTypeURL(msg)
@@ -30,6 +36,7 @@ func NewMsgRouterMgr(encoder tx.MsgEncoder, getRequestTypeNameFunc func(msg sdk.
 		Router:                 map[string]MsgHandler{},
 		encoder:                encoder,
 		findRouterTypeNameFunc: getRequestTypeNameFunc,
+		resultHandler:          resultHandler,
 	}
 }
 
@@ -59,7 +66,7 @@ func (m *MsgRouterMgr) RegisterMsgHandler(sd *grpc.ServiceDesc, method grpc.Meth
 
 	// requestTypeName register check
 	if _, ok := m.Router[requestTypeName]; !ok {
-		m.Router[requestTypeName] = func(ctx sdk.Context, msg sdk.Msg) (*sdk.Result, error) {
+		m.Router[requestTypeName] = func(ctx sdk.Context, msg sdk.Msg) (*result.Result, error) {
 			ctx = ctx.WithEventManager(sdk.NewEventManager())
 			interceptor := func(goCtx context.Context, _ interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 				goCtx = context.WithValue(goCtx, sdk.SdkContextKey, ctx)
@@ -76,7 +83,7 @@ func (m *MsgRouterMgr) RegisterMsgHandler(sd *grpc.ServiceDesc, method grpc.Meth
 				return nil, fmt.Errorf("expecting proto.Message, got %T", resMsg)
 			}
 
-			return sdk.WrapServiceResult(ctx, resMsg, err)
+			return m.resultHandler.WrapServiceResult(ctx, resMsg, err)
 		}
 	} else {
 		log.Warn("duplicate existing handler for %s", requestTypeName)
@@ -104,7 +111,7 @@ func (m *MsgRouterMgr) GetHandlerByData(data []byte) MsgHandler {
 	return nil
 }
 
-func (m *MsgRouterMgr) HandleByData(sdkCtx sdk.Context, data []byte) (*sdk.Result, error) {
+func (m *MsgRouterMgr) HandleByData(sdkCtx sdk.Context, data []byte) (*result.Result, error) {
 	msgTx, err := m.encoder.Decode(data)
 	if err != nil {
 		return nil, err

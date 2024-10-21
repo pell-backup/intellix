@@ -18,4 +18,13 @@ message MsgVoteFinalizedRequestPrice {
     (gogoproto.nullable) = false
   ];
   int64 timestamp = 4;
+  string fee_token = 5;
+  string payment = 6 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string callback_address = 7;
+  bytes callback_function_id = 8;
+  bytes quorum_numbers = 9;
+  uint32 quorum_threshold_percentage = 10;
 }

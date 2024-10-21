@@ -3,6 +3,7 @@ package intellix.price;
 
 import "gogoproto/gogo.proto";
 import "intellix/price/task.proto";
+import "intellix/pelldvs/dvs_post_process_validated.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
@@ -11,44 +12,7 @@ option go_package = "intellix/x/price/types";
 
 service DvsPostProcessRequest {
   // PostProcessRequestPriceFeed defines avsi logic processing
-  rpc PostProcessRequestPriceFeed(RequestPostRequestPriceFeedValidatedData) returns (ResponsePostRequestPriceFeed) {}
-}
-
-message G1Point {
-  bytes x = 1;
-  bytes y = 2;
-}
-
-message G2Point {
-  bytes x_real = 1;
-  bytes x_imag = 2;
-  bytes y_real = 3;
-  bytes y_imag = 4;
-}
-
-message Signature {
-  bytes sig = 1;
-}
-
-// UInt32List [][]uint32
-message UInt32List {
-  repeated uint32 values = 1;
-}
-
-message RequestPostRequestPriceFeedValidatedData {
-  option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
-  option (amino.name) = "intellix/x/price/dvs/post_price_feed";
-  bytes data = 1;
-  string error = 2;
-  bytes hash = 3;
-  repeated G1Point non_signers_pubkeys_g1 = 4;
-  repeated G1Point quorum_apks_g1 = 5;
-  G2Point signers_apk_g2 = 6;
-  Signature signers_agg_sig_g1 = 7;
-  repeated uint32 non_signer_quorum_bitmap_indices = 8;
-  repeated uint32 quorum_apk_indices = 9;
-  repeated uint32 total_stake_indices = 10;
-  repeated UInt32List non_signer_stake_indices = 11;
+  rpc PostProcessRequestPriceFeed(pelldvs.RequestPostRequestValidatedData) returns (ResponsePostRequestPriceFeed) {}
 }
 
 message ResponsePostRequestPriceFeed {

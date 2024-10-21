@@ -3,17 +3,25 @@ package dvsservermanager
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
+	"github.com/cosmos/gogoproto/proto"
 	"google.golang.org/grpc"
+	result "intellix/pkg/dvs_msg_handler/result_handler"
 	"intellix/pkg/dvs_msg_handler/tx"
 )
 
 type ProcessRequestHandler struct {
-	Mgr *MsgRouterMgr
+	Mgr           *MsgRouterMgr
+	ResultHandler *result.ResultCustomizedMgr
 }
 
-func NewProcessRequestHandler(encoder tx.MsgEncoder) grpc1.Server {
+func NewProcessRequestHandler(encoder tx.MsgEncoder, resultHandler *result.ResultCustomizedMgr) grpc1.Server {
 	return &ProcessRequestHandler{
-		Mgr: NewMsgRouterMgr(encoder, nil),
+		Mgr: NewMsgRouterMgr(
+			encoder,
+			nil,
+			resultHandler,
+		),
+		ResultHandler: resultHandler,
 	}
 }
 
@@ -27,4 +35,16 @@ func (p *ProcessRequestHandler) InvokeRouterByData(sdkCtx sdk.Context, data []by
 		return nil, err
 	}
 	return res.Data, nil
+}
+
+func (p *ProcessRequestHandler) InvokeRouterRawByData(sdkCtx sdk.Context, data []byte) (*result.Result, error) {
+	res, err := p.Mgr.HandleByData(sdkCtx, data)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (p *ProcessRequestHandler) RegisterResultHandler(msg proto.Message, handler result.ResultCustomizedIFace) {
+	p.ResultHandler.RegisterCustomizedFunc(msg, handler)
 }
