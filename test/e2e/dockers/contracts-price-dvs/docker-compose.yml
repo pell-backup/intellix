@@ -1,0 +1,32 @@
+name: intellix_price_dvs_e2e
+networks:
+  intellix_price_dvs_e2e:
+    external: true
+services:
+  hardhat:
+    build:
+      context: .
+      dockerfile: Dockerfile-contracts
+      args:
+        - HTTP_PROXY=$HTTP_PROXY
+        - HTTPS_PROXY=$HTTPS_PROXY
+        - GITHUB_TOKEN=$GITHUB_TOKEN
+    environment:
+      - LOCALHOST_URL=http://eth:8545
+    depends_on:
+      - eth
+    labels:
+      - "intellix-price-dvs-e2e=true"
+    image: intellix/e2e-price-oracle-dvs:local-version
+    networks:
+      - intellix_price_dvs_e2e
+  eth:
+    image: ghcr.io/foundry-rs/foundry:latest
+    ports:
+      - "8545"
+      - "6545:8545"
+    entrypoint: [ "anvil", "--host", "0.0.0.0", "--chain-id", "1337" ]
+    labels:
+      - "intellix-price-dvs-e2e=true"
+    networks:
+      - intellix_price_dvs_e2e
