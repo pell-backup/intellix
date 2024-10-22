@@ -78,10 +78,14 @@ func convertValidatedResponse(validatedData *aggregator.ValidatedResponse) *dvst
 			Values: stakeIndices,
 		})
 	}
+	var errMsg string
+	if validatedData.Err != nil {
+		errMsg = validatedData.Err.Error()
+	}
 
 	resp := &dvstypes.RequestPostRequestValidatedData{
 		Data:                         validatedData.Data,
-		Error:                        validatedData.Err.Error(),
+		Error:                        errMsg,
 		Hash:                         validatedData.Hash,
 		NonSignersPubkeysG1:          nonSignersPubkeysG1,
 		QuorumApksG1:                 quorumApksG1,
@@ -104,7 +108,7 @@ func (app *App) PostRequest(ctx context.Context, req *avsi.RequestPostRequest) (
 	sdkCtx = dvsservermanager.CtxWithDvsRequestData(sdkCtx, &req.Request)
 
 	handlerSrc := dvsservermanager.GetPostProcessRequestHandlerSrc()
-	res, err := handlerSrc.InvokeRouterRawByData(sdkCtx, req.Request.Data, convertValidatedResponse(&req.Response))
+	res, err := handlerSrc.InvokeRouterRawByData(sdkCtx, convertValidatedResponse(&req.Response))
 	if err != nil {
 		return nil, err
 	}

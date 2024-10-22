@@ -42,7 +42,7 @@ func NewServer(
 		gasAdjustment = 1.5
 	}
 	if waitBlockCount == 0 {
-		panic("waitBlockCount can't be nil or zero")
+		waitBlockCount = 10
 	}
 
 	k := Server{
@@ -55,7 +55,9 @@ func NewServer(
 		gasAdjustment:   gasAdjustment,
 	}
 
-	k.SetOperatorAddress(operatorAddress)
+	if operatorAddress != "" {
+		k.SetOperatorAddress(operatorAddress)
+	}
 	return k
 }
 

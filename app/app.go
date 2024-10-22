@@ -1,7 +1,10 @@
 package app
 
 import (
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
+	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	"intellix/x/price/dvs"
+	dvstypes "intellix/x/price/dvs/types"
 	"io"
 
 	"cosmossdk.io/store"
@@ -80,7 +83,7 @@ import (
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
-	dvsservermanager "intellix/pkg/dvs_msg_handler"
+	_ "intellix/x/price/dvs"
 	dvsserver "intellix/x/price/dvs/server"
 	pricemodulekeeper "intellix/x/price/keeper"
 
@@ -261,7 +264,6 @@ func New(
 		&app.NFTKeeper,
 		&app.GroupKeeper,
 		&app.CircuitBreakerKeeper,
-		//&app.IntellixKeeper,
 		&app.PriceKeeper,
 		// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	); err != nil {
@@ -314,21 +316,18 @@ func New(
 		return nil, err
 	}
 
-	// dvs server manager
+	//dvs server manager
+	clientCtx := NewClientContext(app.appCodec, app.interfaceRegistry, tx.ConfigOptions{}, app.legacyAmino)
 	{
-		app.DvsServer = dvsserver.NewServer(app.logger, NewClientContext(), "", 10, "", 0)
+		app.DvsServer = dvsserver.NewServer(app.logger, clientCtx, "", 10, "", 0)
 		dvsservermanager.InitDvsMsgHelper(app.appCodec)
 		app.PostProcessRequestServer = dvsservermanager.GetPostProcessRequestHandler()
 		app.ProcessRequestServer = dvsservermanager.GetProcessRequestHandler()
 		dvs.NewAppModule(app.DvsServer).RegisterServices()
+		dvstypes.RegisterInterfaces(app.interfaceRegistry)
 	}
 
 	return app, nil
-}
-
-func NewClientContext() client.Context {
-	// TODO: read config
-	return client.Context{}
 }
 
 // LegacyAmino returns App's amino codec.

@@ -8,7 +8,6 @@ import (
 	"google.golang.org/grpc"
 	result "intellix/pkg/dvs_msg_handler/result_handler"
 	"intellix/pkg/dvs_msg_handler/tx"
-	"strings"
 )
 
 type PostProcessRequestHandler struct {
@@ -20,14 +19,7 @@ func NewPostProcessRequestHandler(encoder tx.MsgEncoder, resultHandler *result.R
 	return &PostProcessRequestHandler{
 		Mgr: NewMsgRouterMgr(
 			encoder,
-			func(msg sdk.Msg) string {
-				// router postProcessRequestReq by processRequestReq
-				r := sdk.MsgTypeURL(msg)
-				if strings.HasPrefix(r, "ProcessRequest") {
-					return strings.ReplaceAll(r, "ProcessRequest", "PostProcessRequest")
-				}
-				return r
-			},
+			nil,
 			resultHandler,
 		),
 		ResultHandler: resultHandler,
@@ -38,24 +30,15 @@ func (p *PostProcessRequestHandler) RegisterService(sd *grpc.ServiceDesc, handle
 	RegisterServiceRouter(p.Mgr, sd, handler)
 }
 
-func (p *PostProcessRequestHandler) InvokeRouterByData(sdkCtx sdk.Context, sourceData []byte, reqMsg sdk.Msg) ([]byte, error) {
-	handler := p.Mgr.GetHandlerByData(sourceData)
-	if handler == nil {
-		return nil, fmt.Errorf("no handler found for data: %s", string(sourceData))
-	}
-
-	res, err := handler(sdkCtx, reqMsg)
+func (p *PostProcessRequestHandler) InvokeRouterRawByData(sdkCtx sdk.Context, reqMsg sdk.Msg) (*result.Result, error) {
+	data, err := p.Mgr.encoder.EncodeMsgs(reqMsg)
 	if err != nil {
 		return nil, err
 	}
 
-	return res.Data, nil
-}
-
-func (p *PostProcessRequestHandler) InvokeRouterRawByData(sdkCtx sdk.Context, sourceData []byte, reqMsg sdk.Msg) (*result.Result, error) {
-	handler := p.Mgr.GetHandlerByData(sourceData)
+	handler := p.Mgr.GetHandlerByData(data)
 	if handler == nil {
-		return nil, fmt.Errorf("no handler found for data: %s", string(sourceData))
+		return nil, fmt.Errorf("no handler found for data: %s", string(data))
 	}
 
 	res, err := handler(sdkCtx, reqMsg)

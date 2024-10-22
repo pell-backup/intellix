@@ -25,6 +25,8 @@ message ProcessPriceFeedMsg {
 
 // AggregatedRequestPrice
 message AggregatedRequestPrice {
+  option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
+
   bytes request_id = 1;
   uint32 task_index = 2;
   // Aggregated final price

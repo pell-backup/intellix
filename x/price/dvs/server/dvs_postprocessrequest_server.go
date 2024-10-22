@@ -52,12 +52,12 @@ func (d DvsPostProcessRequestServer) decodePackedPriceFeedData(data []byte) (*co
 		return nil, fmt.Errorf("unexpected number of values: got %d, want 1", len(values))
 	}
 
-	r, ok := values[0].(*contractPriceOracle.IPriceOracleTaskResponse)
+	r, ok := values[0].(contractPriceOracle.IPriceOracleTaskResponse)
 	if !ok {
 		return nil, fmt.Errorf("expected %T, got %T", &contractPriceOracle.IPriceOracleTaskResponse{}, r)
 	}
 
-	return r, nil
+	return &r, nil
 }
 
 func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Context, msg *dvstypes.RequestPostRequestValidatedData) (*types.ResponsePostRequestPriceFeed, error) {
@@ -71,9 +71,9 @@ func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Con
 	if err != nil {
 		return nil, err
 	}
-	taskRequest, ok := requestMsg.(*types.TaskRequestRaw)
+	taskRequest, ok := requestMsg.(*types.ProcessPriceFeedMsg)
 	if !ok {
-		return nil, fmt.Errorf("expected %T, got %T", &types.TaskRequestRaw{}, taskRequest)
+		return nil, fmt.Errorf("expected %T, got %T", &types.ProcessPriceFeedMsg{}, taskRequest)
 	}
 
 	taskResp, err := d.decodePackedPriceFeedData(msg.Data)
@@ -82,7 +82,7 @@ func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Con
 	}
 
 	// just send VoteFinalizedRequestPrice Tx
-	err = d.sendVoteFinalizedRequestPriceTx(sdkCtx, taskRequest, taskResp)
+	err = d.sendVoteFinalizedRequestPriceTx(sdkCtx, taskRequest.Raw, taskResp)
 	if err != nil {
 		return nil, err
 	}

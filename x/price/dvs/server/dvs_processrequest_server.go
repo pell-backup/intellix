@@ -29,6 +29,19 @@ func NewDvsProcessRequestServer(server Server) types.DvsProcessRequestServer {
 func (d *DvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, request *types.ProcessPriceFeedMsg) (*types.AggregatedRequestPrice, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
+	// just for testing
+	//{
+	//	return &types.AggregatedRequestPrice{
+	//		RequestId:     request.Raw.RequestId,
+	//		TaskIndex:     request.Raw.TaskIndex,
+	//		Price:         math.LegacyNewDec(10),
+	//		Timestamp:     time.Now().Unix(),
+	//		SourceCount:   1,
+	//		OperatorCount: 1,
+	//		BlockHeight:   1,
+	//	}, nil
+	//}
+
 	// fetch raw price from chain
 	rawPrices, err := fetchRawPrices(sdkCtx, d.Logger(), request.Raw.PriceFeed.BaseSymbol, request.Raw.PriceFeed.QuoteSymbol)
 	if err != nil {
