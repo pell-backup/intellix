@@ -64,11 +64,13 @@ func convertValidatedResponse(validatedData *aggregator.ValidatedResponse) *dvst
 		}
 	}
 
-	var signersAggSigG1 *dvstypes.Signature
+	var signersAggSigG1 *dvstypes.G1Point
 	if validatedData.SignersAggSigG1 != nil {
-		s := validatedData.SignersAggSigG1.Bytes()
-		signersAggSigG1 = &dvstypes.Signature{
-			Sig: s[:],
+		x := validatedData.SignersAggSigG1.X.Bytes()
+		y := validatedData.SignersAggSigG1.Y.Bytes()
+		signersAggSigG1 = &dvstypes.G1Point{
+			X: x[:],
+			Y: y[:],
 		}
 	}
 
