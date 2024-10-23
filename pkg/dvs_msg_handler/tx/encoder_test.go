@@ -1,7 +1,6 @@
 package tx
 
 import (
-	cosmossdk_io_math "cosmossdk.io/math"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -17,9 +16,8 @@ func TestEncodeDecode(t *testing.T) {
 	coder := NewDefaultDecoder(cdc)
 
 	builder := NewBuilder(cdc)
-	err := builder.SetMsgs(&types.ProcessPriceFeedMsg{
-		Height:  1,
-		ChainId: cosmossdk_io_math.Int{},
+	err := builder.SetMsgs(&types.ProcessRequestPriceFeedIn{
+		TaskIndex: 1,
 	})
 	require.NoError(t, err)
 
@@ -28,7 +26,7 @@ func TestEncodeDecode(t *testing.T) {
 
 	// decode before register: should has error
 	_, err = coder.Decode(txBz)
-	require.EqualError(t, err, "unable to resolve type URL /intellix.price.ProcessPriceFeedMsg: tx parse error")
+	require.EqualError(t, err, "unable to resolve type URL /intellix.price.ProcessRequestPriceFeedIn: tx parse error")
 
 	// decode after register
 	types.RegisterInterfaces(registry)
@@ -47,15 +45,14 @@ func TestTxMsgs(t *testing.T) {
 	coder := NewDefaultDecoder(cdc)
 
 	builder := NewBuilder(cdc)
-	err := builder.SetMsgs(&types.ProcessPriceFeedMsg{
-		Height:  1,
-		ChainId: cosmossdk_io_math.Int{},
+	err := builder.SetMsgs(&types.ProcessRequestPriceFeedIn{
+		TaskIndex: 1,
 	})
 	require.NoError(t, err)
 
 	for _, msg := range builder.GetTx().GetMsgs() {
 		url := sdk.MsgTypeURL(msg)
-		require.Equal(t, url, "/intellix.price.ProcessPriceFeedMsg")
+		require.Equal(t, url, "/intellix.price.ProcessRequestPriceFeedIn")
 	}
 
 	txBz, err := coder.Encode(builder.GetTx())
