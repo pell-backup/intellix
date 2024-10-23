@@ -105,10 +105,9 @@ func (app *App) PostRequest(ctx context.Context, req *avsi.RequestPostRequest) (
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx = sdkCtx.WithBlockHeight(req.Request.Height)
 	sdkCtx = sdkCtx.WithChainID(req.Request.ChainID.String())
-	sdkCtx = dvsservermanager.CtxWithDvsRequestData(sdkCtx, &req.Request)
 
 	handlerSrc := dvsservermanager.GetPostProcessRequestHandlerSrc()
-	res, err := handlerSrc.InvokeRouterRawByData(sdkCtx, convertValidatedResponse(&req.Response))
+	res, err := handlerSrc.InvokeRouterRawByData(sdkCtx, req.Request.Data, convertValidatedResponse(&req.Response))
 	if err != nil {
 		return nil, err
 	}

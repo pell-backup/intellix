@@ -143,7 +143,7 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractPriceOr
 		return nil, err
 	}
 	task := newTask.Task
-	taskRequest := &pricetypes.TaskRequestRaw{
+	taskRequest := &pricetypes.ProcessRequestPriceFeedIn{
 		TaskIndex:                 newTask.TaskIndex,
 		RequestId:                 task.RequestId[:],
 		FeeToken:                  task.FeeToken.Hex(),
@@ -160,9 +160,7 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractPriceOr
 		},
 	}
 
-	return dvsservermanager.EncodeMsgs(&pricetypes.ProcessPriceFeedMsg{
-		Raw: taskRequest,
-	})
+	return dvsservermanager.EncodeMsgs(taskRequest)
 }
 
 func (td *TaskDispatcher) OnStart() error {

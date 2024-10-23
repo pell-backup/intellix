@@ -16,7 +16,7 @@ func NewProcessRequestPriceFeedResultHandler() *ProcessRequestPriceFeedResultHan
 }
 
 func (p *ProcessRequestPriceFeedResultHandler) getAbiEncodeData(msg proto.Message) ([]byte, error) {
-	r, ok := msg.(*types.AggregatedRequestPrice)
+	r, ok := msg.(*types.ProcessRequestPriceFeedOut)
 	if !ok {
 		return nil, nil
 	}

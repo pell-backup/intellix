@@ -35,7 +35,7 @@ func (am AppModule) RegisterServices() {
 
 	// register dvs-msg result handler
 	if r, ok := am.ProcessRequestServer.(*dvsservermanager.ProcessRequestHandler); ok {
-		r.RegisterResultHandler(&types.AggregatedRequestPrice{}, resulthandlers.NewProcessRequestPriceFeedResultHandler())
+		r.RegisterResultHandler(&types.ProcessRequestPriceFeedOut{}, resulthandlers.NewProcessRequestPriceFeedResultHandler())
 	}
 
 }

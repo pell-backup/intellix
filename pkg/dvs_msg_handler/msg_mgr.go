@@ -123,7 +123,7 @@ func (m *MsgRouterMgr) HandleByData(sdkCtx sdk.Context, data []byte) (*result.Re
 		}
 	}
 
-	return nil, err
+	return nil, fmt.Errorf("no handler found for %s", msgTx.GetMsgs())
 }
 
 func noopDecoder(_ interface{}) error { return nil }

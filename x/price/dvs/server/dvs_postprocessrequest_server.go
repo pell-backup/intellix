@@ -60,37 +60,44 @@ func (d DvsPostProcessRequestServer) decodePackedPriceFeedData(data []byte) (*co
 	return &r, nil
 }
 
-func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Context, msg *dvstypes.RequestPostRequestValidatedData) (*types.ResponsePostRequestPriceFeed, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
-
-	reqData, ok := dvsservermanager.CtxGetDvsRequestData(sdkCtx)
+func (d DvsPostProcessRequestServer) getDvsRequestValidatedData(ctx sdk.Context) (*dvstypes.RequestPostRequestValidatedData, error) {
+	reqData, ok := dvsservermanager.CtxGetDvsPostResponseData(ctx)
 	if !ok {
 		return nil, fmt.Errorf("not DvsRequestData found")
 	}
-	requestMsg, err := dvsservermanager.DecodeMsg(reqData)
+	validatedDataMsg, err := dvsservermanager.DecodeMsg(reqData)
 	if err != nil {
 		return nil, err
 	}
-	taskRequest, ok := requestMsg.(*types.ProcessPriceFeedMsg)
+	validatedData, ok := validatedDataMsg.(*dvstypes.RequestPostRequestValidatedData)
 	if !ok {
-		return nil, fmt.Errorf("expected %T, got %T", &types.ProcessPriceFeedMsg{}, taskRequest)
+		return nil, fmt.Errorf("expected %T, got %T", &dvstypes.RequestPostRequestValidatedData{}, validatedData)
 	}
+	return validatedData, nil
+}
 
-	taskResp, err := d.decodePackedPriceFeedData(msg.Data)
+func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Context, in *types.ProcessRequestPriceFeedIn) (*types.PostProcessRequestPriceFeedOut, error) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	validatedData, err := d.getDvsRequestValidatedData(sdkCtx)
+	if err != nil {
+		return nil, err
+	}
+	taskResp, err := d.decodePackedPriceFeedData(validatedData.Data)
 	if err != nil {
 		return nil, err
 	}
 
 	// just send VoteFinalizedRequestPrice Tx
-	err = d.sendVoteFinalizedRequestPriceTx(sdkCtx, taskRequest.Raw, taskResp)
+	err = d.sendVoteFinalizedRequestPriceTx(sdkCtx, in, taskResp)
 	if err != nil {
 		return nil, err
 	}
 
-	return &types.ResponsePostRequestPriceFeed{}, nil
+	return &types.PostProcessRequestPriceFeedOut{}, nil
 }
 
-func (d DvsPostProcessRequestServer) sendVoteFinalizedRequestPriceTx(ctx sdk.Context, raw *types.TaskRequestRaw, priceData *contractPriceOracle.IPriceOracleTaskResponse) error {
+func (d DvsPostProcessRequestServer) sendVoteFinalizedRequestPriceTx(ctx sdk.Context, raw *types.ProcessRequestPriceFeedIn, priceData *contractPriceOracle.IPriceOracleTaskResponse) error {
 	msg := &types.MsgVoteFinalizedRequestPrice{
 		TaskIndex:                 priceData.ReferenceTaskIndex,
 		RequestId:                 raw.RequestId,

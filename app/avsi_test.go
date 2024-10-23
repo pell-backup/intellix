@@ -34,22 +34,20 @@ func interBlockCacheOpt() func(*baseapp.BaseApp) {
 }
 
 func mockDvsRequestData() ([]byte, error) {
-	data := &dvstypes.ProcessPriceFeedMsg{
-		Raw: &dvstypes.TaskRequestRaw{
-			TaskIndex:                 1,
-			RequestId:                 []byte{},
-			FeeToken:                  "01",
-			Payment:                   cosmossdk_io_math.NewInt(1),
-			RequestData:               nil,
-			CallbackAddress:           "0x001",
-			CallbackFunctionId:        []byte{},
-			TaskCreatedBlock:          1,
-			QuorumNumbers:             []byte{},
-			QuorumThresholdPercentage: 10,
-			PriceFeed: &dvstypes.PriceFeedParam{
-				BaseSymbol:  "btc",
-				QuoteSymbol: "usdt",
-			},
+	data := &dvstypes.ProcessRequestPriceFeedIn{
+		TaskIndex:                 1,
+		RequestId:                 []byte{},
+		FeeToken:                  "01",
+		Payment:                   cosmossdk_io_math.NewInt(1),
+		RequestData:               nil,
+		CallbackAddress:           "0x001",
+		CallbackFunctionId:        []byte{},
+		TaskCreatedBlock:          1,
+		QuorumNumbers:             []byte{},
+		QuorumThresholdPercentage: 10,
+		PriceFeed: &dvstypes.PriceFeedParam{
+			BaseSymbol:  "btc",
+			QuoteSymbol: "usdt",
 		},
 	}
 
@@ -104,7 +102,7 @@ func TestProcessRequest(t *testing.T) {
 		t.Fatalf("error in mockDvsRequestData: %s", err.Error())
 	}
 
-	_, err = a.ProcessRequest(ctx, &avsi.RequestProcessRequest{
+	resp, err := a.ProcessRequest(ctx, &avsi.RequestProcessRequest{
 		Request: types.DVSRequest{
 			Data:    data,
 			Height:  1,
@@ -112,6 +110,8 @@ func TestProcessRequest(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
+
+	require.NotNil(t, resp.ResponseDigest)
 
 }
 

@@ -12,7 +12,6 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	msgservice.RegisterMsgServiceDesc(registry, &_DvsProcessRequest_serviceDesc)
 	msgservice.RegisterMsgServiceDesc(registry, &_DvsPostProcessRequest_serviceDesc)
 
-	registry.RegisterImplementations((*sdk.Msg)(nil), &ProcessPriceFeedMsg{})
 	registry.RegisterImplementations((*sdk.Msg)(nil), &dvstypes.RequestPostRequestValidatedData{})
-	registry.RegisterImplementations((*sdk.Msg)(nil), &AggregatedRequestPrice{})
+	registry.RegisterImplementations((*sdk.Msg)(nil), &ProcessRequestPriceFeedIn{})
 }

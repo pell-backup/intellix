@@ -2,7 +2,6 @@ syntax = "proto3";
 package intellix.pelldvs;
 
 import "gogoproto/gogo.proto";
-import "intellix/price/task.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
@@ -32,7 +31,7 @@ message UInt32List {
 
 message RequestPostRequestValidatedData {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
-  option (amino.name) = "intellix/dvs/post_price_feed";
+  option (amino.name) = "intellix/dvs/post_request_validated";
   bytes data = 1;
   string error = 2;
   bytes hash = 3;
