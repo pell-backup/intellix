@@ -5,14 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"math"
 	"math/big"
 	"net/http"
+	"strconv"
 	"sync"
 )
 
 type PriceInfo struct {
 	DataSource string
-	Price      *big.Int
+	Price      float64
 }
 
 const (
@@ -34,11 +36,12 @@ func fetchRawPrices(ctx sdk.Context, logger log.Logger, baseSymbol, quoteSymbol 
 		go fetchPriceIf.fetchCoinPrice(baseSymbol, quoteSymbol, &wg, priceChan)
 	}
 	wg.Wait()
+
 	close(priceChan)
 
 	var prices = map[string]*big.Int{}
 	for price := range priceChan {
-		prices[price.DataSource] = price.Price
+		prices[price.DataSource] = big.NewInt(int64(math.Round(price.Price * 100000000)))
 	}
 
 	if len(prices) == 0 {
@@ -80,8 +83,8 @@ func (s *CoinbaseFetchPriceService) fetchCoinPrice(baseSymbol, quote string, wg 
 		return
 	}
 
-	price, ok := new(big.Int).SetString(coinbaseResp.Data.Amount, 10)
-	if !ok {
+	price, err := strconv.ParseFloat(coinbaseResp.Data.Amount, 64)
+	if err != nil {
 		s.logger.Error("Error parsing price from Coinbase failed")
 		return
 	}
@@ -113,9 +116,9 @@ func (s *BinanceFetchPriceService) fetchCoinPrice(baseSymbol, quote string, wg *
 		return
 	}
 
-	price, ok := new(big.Int).SetString(binanceResp.Price, 10)
-	if !ok {
-		s.logger.Error("Error parsing price from Binance failed")
+	price, err := strconv.ParseFloat(binanceResp.Price, 64)
+	if err != nil {
+		fmt.Println("Error parsing price from Binance:", err)
 		return
 	}
 

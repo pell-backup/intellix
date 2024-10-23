@@ -10,7 +10,7 @@ import (
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	dvstypes "intellix/pkg/pelldvs/types"
 	"intellix/x/price/dvs/types"
-	"time"
+	"math/big"
 )
 
 type DvsPostProcessRequestServer struct {
@@ -52,12 +52,18 @@ func (d DvsPostProcessRequestServer) decodePackedPriceFeedData(data []byte) (*co
 		return nil, fmt.Errorf("unexpected number of values: got %d, want 1", len(values))
 	}
 
-	r, ok := values[0].(contractPriceOracle.IPriceOracleTaskResponse)
+	r, ok := values[0].(struct {
+		ReferenceTaskIndex uint32   `json:"referenceTaskIndex"`
+		Price              *big.Int `json:"price"`
+	})
 	if !ok {
-		return nil, fmt.Errorf("expected %T, got %T", &contractPriceOracle.IPriceOracleTaskResponse{}, r)
+		return nil, fmt.Errorf("expected %T, got %T", &contractPriceOracle.IPriceOracleTaskResponse{}, values[0])
 	}
 
-	return &r, nil
+	return &contractPriceOracle.IPriceOracleTaskResponse{
+		ReferenceTaskIndex: r.ReferenceTaskIndex,
+		Price:              r.Price,
+	}, nil
 }
 
 func (d DvsPostProcessRequestServer) getDvsRequestValidatedData(ctx sdk.Context) (*dvstypes.RequestPostRequestValidatedData, error) {
@@ -89,7 +95,7 @@ func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Con
 	}
 
 	// just send VoteFinalizedRequestPrice Tx
-	err = d.sendVoteFinalizedRequestPriceTx(sdkCtx, in, taskResp)
+	err = d.sendVoteFinalizedRequestPriceTx(sdkCtx, in, validatedData, taskResp)
 	if err != nil {
 		return nil, err
 	}
@@ -97,18 +103,14 @@ func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Con
 	return &types.PostProcessRequestPriceFeedOut{}, nil
 }
 
-func (d DvsPostProcessRequestServer) sendVoteFinalizedRequestPriceTx(ctx sdk.Context, raw *types.ProcessRequestPriceFeedIn, priceData *contractPriceOracle.IPriceOracleTaskResponse) error {
+func (d DvsPostProcessRequestServer) sendVoteFinalizedRequestPriceTx(ctx sdk.Context, raw *types.ProcessRequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractPriceOracle.IPriceOracleTaskResponse) error {
 	msg := &types.MsgVoteFinalizedRequestPrice{
-		TaskIndex:                 priceData.ReferenceTaskIndex,
-		RequestId:                 raw.RequestId,
-		Price:                     math.LegacyNewDecFromBigInt(priceData.Price),
-		Timestamp:                 time.Now().Unix(),
-		FeeToken:                  raw.FeeToken,
-		Payment:                   raw.Payment,
-		CallbackAddress:           raw.CallbackAddress,
-		CallbackFunctionId:        raw.CallbackFunctionId,
-		QuorumNumbers:             raw.QuorumNumbers,
-		QuorumThresholdPercentage: raw.QuorumThresholdPercentage,
+		Task:          raw.Task,
+		ValidatedData: validatedData,
+		PriceFeedResponse: &types.PriceFeedResponse{
+			ReferenceTaskIndex: priceData.ReferenceTaskIndex,
+			Price:              math.NewIntFromBigInt(priceData.Price),
+		},
 	}
 
 	if err := d.Server.SignAndBroadcastTx(ctx, msg); err != nil {

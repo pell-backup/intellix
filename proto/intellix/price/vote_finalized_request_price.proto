@@ -5,26 +5,23 @@ import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
+import "intellix/price/task.proto";
+import "intellix/pelldvs/dvs_post_process_validated.proto";
 
 option go_package = "intellix/x/price/types";
 
 message MsgVoteFinalizedRequestPrice {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
 
-  uint32 task_index = 1;
-  bytes request_id = 2;
-  string price = 3 [
-    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
-    (gogoproto.nullable) = false
-  ];
-  int64 timestamp = 4;
-  string fee_token = 5;
-  string payment = 6 [
+  TaskRequest task = 1;
+  pelldvs.RequestPostRequestValidatedData validated_data = 2;
+  PriceFeedResponse price_feed_response = 3;
+}
+
+message PriceFeedResponse {
+  uint32 reference_task_index = 1;
+  bytes price = 2[
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
-  string callback_address = 7;
-  bytes callback_function_id = 8;
-  bytes quorum_numbers = 9;
-  uint32 quorum_threshold_percentage = 10;
 }
