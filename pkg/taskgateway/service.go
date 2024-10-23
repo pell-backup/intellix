@@ -80,6 +80,7 @@ func NewTaskGateway(logger log.Logger, ctx context.Context, cfg *TaskGatewayCfg)
 }
 
 func registerClientCtx() (*client.Context, error) {
+	// register client context
 	return nil, nil
 }
 
@@ -154,11 +155,11 @@ func (tg *TaskGateway) processResponses(ctx context.Context) {
 }
 
 func (tg *TaskGateway) handleResponse(ctx context.Context, response *types.MsgVoteFinalizedRequestPrice) {
-	value, loaded := tg.taskMap.LoadOrStore(response.RequestId, response)
+	value, loaded := tg.taskMap.LoadOrStore(response.Task.TaskIndex, response)
 	if loaded {
 		existingResponse := value.(*types.MsgVoteFinalizedRequestPrice)
 		if tg.shouldReplaceResponse(existingResponse, response) {
-			tg.taskMap.Store(response.RequestId, response)
+			tg.taskMap.Store(response.Task.RequestId, response)
 			go tg.submitToChain(ctx, response)
 		}
 	} else {
@@ -196,39 +197,39 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVot
 		},
 	}
 
-	feeTokenAddr, err := convertAddressToString(response.FeeToken)
+	feeTokenAddr, err := convertAddressToString(response.Task.FeeToken)
 	if err != nil {
 		tg.logger.Error("Error converting fee token address", "err", err)
 		return
 	}
-	cbAddr, err := convertAddressToString(response.CallbackAddress)
+	cbAddr, err := convertAddressToString(response.Task.CallbackAddress)
 	if err != nil {
 		tg.logger.Error("Error converting callback address", "err", err)
 		return
 	}
 
 	transaction, err := tg.contractPriceOracle.UpdatePrice(txOpts, priceOracle.IPriceOracleTask{
-		RequestId:                 [32]byte(response.RequestId),
+		RequestId:                 [32]byte(response.Task.RequestId),
 		FeeToken:                  *feeTokenAddr,
-		Payment:                   response.Payment.BigInt(),
-		RequestData:               nil,
+		Payment:                   response.Task.Payment.BigInt(),
+		RequestData:               response.Task.RequestData,
 		CallbackAddress:           *cbAddr,
-		CallbackFunctionId:        [4]byte(response.CallbackFunctionId),
-		TaskCreatedBlock:          0,
-		QuorumNumbers:             response.QuorumNumbers,
-		QuorumThresholdPercentage: response.QuorumThresholdPercentage,
+		CallbackFunctionId:        [4]byte(response.Task.CallbackFunctionId),
+		TaskCreatedBlock:          response.Task.TaskCreatedBlock,
+		QuorumNumbers:             response.Task.QuorumNumbers,
+		QuorumThresholdPercentage: response.Task.QuorumThresholdPercentage,
 	}, priceOracle.IPriceOracleTaskResponse{
-		ReferenceTaskIndex: response.TaskIndex,
-		Price:              response.Price.BigInt(),
+		ReferenceTaskIndex: response.PriceFeedResponse.ReferenceTaskIndex,
+		Price:              response.PriceFeedResponse.Price.BigInt(),
 	}, priceOracle.IBLSSignatureCheckerNonSignerStakesAndSignature{
-		NonSignerQuorumBitmapIndices: nil,
-		NonSignerPubkeys:             nil,
-		QuorumApks:                   nil,
-		ApkG2:                        priceOracle.BN254G2Point{},
-		Sigma:                        priceOracle.BN254G1Point{},
-		QuorumApkIndices:             nil,
-		TotalStakeIndices:            nil,
-		NonSignerStakeIndices:        nil,
+		NonSignerQuorumBitmapIndices: response.ValidatedData.NonSignerQuorumBitmapIndices,
+		NonSignerPubkeys:             convertPbToBN254G1PointList(response.ValidatedData.NonSignersPubkeysG1),
+		QuorumApks:                   convertPbToBN254G1PointList(response.ValidatedData.QuorumApksG1),
+		ApkG2:                        *convertPbToBN254G2Point(response.ValidatedData.SignersApkG2),
+		Sigma:                        priceOracle.BN254G1Point{}, // *convertPbToBN254G1Point(response.ValidatedData.SignersAggSigG1),
+		QuorumApkIndices:             response.ValidatedData.QuorumApkIndices,
+		TotalStakeIndices:            response.ValidatedData.TotalStakeIndices,
+		NonSignerStakeIndices:        convertUInt32ListToSlice(response.ValidatedData.NonSignerStakeIndices),
 	})
 	if err != nil {
 		tg.logger.Error("Error assembling RequestPrice tx", "err", err)
