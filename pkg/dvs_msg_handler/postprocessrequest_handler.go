@@ -1,7 +1,6 @@
 package dvsservermanager
 
 import (
-	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	"github.com/cosmos/gogoproto/proto"
@@ -30,23 +29,17 @@ func (p *PostProcessRequestHandler) RegisterService(sd *grpc.ServiceDesc, handle
 	RegisterServiceRouter(p.Mgr, sd, handler)
 }
 
-func (p *PostProcessRequestHandler) InvokeRouterRawByData(sdkCtx sdk.Context, reqMsg sdk.Msg) (*result.Result, error) {
-	data, err := p.Mgr.encoder.EncodeMsgs(reqMsg)
+// InvokeRouterRawByData
+// requestData: binary data from processRequestData, for found router and dispatcher
+// reqMsg: post-process-response data, attached to context
+func (p *PostProcessRequestHandler) InvokeRouterRawByData(sdkCtx sdk.Context, requestData []byte, postProcessResponseMsg sdk.Msg) (*result.Result, error) {
+	postResponseData, err := p.Mgr.encoder.EncodeMsgs(postProcessResponseMsg)
 	if err != nil {
 		return nil, err
 	}
+	sdkCtx = CtxWithDvsPostResponseData(sdkCtx, postResponseData)
 
-	handler := p.Mgr.GetHandlerByData(data)
-	if handler == nil {
-		return nil, fmt.Errorf("no handler found for data: %s", string(data))
-	}
-
-	res, err := handler(sdkCtx, reqMsg)
-	if err != nil {
-		return nil, err
-	}
-
-	return res, nil
+	return p.Mgr.HandleByData(sdkCtx, requestData)
 }
 
 func (p *PostProcessRequestHandler) RegisterResultHandler(msg proto.Message, handler result.ResultCustomizedIFace) {
