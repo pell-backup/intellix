@@ -6,6 +6,9 @@ import (
 	tmclient "github.com/cometbft/cometbft/rpc/client/http"
 	tmtypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/codec"
+	sdktypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"intellix/x/price/dvs/types"
 	"math/big"
@@ -22,7 +25,7 @@ import (
 	"time"
 )
 
-const tmClientQuery = "tm.event = 'NewBlock' OR tm.event = 'NewRound' OR tm.event = 'NewRoundStep'"
+const tmClientQuery = "tm.event='Tx' AND message.action='/intellix.price.dvs.MsgVoteFinalizedRequestPrice'"
 
 type TaskGateway struct {
 	service.BaseService
@@ -81,7 +84,14 @@ func NewTaskGateway(logger log.Logger, ctx context.Context, cfg *TaskGatewayCfg)
 
 func registerClientCtx() (*client.Context, error) {
 	// register client context
-	return nil, nil
+	registry := sdktypes.NewInterfaceRegistry()
+	registry.RegisterImplementations((*sdk.Msg)(nil), &types.MsgVoteFinalizedRequestPrice{})
+
+	clientCtx := client.Context{}.WithCodec(
+		codec.NewProtoCodec(registry),
+	)
+
+	return &clientCtx, nil
 }
 
 func (tg *TaskGateway) OnStart() error {
@@ -226,7 +236,7 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVot
 		NonSignerPubkeys:             convertPbToBN254G1PointList(response.ValidatedData.NonSignersPubkeysG1),
 		QuorumApks:                   convertPbToBN254G1PointList(response.ValidatedData.QuorumApksG1),
 		ApkG2:                        *convertPbToBN254G2Point(response.ValidatedData.SignersApkG2),
-		Sigma:                        priceOracle.BN254G1Point{}, // *convertPbToBN254G1Point(response.ValidatedData.SignersAggSigG1),
+		Sigma:                        *convertPbToBN254G1Point(response.ValidatedData.SignersAggSigG1),
 		QuorumApkIndices:             response.ValidatedData.QuorumApkIndices,
 		TotalStakeIndices:            response.ValidatedData.TotalStakeIndices,
 		NonSignerStakeIndices:        convertUInt32ListToSlice(response.ValidatedData.NonSignerStakeIndices),
