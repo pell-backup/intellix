@@ -30,17 +30,17 @@ func (d *DvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, r
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	// just for testing
-	{
-		return &types.ProcessRequestPriceFeedOut{
-			RequestId:     request.RequestId,
-			TaskIndex:     request.TaskIndex,
-			Price:         math.LegacyNewDec(10),
-			Timestamp:     time.Now().Unix(),
-			SourceCount:   1,
-			OperatorCount: 1,
-			BlockHeight:   1,
-		}, nil
-	}
+	//{
+	//	return &types.ProcessRequestPriceFeedOut{
+	//		RequestId:     request.RequestId,
+	//		TaskIndex:     request.TaskIndex,
+	//		Price:         math.LegacyNewDec(10),
+	//		Timestamp:     time.Now().Unix(),
+	//		SourceCount:   1,
+	//		OperatorCount: 1,
+	//		BlockHeight:   1,
+	//	}, nil
+	//}
 
 	// fetch raw price from chain
 	rawPrices, err := fetchRawPrices(sdkCtx, d.Logger(), request.PriceFeed.BaseSymbol, request.PriceFeed.QuoteSymbol)
