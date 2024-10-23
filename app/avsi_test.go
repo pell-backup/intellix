@@ -29,22 +29,20 @@ const (
 	SimAppChainID = "intellix-simapp"
 )
 
-func interBlockCacheOpt() func(*baseapp.BaseApp) {
-	return baseapp.SetInterBlockCache(store.NewCommitKVStoreCacheManager())
-}
-
 func mockDvsRequestData() ([]byte, error) {
 	data := &dvstypes.ProcessRequestPriceFeedIn{
-		TaskIndex:                 1,
-		RequestId:                 []byte{},
-		FeeToken:                  "01",
-		Payment:                   cosmossdk_io_math.NewInt(1),
-		RequestData:               nil,
-		CallbackAddress:           "0x001",
-		CallbackFunctionId:        []byte{},
-		TaskCreatedBlock:          1,
-		QuorumNumbers:             []byte{},
-		QuorumThresholdPercentage: 10,
+		Task: &dvstypes.TaskRequest{
+			TaskIndex:                 1,
+			RequestId:                 []byte("1234"),
+			FeeToken:                  "",
+			Payment:                   cosmossdk_io_math.NewInt(1),
+			RequestData:               []byte(""),
+			CallbackAddress:           "",
+			CallbackFunctionId:        []byte("1"),
+			TaskCreatedBlock:          2,
+			QuorumNumbers:             []byte("1"),
+			QuorumThresholdPercentage: 10,
+		},
 		PriceFeed: &dvstypes.PriceFeedParam{
 			BaseSymbol:  "btc",
 			QuoteSymbol: "usdt",

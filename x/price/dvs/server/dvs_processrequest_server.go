@@ -32,13 +32,14 @@ func (d *DvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, r
 	// just for testing
 	//{
 	//	return &types.ProcessRequestPriceFeedOut{
-	//		RequestId:     request.RequestId,
-	//		TaskIndex:     request.TaskIndex,
-	//		Price:         math.LegacyNewDec(10),
+	//		RequestId:     request.Task.RequestId,
+	//		TaskIndex:     request.Task.TaskIndex,
+	//		Price:         math.LegacyNewDec(1),
 	//		Timestamp:     time.Now().Unix(),
-	//		SourceCount:   1,
-	//		OperatorCount: 1,
-	//		BlockHeight:   1,
+	//		SourceCount:   0,
+	//		OperatorCount: 0,
+	//		BlockHeight:   0,
+	//		BlockRange:    nil,
 	//	}, nil
 	//}
 
@@ -55,21 +56,21 @@ func (d *DvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, r
 	}
 
 	// listen and collect [N-N+M] block
-	priceFeedTxs, err := d.collectVoteRequestPriceFeedTxs(sdkCtx, request.RequestId)
+	priceFeedTxs, err := d.collectVoteRequestPriceFeedTxs(sdkCtx, request.Task.RequestId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to collect VoteRequestPriceFeed transactions: %w", err)
 	}
 
 	// aggregate [N-N+M] block prices
-	return d.aggregatePrices(sdkCtx, request.TaskIndex, request.RequestId, priceFeedTxs)
+	return d.aggregatePrices(sdkCtx, request.Task.TaskIndex, request.Task.RequestId, priceFeedTxs)
 }
 
 func (d *DvsProcessRequestServer) broadcastVoteRequestPriceFeed(ctx sdk.Context, task *types.ProcessRequestPriceFeedIn, priceFeed *types.PriceFeedParam, rawPrices map[string]*big.Int) error {
 	for dataSource, price := range rawPrices {
 		msg := types.MsgVoteRequestPriceFeed{
-			TaskIndex:   task.TaskIndex,
+			TaskIndex:   task.Task.TaskIndex,
 			OperatorId:  d.Server.GetOperatorAddress(ctx),
-			RequestId:   task.RequestId,
+			RequestId:   task.Task.RequestId,
 			BaseSymbol:  priceFeed.BaseSymbol,
 			QuoteSymbol: priceFeed.QuoteSymbol,
 			Price:       math.LegacyNewDecFromBigInt(price),

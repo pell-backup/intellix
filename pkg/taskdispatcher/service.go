@@ -144,16 +144,18 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractPriceOr
 	}
 	task := newTask.Task
 	taskRequest := &pricetypes.ProcessRequestPriceFeedIn{
-		TaskIndex:                 newTask.TaskIndex,
-		RequestId:                 task.RequestId[:],
-		FeeToken:                  task.FeeToken.Hex(),
-		Payment:                   math.NewIntFromBigInt(task.Payment),
-		RequestData:               task.RequestData,
-		CallbackAddress:           task.CallbackAddress.Hex(),
-		CallbackFunctionId:        task.CallbackFunctionId[:],
-		TaskCreatedBlock:          task.TaskCreatedBlock,
-		QuorumNumbers:             task.QuorumNumbers,
-		QuorumThresholdPercentage: task.QuorumThresholdPercentage,
+		Task: &pricetypes.TaskRequest{
+			TaskIndex:                 newTask.TaskIndex,
+			RequestId:                 task.RequestId[:],
+			FeeToken:                  task.FeeToken.Hex(),
+			Payment:                   math.NewIntFromBigInt(task.Payment),
+			RequestData:               task.RequestData,
+			CallbackAddress:           task.CallbackAddress.Hex(),
+			CallbackFunctionId:        task.CallbackFunctionId[:],
+			TaskCreatedBlock:          task.TaskCreatedBlock,
+			QuorumNumbers:             task.QuorumNumbers,
+			QuorumThresholdPercentage: task.QuorumThresholdPercentage,
+		},
 		PriceFeed: &pricetypes.PriceFeedParam{
 			BaseSymbol:  priceFeed.BaseSymbol,
 			QuoteSymbol: priceFeed.QuoteSymbol,
