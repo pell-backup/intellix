@@ -9,24 +9,24 @@ import (
 )
 
 type TaskGatewayCfg struct {
-	EthEndpoint         string
-	CosmosNetworkUrl    string
-	ContractAddress     string
-	ContractFromAddress string
+	SenderAddress    string `mapstructure:"sender_address"`
+	EthEndpoint      string `mapstructure:"eth_endpoint"`
+	BftNetworkRemote string `mapstructure:"bft_network_remote"`
+	ContractAddress  string `mapstructure:"contract_address"`
 }
 
 func (t TaskGatewayCfg) Validate() error {
 	if t.EthEndpoint == "" {
 		return fmt.Errorf("eth endpoint cannot be empty")
 	}
-	if t.CosmosNetworkUrl == "" {
-		return fmt.Errorf("cosmos network url cannot be empty")
+	if t.BftNetworkRemote == "" {
+		return fmt.Errorf("cometbft network remote cannot be empty")
 	}
 	if t.ContractAddress == "" {
 		return fmt.Errorf("contract address cannot be empty")
 	}
-	if t.ContractFromAddress == "" {
-		return fmt.Errorf("contract from address cannot be empty")
+	if t.SenderAddress == "" {
+		return fmt.Errorf("sender address cannot be empty")
 	}
 	return nil
 }

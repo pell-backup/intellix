@@ -5,12 +5,11 @@ import (
 	"fmt"
 	tmclient "github.com/cometbft/cometbft/rpc/client/http"
 	tmtypes "github.com/cometbft/cometbft/types"
-	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdktypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"intellix/x/price/dvs/types"
+	"intellix/x/price/types"
 	"math/big"
 
 	priceOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/PriceOracle"
@@ -25,7 +24,7 @@ import (
 	"time"
 )
 
-const tmClientQuery = "tm.event='Tx' AND message.action='/intellix.price.dvs.MsgVoteFinalizedRequestPrice'"
+var tmClientQuery = fmt.Sprintf("tm.event='%s'", types.EventTypeVoteFinalizedRequestPrice)
 
 type TaskGateway struct {
 	service.BaseService
@@ -36,7 +35,7 @@ type TaskGateway struct {
 	logger    log.Logger
 	ethClient *ethclient.Client
 	tmClient  *tmclient.HTTP
-	clientCtx *client.Context // just for decode tx
+	cdc       codec.Codec
 
 	contractPriceOracle *priceOracle.ContractPriceOracle
 	responseChan        chan *types.MsgVoteFinalizedRequestPrice
@@ -50,17 +49,12 @@ func NewTaskGateway(logger log.Logger, ctx context.Context, cfg *TaskGatewayCfg)
 		return nil, err
 	}
 
-	tmClient, err := tmclient.New(cfg.CosmosNetworkUrl, "/websocket")
+	tmClient, err := tmclient.New(cfg.BftNetworkRemote, "/websocket")
 	if err != nil {
 		return nil, err
 	}
 
 	contract, err := priceOracle.NewContractPriceOracle(common.HexToAddress(cfg.ContractAddress), ethClient)
-	if err != nil {
-		return nil, err
-	}
-
-	clientCtx, err := registerClientCtx()
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +65,7 @@ func NewTaskGateway(logger log.Logger, ctx context.Context, cfg *TaskGatewayCfg)
 		logger:              logger,
 		ethClient:           ethClient,
 		tmClient:            tmClient,
-		clientCtx:           clientCtx,
+		cdc:                 newCodec(),
 		contractPriceOracle: contract,
 		responseChan:        make(chan *types.MsgVoteFinalizedRequestPrice, 100),
 		taskMap:             sync.Map{},
@@ -82,16 +76,10 @@ func NewTaskGateway(logger log.Logger, ctx context.Context, cfg *TaskGatewayCfg)
 	return tg, nil
 }
 
-func registerClientCtx() (*client.Context, error) {
-	// register client context
+func newCodec() codec.Codec {
 	registry := sdktypes.NewInterfaceRegistry()
 	registry.RegisterImplementations((*sdk.Msg)(nil), &types.MsgVoteFinalizedRequestPrice{})
-
-	clientCtx := client.Context{}.WithCodec(
-		codec.NewProtoCodec(registry),
-	)
-
-	return &clientCtx, nil
+	return codec.NewProtoCodec(registry)
 }
 
 func (tg *TaskGateway) OnStart() error {
@@ -136,17 +124,10 @@ func (tg *TaskGateway) convertEventMsgVoteFinalizedRequestPrice(eventData tmtype
 	}
 
 	// decode tx
-	decoder := tg.clientCtx.TxConfig.TxDecoder()
-	data, err := decoder(tx.GetTx())
+	var out = &types.MsgVoteFinalizedRequestPrice{}
+	err := tg.cdc.Unmarshal(tx.Tx, out)
 	if err != nil {
-		return nil, fmt.Errorf("failed to decode tx: %w", err)
-	}
-	if len(data.GetMsgs()) != 1 {
-		return nil, fmt.Errorf("expected 1 message, got %d", len(data.GetMsgs()))
-	}
-	out, ok := data.GetMsgs()[0].(*types.MsgVoteFinalizedRequestPrice)
-	if !ok {
-		return nil, fmt.Errorf("expected MsgVoteFinalizedRequestPrice, got %T", data.GetMsgs()[0])
+		return nil, err
 	}
 
 	return out, nil
@@ -165,11 +146,11 @@ func (tg *TaskGateway) processResponses(ctx context.Context) {
 }
 
 func (tg *TaskGateway) handleResponse(ctx context.Context, response *types.MsgVoteFinalizedRequestPrice) {
-	value, loaded := tg.taskMap.LoadOrStore(response.Task.TaskIndex, response)
+	value, loaded := tg.taskMap.LoadOrStore(response.TaskRaw.TaskIndex, response)
 	if loaded {
 		existingResponse := value.(*types.MsgVoteFinalizedRequestPrice)
 		if tg.shouldReplaceResponse(existingResponse, response) {
-			tg.taskMap.Store(response.Task.RequestId, response)
+			tg.taskMap.Store(response.TaskRaw.RequestId, response)
 			go tg.submitToChain(ctx, response)
 		}
 	} else {
@@ -199,7 +180,7 @@ func (tg *TaskGateway) getNonce(ctx context.Context, address string) (*big.Int, 
 }
 
 func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVoteFinalizedRequestPrice) {
-	var sender = common.HexToAddress(tg.cfg.ContractFromAddress)
+	var sender = common.HexToAddress(tg.cfg.SenderAddress)
 	txOpts := &bind.TransactOpts{
 		From: sender,
 		Signer: func(common.Address, *ethtypes.Transaction) (*ethtypes.Transaction, error) {
@@ -207,27 +188,27 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVot
 		},
 	}
 
-	feeTokenAddr, err := convertAddressToString(response.Task.FeeToken)
+	feeTokenAddr, err := convertAddressToString(response.TaskRaw.FeeToken)
 	if err != nil {
 		tg.logger.Error("Error converting fee token address", "err", err)
 		return
 	}
-	cbAddr, err := convertAddressToString(response.Task.CallbackAddress)
+	cbAddr, err := convertAddressToString(response.TaskRaw.CallbackAddress)
 	if err != nil {
 		tg.logger.Error("Error converting callback address", "err", err)
 		return
 	}
 
 	transaction, err := tg.contractPriceOracle.UpdatePrice(txOpts, priceOracle.IPriceOracleTask{
-		RequestId:                 [32]byte(response.Task.RequestId),
+		RequestId:                 [32]byte(response.TaskRaw.RequestId),
 		FeeToken:                  *feeTokenAddr,
-		Payment:                   response.Task.Payment.BigInt(),
-		RequestData:               response.Task.RequestData,
+		Payment:                   response.TaskRaw.Payment.BigInt(),
+		RequestData:               response.TaskRaw.RequestData,
 		CallbackAddress:           *cbAddr,
-		CallbackFunctionId:        [4]byte(response.Task.CallbackFunctionId),
-		TaskCreatedBlock:          response.Task.TaskCreatedBlock,
-		QuorumNumbers:             response.Task.QuorumNumbers,
-		QuorumThresholdPercentage: response.Task.QuorumThresholdPercentage,
+		CallbackFunctionId:        [4]byte(response.TaskRaw.CallbackFunctionId),
+		TaskCreatedBlock:          response.TaskRaw.TaskCreatedBlock,
+		QuorumNumbers:             response.TaskRaw.QuorumNumbers,
+		QuorumThresholdPercentage: response.TaskRaw.QuorumThresholdPercentage,
 	}, priceOracle.IPriceOracleTaskResponse{
 		ReferenceTaskIndex: response.PriceFeedResponse.ReferenceTaskIndex,
 		Price:              response.PriceFeedResponse.Price.BigInt(),

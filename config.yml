@@ -29,5 +29,11 @@ task_dispatcher:
     eth_url: http://127.0.0.1:28545
     contract_address: '0x0000000000000000000000000000000000000001'
 
+task_gateway:
+  sender_address: '0x0000000000000000000000000000000000000000'
+  eth_endpoint: http://127.0.0.1:18545
+  bft_network_remote: http://127.0.0.1:28545
+  contract_address: '0x0000000000000000000000000000000000000001'
+
 build:
   main: ./cmd/intellixd

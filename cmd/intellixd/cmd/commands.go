@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	pkglogger "intellix/pkg/logger"
 	"intellix/pkg/pelldvs"
 	"intellix/pkg/taskdispatcher"
+	"intellix/pkg/taskgateway"
 	"io"
 
 	"cosmossdk.io/log"
@@ -58,6 +60,7 @@ func initRootCmd(
 		txCommand(),
 		keys.Commands(),
 		taskDispatcherCommand(),
+		taskGatewayCommand(),
 	)
 }
 
@@ -259,6 +262,57 @@ func taskDispatcherCommand() *cobra.Command {
 
 	// add config flag
 	cmd.Flags().StringVar(&configFile, "config", "", "config file")
+
+	return cmd
+}
+
+func taskGatewayCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "task-gateway",
+		Short: "Start the TaskGateway service",
+		Long: "Start the TaskGateway service, Example:\n" +
+			"intellixd task-gateway --config=config.yml",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			serverCtx := server.GetServerContextFromCmd(cmd)
+			// read config file
+			if configFile != "" {
+				viper.SetConfigFile(configFile)
+				if err := viper.ReadInConfig(); err != nil {
+					return err
+				}
+			} else {
+				return errors.New("config file not set")
+			}
+
+			senderAddress := viper.GetString("task_gateway.sender_address")
+			ethEndpoint := viper.GetString("task_gateway.eth_endpoint")
+			bftNetworkRemote := viper.GetString("task_gateway.bft_network_remote")
+			contractAddress := viper.GetString("task_gateway.contract_address")
+
+			if senderAddress == "" || ethEndpoint == "" || bftNetworkRemote == "" || contractAddress == "" {
+				return errors.New("task_gateway config is not set")
+			}
+
+			cmtLogger := pkglogger.NewCometBFTLogAdapter(serverCtx.Logger)
+			taskGateway, err := taskgateway.NewTaskGateway(cmtLogger, context.Background(), &taskgateway.TaskGatewayCfg{
+				SenderAddress:    senderAddress,
+				EthEndpoint:      ethEndpoint,
+				BftNetworkRemote: bftNetworkRemote,
+				ContractAddress:  contractAddress,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to create TaskGateway: %w", err)
+			}
+
+			err = taskGateway.Start()
+			if err != nil {
+				return fmt.Errorf("failed to start TaskGateway: %w", err)
+			}
+			<-taskGateway.Quit()
+
+			return nil
+		},
+	}
 
 	return cmd
 }
