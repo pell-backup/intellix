@@ -26,7 +26,7 @@ RUN <<EOR
 	git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
 EOR
 
-RUN git clone https://github.com/IntelliXLabs/price-oracle-dvs.git --branch feat/add-mock-scripts --depth 1
+RUN git clone https://github.com/IntelliXLabs/price-oracle-dvs.git --branch v0.1.1 --depth 1
 
 WORKDIR /app/price-oracle-dvs
 ADD .env .env
