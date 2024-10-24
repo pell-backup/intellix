@@ -5,6 +5,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
 	dvstypes "intellix/pkg/pelldvs/types"
+	pricetypes "intellix/x/price/types"
 )
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -14,7 +15,7 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 
 	registry.RegisterImplementations((*sdk.Msg)(nil), &dvstypes.RequestPostRequestValidatedData{})
 	registry.RegisterImplementations((*sdk.Msg)(nil), &ProcessRequestPriceFeedIn{})
-	registry.RegisterImplementations((*sdk.Msg)(nil), &MsgVoteFinalizedRequestPrice{})
-	registry.RegisterImplementations((*sdk.Msg)(nil), &MsgVoteRequestPriceFeed{})
+	registry.RegisterImplementations((*sdk.Msg)(nil), &pricetypes.MsgVoteFinalizedRequestPrice{})
+	registry.RegisterImplementations((*sdk.Msg)(nil), &pricetypes.MsgVoteRequestPriceFeed{})
 
 }
