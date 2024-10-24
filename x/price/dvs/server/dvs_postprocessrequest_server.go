@@ -10,6 +10,7 @@ import (
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	dvstypes "intellix/pkg/pelldvs/types"
 	"intellix/x/price/dvs/types"
+	pricetypes "intellix/x/price/types"
 	"math/big"
 )
 
@@ -104,10 +105,21 @@ func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Con
 }
 
 func (d DvsPostProcessRequestServer) sendVoteFinalizedRequestPriceTx(ctx sdk.Context, raw *types.ProcessRequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractPriceOracle.IPriceOracleTaskResponse) error {
-	msg := &types.MsgVoteFinalizedRequestPrice{
-		Task:          raw.Task,
+	msg := &pricetypes.MsgVoteFinalizedRequestPrice{
+		TaskRaw: &pricetypes.TaskRaw{
+			TaskIndex:                 raw.Task.TaskIndex,
+			RequestId:                 raw.Task.RequestId,
+			FeeToken:                  raw.Task.FeeToken,
+			Payment:                   raw.Task.Payment,
+			RequestData:               raw.Task.RequestData,
+			CallbackAddress:           raw.Task.CallbackAddress,
+			CallbackFunctionId:        raw.Task.CallbackFunctionId,
+			TaskCreatedBlock:          raw.Task.TaskCreatedBlock,
+			QuorumNumbers:             raw.Task.QuorumNumbers,
+			QuorumThresholdPercentage: raw.Task.QuorumThresholdPercentage,
+		},
 		ValidatedData: validatedData,
-		PriceFeedResponse: &types.PriceFeedResponse{
+		PriceFeedResponse: &pricetypes.PriceFeedResponse{
 			ReferenceTaskIndex: priceData.ReferenceTaskIndex,
 			Price:              math.NewIntFromBigInt(priceData.Price),
 		},

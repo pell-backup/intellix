@@ -16,10 +16,15 @@ message MsgVoteRequestPriceFeed {
   bytes request_id = 3;
   string base_symbol = 4;
   string quote_symbol = 5;
-  string price = 6 [
+  repeated VoteRequestPriceFeed price = 6;
+  int64 timestamp = 7;
+  uint64 block_height = 8;
+}
+
+message VoteRequestPriceFeed {
+  string source = 1;
+  string price = 2 [
     (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
     (gogoproto.nullable) = false
   ];
-  int64 timestamp = 7;
-  uint64 block_height = 8;
 }
