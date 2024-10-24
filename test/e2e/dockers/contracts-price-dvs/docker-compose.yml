@@ -19,6 +19,8 @@ services:
       - "intellix-price-dvs-e2e=true"
       - "intellix-price-dvs-e2e-contracts=true"
     image: intellix/e2e-price-oracle-dvs:local-version
+    volumes:
+      - ./contracts:/app/contracts
     networks:
       - intellix_price_dvs_e2e
   intellix_price_dvs_e2e_eth:

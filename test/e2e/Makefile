@@ -26,11 +26,26 @@ docker-contracts-build:gen-env-file-for-dokcer-contracts
 	@echo "Building contracts"
 	cd ./dockers/contracts-price-dvs && docker compose build
 
-docker-contracts-start:gen-env-file-for-dokcer-contracts
+docker-contracts-start:gen-env-file-for-dokcer-contracts docker-network-create
 	@echo "Starting contracts"
 	cd ./dockers/contracts-price-dvs && docker compose up -d
+
+docker-network-create:
+	@if [ -z "$(shell docker network ls -q -f label=intellixe2e -f name=intellix_price_dvs_e2e)"  ]; then \
+	    docker network create \
+	    	--driver bridge --label intellixe2e=true --opt com.docker.network.enable_ipv6=false \
+	    	intellix_price_dvs_e2e; \
+	    echo "Created network intellix_price_dvs_e2e."; \
+    else \
+        echo "Network intellix_price_dvs_e2e already exists."; \
+    fi
+
+docker-network-remove:
+	@if [ -n "$(shell docker network ls -q -f label=intellixe2e -f name=intellix_price_dvs_e2e)"  ]; then \
+	    docker network remove intellix_price_dvs_e2e; \
+	fi
 
 runner:
 	go build -o build/runner ./runner
 
-.PHONY: all node docker generator runner docker-contracts
+.PHONY: all node docker generator runner
