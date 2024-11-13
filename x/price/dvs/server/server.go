@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"cosmossdk.io/log"
 	"fmt"
 	cmttypes "github.com/cometbft/cometbft/types"
@@ -9,6 +10,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/spf13/pflag"
+	pkgcontext "intellix/pkg/context"
 	"intellix/x/price/types"
 )
 
@@ -66,7 +68,7 @@ func (k *Server) Logger() log.Logger {
 	return k.logger.With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
-func (k *Server) GetOperatorAddress(ctx sdk.Context) string {
+func (k *Server) GetOperatorAddress(ctx context.Context) string {
 	if k.operatorAddress == "" {
 		panic("Operator address not set")
 	}
@@ -80,7 +82,7 @@ func (k *Server) SetOperatorAddress(address string) {
 	k.operatorAddress = address
 }
 
-func (k *Server) GetLatestBlock(ctx sdk.Context) (*cmttypes.Block, error) {
+func (k *Server) GetLatestBlock(ctx context.Context) (*cmttypes.Block, error) {
 	node, err := k.clientCtx.GetNode()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get node: %w", err)
@@ -102,7 +104,7 @@ func (k *Server) GetLatestBlock(ctx sdk.Context) (*cmttypes.Block, error) {
 }
 
 // SignAndBroadcastTx signs and broadcasts a transaction
-func (k *Server) SignAndBroadcastTx(ctx sdk.Context, msg sdk.Msg) error {
+func (k *Server) SignAndBroadcastTx(ctx pkgcontext.Context, msg sdk.Msg) error {
 	txf, err := k.prepareTxFactory(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to prepare tx factory: %w", err)
@@ -136,7 +138,7 @@ func (k *Server) SignAndBroadcastTx(ctx sdk.Context, msg sdk.Msg) error {
 }
 
 // prepareTxFactory prepare tx factory
-func (k *Server) prepareTxFactory(ctx sdk.Context) (tx.Factory, error) {
+func (k *Server) prepareTxFactory(ctx pkgcontext.Context) (tx.Factory, error) {
 	txf, err := tx.NewFactoryCLI(k.clientCtx, &pflag.FlagSet{})
 	if err != nil {
 		return tx.Factory{}, err

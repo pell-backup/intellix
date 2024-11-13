@@ -5,8 +5,8 @@ import (
 	"cosmossdk.io/math"
 	"fmt"
 	contractPriceOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/PriceOracle"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+	pkgcontext "intellix/pkg/context"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	dvstypes "intellix/pkg/pelldvs/types"
 	"intellix/x/price/dvs/types"
@@ -67,8 +67,8 @@ func (d DvsPostProcessRequestServer) decodePackedPriceFeedData(data []byte) (*co
 	}, nil
 }
 
-func (d DvsPostProcessRequestServer) getDvsRequestValidatedData(ctx sdk.Context) (*dvstypes.RequestPostRequestValidatedData, error) {
-	reqData, ok := dvsservermanager.CtxGetDvsPostResponseData(ctx)
+func (d DvsPostProcessRequestServer) getDvsRequestValidatedData(ctx pkgcontext.Context) (*dvstypes.RequestPostRequestValidatedData, error) {
+	reqData, ok := ctx.DvsPostResponseData()
 	if !ok {
 		return nil, fmt.Errorf("not DvsRequestData found")
 	}
@@ -84,9 +84,9 @@ func (d DvsPostProcessRequestServer) getDvsRequestValidatedData(ctx sdk.Context)
 }
 
 func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Context, in *types.ProcessRequestPriceFeedIn) (*types.PostProcessRequestPriceFeedOut, error) {
-	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	pkgCtx := pkgcontext.UnwrapContext(ctx)
 
-	validatedData, err := d.getDvsRequestValidatedData(sdkCtx)
+	validatedData, err := d.getDvsRequestValidatedData(pkgCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +96,7 @@ func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Con
 	}
 
 	// just send VoteFinalizedRequestPrice Tx
-	err = d.sendVoteFinalizedRequestPriceTx(sdkCtx, in, validatedData, taskResp)
+	err = d.sendVoteFinalizedRequestPriceTx(pkgCtx, in, validatedData, taskResp)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Con
 	return &types.PostProcessRequestPriceFeedOut{}, nil
 }
 
-func (d DvsPostProcessRequestServer) sendVoteFinalizedRequestPriceTx(ctx sdk.Context, raw *types.ProcessRequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractPriceOracle.IPriceOracleTaskResponse) error {
+func (d DvsPostProcessRequestServer) sendVoteFinalizedRequestPriceTx(ctx pkgcontext.Context, raw *types.ProcessRequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractPriceOracle.IPriceOracleTaskResponse) error {
 	msg := &pricetypes.MsgVoteFinalizedRequestPrice{
 		TaskRaw: &pricetypes.TaskRaw{
 			TaskIndex:                 raw.Task.TaskIndex,

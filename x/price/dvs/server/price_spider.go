@@ -1,10 +1,10 @@
 package server
 
 import (
+	"context"
 	"cosmossdk.io/log"
 	"encoding/json"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"math"
 	"math/big"
 	"net/http"
@@ -22,7 +22,7 @@ const (
 	dataSourceBinance  = "binance"
 )
 
-func fetchRawPrices(ctx sdk.Context, logger log.Logger, baseSymbol, quoteSymbol string) (map[string]*big.Int, error) {
+func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSymbol string) (map[string]*big.Int, error) {
 	var wg sync.WaitGroup
 
 	// TODO: configurable

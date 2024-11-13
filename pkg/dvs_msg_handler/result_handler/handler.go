@@ -1,10 +1,10 @@
 package resulthandler
 
 import (
-	abci "github.com/cometbft/cometbft/abci/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
+	pkgcontext "intellix/pkg/context"
 )
 
 type ResultCustomizedMgr struct {
@@ -24,7 +24,7 @@ func (r *ResultCustomizedMgr) RegisterCustomizedFunc(t proto.Message, f ResultCu
 // WrapServiceResult wraps a result from a protobuf RPC service method call (res proto.Message, err error)
 // in a Result object or error. This method takes care of marshaling the res param to
 // protobuf and attaching any events on the ctx.EventManager() to the Result.
-func (r *ResultCustomizedMgr) WrapServiceResult(ctx sdk.Context, res proto.Message, err error) (*Result, error) {
+func (r *ResultCustomizedMgr) WrapServiceResult(ctx pkgcontext.Context, res proto.Message, err error) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
@@ -42,15 +42,15 @@ func (r *ResultCustomizedMgr) WrapServiceResult(ctx sdk.Context, res proto.Messa
 		}
 	}
 
-	var events []abci.Event
-	if evtMgr := ctx.EventManager(); evtMgr != nil {
-		events = evtMgr.ABCIEvents()
-	}
+	//var events []abci.Event
+	//if evtMgr := ctx.EventManager(); evtMgr != nil {
+	//	events = evtMgr.ABCIEvents()
+	//}
 
 	outResult := &Result{
 		Result: &sdk.Result{
-			Data:         data,
-			Events:       events,
+			Data: data,
+			//Events:       events,
 			MsgResponses: []*codectypes.Any{any},
 		},
 	}

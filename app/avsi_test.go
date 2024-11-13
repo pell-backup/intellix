@@ -1,20 +1,15 @@
 package app
 
 import (
-	"cosmossdk.io/log"
+	"context"
 	cosmossdk_io_math "cosmossdk.io/math"
-	"cosmossdk.io/store"
-	"cosmossdk.io/store/metrics"
-	storetypes "cosmossdk.io/store/types"
 	"github.com/0xPellNetwork/pelldvs/aggregator"
 	avsi "github.com/0xPellNetwork/pelldvs/application"
 	"github.com/0xPellNetwork/pelldvs/avsi/types"
-	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/server"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
 	"github.com/stretchr/testify/require"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
@@ -56,7 +51,7 @@ func fauxMerkleModeOpt(bapp *baseapp.BaseApp) {
 	bapp.SetFauxMerkleMode()
 }
 
-func newApp(t *testing.T) (*App, sdk.Context) {
+func newApp(t *testing.T) (*App, context.Context) {
 	simcli.FlagSeedValue = time.Now().Unix()
 	simcli.FlagVerboseValue = true
 	simcli.FlagCommitValue = true
@@ -84,13 +79,13 @@ func newApp(t *testing.T) (*App, sdk.Context) {
 	require.NoError(t, err)
 	require.Equal(t, Name, bApp.Name())
 
-	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
-	storeKey := storetypes.NewKVStoreKey("dvs")
-	stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
-	require.NoError(t, stateStore.LoadLatestVersion())
-	ctx := sdk.NewContext(stateStore, cmtproto.Header{}, false, log.NewNopLogger())
+	//stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
+	//storeKey := storetypes.NewKVStoreKey("dvs")
+	//stateStore.MountStoreWithDB(storeKey, storetypes.StoreTypeIAVL, db)
+	//require.NoError(t, stateStore.LoadLatestVersion())
+	//ctx := sdk.NewContext(stateStore, cmtproto.Header{}, false, log.NewNopLogger())
 
-	return bApp, ctx
+	return bApp, context.Background()
 }
 
 func TestProcessRequest(t *testing.T) {

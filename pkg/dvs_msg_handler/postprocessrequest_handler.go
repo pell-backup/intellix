@@ -5,6 +5,7 @@ import (
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	"github.com/cosmos/gogoproto/proto"
 	"google.golang.org/grpc"
+	pkgcontext "intellix/pkg/context"
 	result "intellix/pkg/dvs_msg_handler/result_handler"
 	"intellix/pkg/dvs_msg_handler/tx"
 )
@@ -18,7 +19,6 @@ func NewPostProcessRequestHandler(encoder tx.MsgEncoder, resultHandler *result.R
 	return &PostProcessRequestHandler{
 		Mgr: NewMsgRouterMgr(
 			encoder,
-			nil,
 			resultHandler,
 		),
 		ResultHandler: resultHandler,
@@ -32,14 +32,14 @@ func (p *PostProcessRequestHandler) RegisterService(sd *grpc.ServiceDesc, handle
 // InvokeRouterRawByData
 // requestData: binary data from processRequestData, for found router and dispatcher
 // reqMsg: post-process-response data, attached to context
-func (p *PostProcessRequestHandler) InvokeRouterRawByData(sdkCtx sdk.Context, requestData []byte, postProcessResponseMsg sdk.Msg) (*result.Result, error) {
+func (p *PostProcessRequestHandler) InvokeRouterRawByData(ctx pkgcontext.Context, requestData []byte, postProcessResponseMsg sdk.Msg) (*result.Result, error) {
 	postResponseData, err := p.Mgr.encoder.EncodeMsgs(postProcessResponseMsg)
 	if err != nil {
 		return nil, err
 	}
-	sdkCtx = CtxWithDvsPostResponseData(sdkCtx, postResponseData)
+	ctx = ctx.WithDvsPostResponseData(postResponseData)
 
-	return p.Mgr.HandleByData(sdkCtx, requestData)
+	return p.Mgr.HandleByData(ctx, requestData)
 }
 
 func (p *PostProcessRequestHandler) RegisterResultHandler(msg proto.Message, handler result.ResultCustomizedIFace) {

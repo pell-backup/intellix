@@ -17,6 +17,8 @@ func NewClientContext(
 	txConfigOpts tx.ConfigOptions,
 	legacyAmino *codec.LegacyAmino,
 ) client.Context {
+	// TODO: using PellDVS client
+
 	clientCtx := client.Context{}.
 		WithCodec(appCodec).
 		WithInterfaceRegistry(interfaceRegistry).
