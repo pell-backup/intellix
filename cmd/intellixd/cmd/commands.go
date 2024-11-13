@@ -145,6 +145,8 @@ func newApp(
 	if err != nil {
 		panic(err)
 	}
+
+	_ = newPellApp(app.Logger())
 	return app
 }
 
@@ -197,6 +199,26 @@ func appExport(
 	}
 
 	return bApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
+}
+
+func newPellApp(
+	logger log.Logger,
+) *app.PellApp {
+	if configFile == "" {
+		panic("PellApp config file not set")
+	}
+
+	viper.SetConfigFile(configFile)
+	if err := viper.ReadInConfig(); err != nil {
+		panic(err)
+	}
+	var pellAppConfig = &app.PellAppConfig{}
+	err := viper.UnmarshalKey("pell_app", pellAppConfig)
+	if err != nil {
+		panic(err)
+	}
+
+	return app.NewPellApp(logger, pellAppConfig)
 }
 
 // TODO: put start logic into "start" command with flag

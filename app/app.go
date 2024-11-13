@@ -1,10 +1,6 @@
 package app
 
 import (
-	"github.com/cosmos/cosmos-sdk/x/auth/tx"
-	dvsservermanager "intellix/pkg/dvs_msg_handler"
-	"intellix/x/price/dvs"
-	dvstypes "intellix/x/price/dvs/types"
 	"io"
 
 	"cosmossdk.io/store"
@@ -72,7 +68,6 @@ import (
 	slashingkeeper "github.com/cosmos/cosmos-sdk/x/slashing/keeper"
 	_ "github.com/cosmos/cosmos-sdk/x/staking" // import for side-effects
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
-	grpc1 "github.com/cosmos/gogoproto/grpc"
 	_ "github.com/cosmos/ibc-go/modules/capability" // import for side-effects
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
 	_ "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts" // import for side-effects
@@ -83,8 +78,6 @@ import (
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
-	_ "intellix/x/price/dvs"
-	dvsserver "intellix/x/price/dvs/server"
 	pricemodulekeeper "intellix/x/price/keeper"
 
 	// this line is used by starport scaffolding # stargate/app/moduleImport
@@ -152,19 +145,13 @@ type App struct {
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
 	ScopedKeepers             map[string]capabilitykeeper.ScopedKeeper
 
-	//IntellixKeeper intellixmodulekeeper.Keeper
 	PriceKeeper pricemodulekeeper.Keeper
-	DvsServer   dvsserver.Server
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
 	sm     *module.SimulationManager
 	cms    storetypes.CommitMultiStore
 	logger log.Logger
-
-	// dvs msg server
-	ProcessRequestServer     grpc1.Server
-	PostProcessRequestServer grpc1.Server
 }
 
 func init() {
@@ -314,17 +301,6 @@ func New(
 
 	if err := app.Load(loadLatest); err != nil {
 		return nil, err
-	}
-
-	//dvs server manager
-	clientCtx := NewClientContext(app.appCodec, app.interfaceRegistry, tx.ConfigOptions{}, app.legacyAmino)
-	{
-		app.DvsServer = dvsserver.NewServer(app.logger, clientCtx, "", 10, "", 0)
-		dvsservermanager.InitDvsMsgHelper(app.appCodec)
-		app.PostProcessRequestServer = dvsservermanager.GetPostProcessRequestHandler()
-		app.ProcessRequestServer = dvsservermanager.GetProcessRequestHandler()
-		dvs.NewAppModule(app.DvsServer).RegisterServices()
-		dvstypes.RegisterInterfaces(app.interfaceRegistry)
 	}
 
 	return app, nil

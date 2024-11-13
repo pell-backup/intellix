@@ -85,6 +85,7 @@ func newApp(t *testing.T) (*App, context.Context) {
 	//require.NoError(t, stateStore.LoadLatestVersion())
 	//ctx := sdk.NewContext(stateStore, cmtproto.Header{}, false, log.NewNopLogger())
 
+	_ = NewPellApp(bApp.logger, &PellAppConfig{})
 	return bApp, context.Background()
 }
 

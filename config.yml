@@ -21,6 +21,10 @@ validators:
 - name: alice
   bonded: 100000000stake
 
+pell_app:
+  operator_addr: '0x0000000000000000000000000000000000000001'
+  wait_block_count: 10
+
 task_dispatcher:
   - chain_id: 0x1
     eth_url: http://127.0.0.1:18545
