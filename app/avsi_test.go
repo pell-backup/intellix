@@ -1,17 +1,16 @@
 package app
 
-import "github.com/cosmos/cosmos-sdk/baseapp"
-
 const (
 	SimAppChainID = "intellix-simapp"
 )
+
+// CI: remove test
+/*
 
 func fauxMerkleModeOpt(bapp *baseapp.BaseApp) {
 	bapp.SetFauxMerkleMode()
 }
 
-// CI: remove test
-/*
 func mockDvsRequestData() ([]byte, error) {
 	data := &dvstypes.ProcessRequestPriceFeedIn{
 		Task: &dvstypes.TaskRequest{
