@@ -70,7 +70,7 @@ func TestNewPellApp(t *testing.T) {
 
 	require.NotPanics(t,
 		func() {
-			papp := NewPellApp(log.NewNopLogger(), &PellAppConfig{})
+			papp := NewPellApp(log.NewLogger(os.Stdout), &PellAppConfig{})
 
 			ret1, err := papp.appCodec.Marshal(testMsg)
 			require.NoError(t, err)
