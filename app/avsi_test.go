@@ -1,25 +1,17 @@
 package app
 
-import (
-	"context"
-	cosmossdk_io_math "cosmossdk.io/math"
-	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/cosmos/cosmos-sdk/client/flags"
-	"github.com/cosmos/cosmos-sdk/server"
-	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
-	simcli "github.com/cosmos/cosmos-sdk/x/simulation/client/cli"
-	"github.com/stretchr/testify/require"
-	dvsservermanager "intellix/pkg/dvs_msg_handler"
-	dvstypes "intellix/x/price/dvs/types"
-	"os"
-	"testing"
-	"time"
-)
+import "github.com/cosmos/cosmos-sdk/baseapp"
 
 const (
 	SimAppChainID = "intellix-simapp"
 )
 
+func fauxMerkleModeOpt(bapp *baseapp.BaseApp) {
+	bapp.SetFauxMerkleMode()
+}
+
+// CI: remove test
+/*
 func mockDvsRequestData() ([]byte, error) {
 	data := &dvstypes.ProcessRequestPriceFeedIn{
 		Task: &dvstypes.TaskRequest{
@@ -41,10 +33,6 @@ func mockDvsRequestData() ([]byte, error) {
 	}
 
 	return dvsservermanager.EncodeMsgs(data)
-}
-
-func fauxMerkleModeOpt(bapp *baseapp.BaseApp) {
-	bapp.SetFauxMerkleMode()
 }
 
 func newApp(t *testing.T) (*App, context.Context) {
@@ -85,8 +73,7 @@ func newApp(t *testing.T) (*App, context.Context) {
 	return bApp, context.Background()
 }
 
-// CI: remove test
-/*
+
 func TestProcessRequest(t *testing.T) {
 	a, ctx := newApp(t)
 	data, err := mockDvsRequestData()

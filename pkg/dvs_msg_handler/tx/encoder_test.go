@@ -1,7 +1,6 @@
 package tx
 
 import (
-	"fmt"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -31,13 +30,8 @@ func TestEncodeDecode(t *testing.T) {
 
 	// decode after register
 	types.RegisterInterfaces(registry)
-	decodedTx, err := coder.Decode(txBz)
+	_, err = coder.Decode(txBz)
 	require.NoError(t, err)
-	_tx, ok := decodedTx.(sdk.Tx)
-	if !ok {
-		require.Error(t, fmt.Errorf("unable to cast to sdk.Tx"))
-	}
-	_ = _tx
 }
 
 func TestTxMsgs(t *testing.T) {
@@ -64,13 +58,9 @@ func TestTxMsgs(t *testing.T) {
 	decodedTx, err := coder.Decode(txBz)
 	require.NoError(t, err)
 
-	_tx, ok := decodedTx.(sdk.Tx)
-	if !ok {
-		require.Error(t, fmt.Errorf("unable to cast to sdk.Tx"))
-	}
-	require.Greater(t, len(_tx.GetMsgs()), 0)
+	require.Greater(t, len(decodedTx.GetMsgs()), 0)
 
-	for _, msg := range _tx.GetMsgs() {
+	for _, msg := range decodedTx.GetMsgs() {
 		url := sdk.MsgTypeURL(msg)
 		require.NotEmpty(t, url)
 	}

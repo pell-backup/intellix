@@ -9,9 +9,6 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"intellix/x/price/types"
-	"math/big"
-
 	priceOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/PriceOracle"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cometbft/cometbft/libs/service"
@@ -19,6 +16,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"intellix/x/price/types"
 
 	"sync"
 	"time"
@@ -111,8 +109,6 @@ func (tg *TaskGateway) listenForVoteFinalizedRequestPrice() {
 				continue
 			}
 			tg.responseChan <- msg
-		default:
-			// pass
 		}
 	}
 }
@@ -149,7 +145,7 @@ func (tg *TaskGateway) handleResponse(ctx context.Context, response *types.MsgVo
 	value, loaded := tg.taskMap.LoadOrStore(response.TaskRaw.TaskIndex, response)
 	if loaded {
 		existingResponse := value.(*types.MsgVoteFinalizedRequestPrice)
-		if tg.shouldReplaceResponse(existingResponse, response) {
+		if tg.shouldReplaceResponse(ctx, existingResponse, response) {
 			tg.taskMap.Store(response.TaskRaw.RequestId, response)
 			go tg.submitToChain(ctx, response)
 		}
@@ -158,25 +154,9 @@ func (tg *TaskGateway) handleResponse(ctx context.Context, response *types.MsgVo
 	}
 }
 
-func (tg *TaskGateway) shouldReplaceResponse(existing, new *types.MsgVoteFinalizedRequestPrice) bool {
+func (tg *TaskGateway) shouldReplaceResponse(ctx context.Context, existing, new *types.MsgVoteFinalizedRequestPrice) bool {
 	// TODO: add security threshold comparison
 	return false
-}
-
-func (tg *TaskGateway) getNonce(ctx context.Context, address string) (*big.Int, error) {
-	if nonce, ok := tg.nonceMap.Load(address); ok {
-		nonce.(*big.Int).Add(nonce.(*big.Int), big.NewInt(1))
-		return nonce.(*big.Int), nil
-	}
-
-	nonce, err := tg.ethClient.PendingNonceAt(ctx, common.HexToAddress(address))
-	if err != nil {
-		return nil, fmt.Errorf("getNonce err: %w", err)
-	}
-	outNonce := big.NewInt(int64(nonce + 1))
-	tg.nonceMap.Store(address, outNonce)
-
-	return outNonce, nil
 }
 
 func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVoteFinalizedRequestPrice) {
@@ -233,8 +213,6 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVot
 		return
 	}
 	_ = receipt
-
-	return
 }
 
 func (tg *TaskGateway) sendTransaction(ctx context.Context, transaction *ethtypes.Transaction) (*ethtypes.Receipt, error) {

@@ -51,7 +51,6 @@ func NewPellApp(
 	)
 
 	if err := depinject.Inject(appConfig,
-		&app.logger,
 		&app.appCodec,
 		&app.legacyAmino,
 		&app.txConfig,
