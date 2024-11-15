@@ -7,7 +7,11 @@ import (
 	"time"
 )
 
-const ContextKey = "pkg_context"
+type ContextKeyType string
+
+const (
+	ContextKey ContextKeyType = "pkg_context"
+)
 
 type Context struct {
 	baseCtx context.Context

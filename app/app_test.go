@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"cosmossdk.io/log"
 	cosmossdk_io_math "cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/client/flags"
@@ -69,7 +70,7 @@ func TestNewPellApp(t *testing.T) {
 
 	require.NotPanics(t,
 		func() {
-			papp := NewPellApp(app.logger, &PellAppConfig{})
+			papp := NewPellApp(log.NewNopLogger(), &PellAppConfig{})
 
 			ret1, err := papp.appCodec.Marshal(testMsg)
 			require.NoError(t, err)
