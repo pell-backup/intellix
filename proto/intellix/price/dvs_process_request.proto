@@ -1,0 +1,55 @@
+syntax = "proto3";
+package intellix.price;
+
+import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "amino/amino.proto";
+import "intellix/price/task.proto";
+
+option go_package = "intellix/x/price/types";
+
+service DvsProcessRequest {
+  // ProcessRequestPriceFeed defines avsi logic processing
+  rpc ProcessRequestPriceFeed(ProcessRequestPriceFeedIn) returns (ProcessRequestPriceFeedOut) {}
+}
+
+// ProcessRequestPriceFeedIn defines task request from task-dispatcher
+message ProcessRequestPriceFeedIn {
+  option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
+  option (amino.name) = "intellix/x/price/dvs/process_price_feed";
+
+  TaskRequest task = 1;
+  PriceFeedParam price_feed = 2;
+}
+
+// ProcessRequestPriceFeedOut
+message ProcessRequestPriceFeedOut {
+  option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
+
+  bytes request_id = 1;
+  uint32 task_index = 2;
+  // Aggregated final price
+  string price = 3 [
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  // Timestamp when aggregation was completed
+  int64 timestamp = 4;
+  // Number of data sources participated in aggregation
+  int32 source_count = 5;
+  // Number of operators participated in aggregation
+  int32 operator_count = 6;
+  // Block height at which aggregation was completed
+  uint64 block_height = 7;
+  // Block range used for aggregation
+  BlockRange block_range = 8;
+}
+
+// BlockRange defines the range of blocks used for price aggregation
+message BlockRange {
+  // Start block height for aggregation
+  uint64 start = 1;
+  // End block height for aggregation
+  uint64 end = 2;
+}
