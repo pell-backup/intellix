@@ -17,7 +17,7 @@ services:
   eth:
     image: ghcr.io/foundry-rs/foundry:latest
     ports:
-      - "8747:8545"
+      - "${ETH_HOST_PORT-5006}:${CONTAINER_PORT:-8545}"
     entrypoint: [ "anvil", "--host", "0.0.0.0", "--chain-id", "1337" ]
     platform: ${PLATFORM:-linux/amd64}
     healthcheck:
