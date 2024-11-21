@@ -38,23 +38,19 @@ load_defaults
 operator_healthcheck
 
 ADMIN_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-SERVICE_MANAGER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/DataOracleServiceManager-Proxy.json" | jq -r .address)
+PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/PriceOraclePayInNativeConsumer.json" | jq -r .address)
 
 ## create a new task
-NUMBER_TO_BE_SQUARED=2
-THREADSHOLD=2 # percentage point
-QUORUM_NUMBERS=0x00
-cast send "$SERVICE_MANAGER_ADDRESS" "createNewTask(uint256,uint32,bytes)" $NUMBER_TO_BE_SQUARED $THREADSHOLD $QUORUM_NUMBERS --private-key "$ADMIN_KEY"
+cast send "PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "BTC" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
 ## wait for the task to be processed
 export TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-8}
 export TIMEOUT_FOR_TASK_PROCESS=$TIMEOUT_FOR_TASK_PROCESS
 echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
 sleep ${TIMEOUT_FOR_TASK_PROCESS}
-TASK_NUMBER=$(cast call "$SERVICE_MANAGER_ADDRESS" "taskNumber()(uint32)" --private-key "$ADMIN_KEY" | xargs printf "%d")
-RESULT=$(cast call "$SERVICE_MANAGER_ADDRESS" "numberSquareds(uint32)(uint256)" $((TASK_NUMBER - 1)))
-assert_eq "$RESULT" "4"
+RESULT=$(cast call "PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()(uint256)" --private-key "$ADMIN_KEY"
+assert_eq "$RESULT" "0"
 
-# cast call "$SERVICE_MANAGER_ADDRESS" "allTaskResponses(uint32)" $((TASK_NUMBER - 1))
+# cast call "PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "allTaskResponses(uint32)" $((TASK_NUMBER - 1))
 # RETRIEVER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorStateRetriever.json" | jq -r .address)
 # cast call "$RETRIEVER_ADDRESS" "GetQuorumsDVSStateAtBlock(uint32)" $TASK_ID --private-key "$ADMIN_KEY"

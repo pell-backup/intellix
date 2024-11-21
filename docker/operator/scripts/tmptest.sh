@@ -43,3 +43,17 @@ response=$(curl -sS -X GET "$URL")
 echo "response: $response"
 
 assert_eq "$response" "world"
+
+ADMIN_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/PriceOraclePayInNativeConsumer.json" | jq -r .address)
+
+## create a new task
+cast send "PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "BTC" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+
+## wait for the task to be processed
+export TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-8}
+export TIMEOUT_FOR_TASK_PROCESS=$TIMEOUT_FOR_TASK_PROCESS
+echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
+sleep ${TIMEOUT_FOR_TASK_PROCESS}
+RESULT=$(cast call "PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()(uint256)" --private-key "$ADMIN_KEY"
+assert_eq "$RESULT" "0"
