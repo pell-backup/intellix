@@ -51,10 +51,10 @@ function setup_operator_config {
   ## FIXME: taskgateway config should not be in the operator config. 
   ## migrate to dvs logic after fix
   # TODO: path should be relative to the operator home
-  SERVICE_MANAGER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/IncredibleSquaringServiceManager-Proxy.json" | jq -r .address)
+  DATA_ORACLE_SERVICE_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/DataOracleServiceManager-Proxy.json" | jq -r .address)
   cat <<EOF > $PELLDVS_HOME/config/taskgateway.config.json
 {
-    "service_manager_address": "$SERVICE_MANAGER_ADDRESS",
+    "service_manager_address": "$DATA_ORACLE_SERVICE_MANAGER",
     "operator_address": "$ADMIN_ADDRESS",
     "taskgateway_private_key_store_path": "$PELLDVS_HOME/keys/admin.ecdsa.key.json", 
     "rpc_url": "$ETH_RPC_URL",
