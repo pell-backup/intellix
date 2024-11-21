@@ -2,7 +2,7 @@ include common.mk
 
 PACKAGES=$(shell go list ./...)
 BUILDDIR?=$(CURDIR)/build
-OUTPUT?=$(BUILDDIR)/intellix
+OUTPUT?=$(BUILDDIR)/intellixd
 
 MODULE_NAME := github.com/IntelliXLabs/intellix
 HTTPS_GIT := https://$(MODULE_NAME).git
@@ -133,7 +133,7 @@ format:
 #? lint: Run latest golangci-lint linter
 lint:
 	@echo "--> Running linter"
-	go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run
+	@go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.60.3 run
 .PHONY: lint
 
 #? vulncheck: Run latest govulncheck
@@ -223,3 +223,4 @@ help: Makefile
 	@sed -n 's/^#?//p' $< | column -t -s ':' |  sort | sed -e 's/^/ /'
 .PHONY: help
 
+include mk-docker.mk
