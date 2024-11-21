@@ -1,0 +1,80 @@
+name: intellix
+
+services:
+  hardhat:
+    image: intellixlabs-intellix-hardhat:latest
+    environment:
+      - LOCALHOST_URL=http://eth:8545
+    depends_on:
+      eth:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "test", "-f", "/root/contracts_deployed_completed" ]
+      start_period: 50s
+      retries: 3
+      interval: 10s
+
+  eth:
+    image: ghcr.io/foundry-rs/foundry:latest
+    ports:
+      - "8747:8545"
+    entrypoint: [ "anvil", "--host", "0.0.0.0", "--chain-id", "1337" ]
+    platform: ${PLATFORM:-linux/amd64}
+    healthcheck:
+      test: [ "CMD", "cast", "block-number" ]
+      retries: 3
+      interval: 10s
+
+  emulator:
+    image: intellixlabs-intellix-pelldvs:latest
+    environment:
+      - ETH_RPC_URL=http://eth:8545
+      - ETH_WS_URL=ws://eth:8545
+    depends_on:
+      hardhat:
+        condition: service_started
+    entrypoint: [ "bash", "/root/scripts/init_emulator.sh" ]
+    healthcheck:
+      test: [ "CMD", "test", "-f", "/root/emulator_initialized" ]
+      start_period: 50s
+      retries: 3
+      interval: 10s
+
+  dvs:
+    image: intellixlabs-intellix-pelldvs:latest
+    environment:
+      - ETH_RPC_URL=http://eth:8545
+      - ETH_WS_URL=ws://eth:8545
+    depends_on:
+      emulator:
+        condition: service_started
+    entrypoint: [ "bash", "/root/scripts/start_dvs.sh" ]
+    volumes:
+      - ./pelldvs/scripts:/root/scripts
+
+  operator:
+    image: intellixlabs-intellix-operator:latest
+    environment:
+      - ETH_RPC_URL=http://eth:8545
+      - ETH_WS_URL=ws://eth:8545
+    depends_on:
+      dvs:
+        condition: service_started
+    entrypoint: [ "bash", "/root/scripts/start_operator.sh" ]
+    ports:
+      - "${HOST_PORT-8090}:${CONTAINER_PORT:-8090}"
+    volumes:
+      - ./operator/scripts:/root/scripts
+
+  test:
+    image: intellixlabs-intellix-operator:latest
+    environment:
+      - ETH_RPC_URL=http://eth:8545
+      - ETH_WS_URL=ws://eth:8545
+      - TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-10}
+    depends_on:
+      operator:
+        condition: service_started
+    entrypoint: [ "bash", "/root/scripts/tmptest.sh" ]
+    volumes:
+      - ./operator/scripts:/root/scripts
