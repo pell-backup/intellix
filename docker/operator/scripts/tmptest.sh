@@ -55,5 +55,5 @@ export TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-8}
 export TIMEOUT_FOR_TASK_PROCESS=$TIMEOUT_FOR_TASK_PROCESS
 echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
 sleep ${TIMEOUT_FOR_TASK_PROCESS}
-RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()(uint256)" --private-key "$ADMIN_KEY"
+RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY"
 assert_eq "$RESULT" "0"
