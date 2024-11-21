@@ -62,7 +62,7 @@ services:
         condition: service_started
     entrypoint: [ "bash", "/root/scripts/start_operator.sh" ]
     ports:
-      - "${HOST_PORT-8090}:${CONTAINER_PORT:-8090}"
+      - "${HOST_PORT:-8090}:${CONTAINER_PORT:-8090}"
     volumes:
       - ./operator/scripts:/root/scripts
 
