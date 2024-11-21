@@ -3,10 +3,13 @@ package app
 import (
 	"io"
 
+	"cosmossdk.io/store"
+
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
 	clienthelpers "cosmossdk.io/client/v2/helpers"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
+	storemetrics "cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
 	_ "cosmossdk.io/x/circuit" // import for side-effects
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
@@ -75,9 +78,8 @@ import (
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
-	intellixmodulekeeper "intellix/x/intellix/keeper"
-
 	pricemodulekeeper "intellix/x/price/keeper"
+
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	"intellix/docs"
@@ -143,12 +145,13 @@ type App struct {
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
 	ScopedKeepers             map[string]capabilitykeeper.ScopedKeeper
 
-	IntellixKeeper intellixmodulekeeper.Keeper
-	PriceKeeper    pricemodulekeeper.Keeper
+	PriceKeeper pricemodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
-	sm *module.SimulationManager
+	sm     *module.SimulationManager
+	cms    storetypes.CommitMultiStore
+	logger log.Logger
 }
 
 func init() {
@@ -248,7 +251,6 @@ func New(
 		&app.NFTKeeper,
 		&app.GroupKeeper,
 		&app.CircuitBreakerKeeper,
-		&app.IntellixKeeper,
 		&app.PriceKeeper,
 		// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	); err != nil {
@@ -282,6 +284,9 @@ func New(
 	}
 	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, overrideModules)
 	app.sm.RegisterStoreDecoders()
+
+	app.cms = store.NewCommitMultiStore(db, logger, storemetrics.NewNoOpMetrics())
+	app.logger = logger
 
 	// A custom InitChainer sets if extra pre-init-genesis logic is required.
 	// This is necessary for manually registered modules that do not support app wiring.
