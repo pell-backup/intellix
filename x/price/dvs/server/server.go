@@ -2,8 +2,8 @@ package server
 
 import (
 	"context"
-	"cosmossdk.io/log"
 	"fmt"
+	"github.com/0xPellNetwork/pelldvs/libs/log"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -145,7 +145,7 @@ func (k *Server) prepareTxFactory(ctx pkgcontext.Context) (tx.Factory, error) {
 	}
 
 	txf = txf.WithGasPrices(k.gasPrices).WithGasAdjustment(k.gasAdjustment)
-	txf = txf.WithChainID(ctx.ChainID())
+	txf = txf.WithChainID(fmt.Sprintf("%d", ctx.ChainID()))
 	txf = txf.WithSignMode(signing.SignMode_SIGN_MODE_DIRECT)
 
 	return txf, nil

@@ -2,27 +2,27 @@ package taskdispatcher
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"fmt"
-	avsi "github.com/0xPellNetwork/pelldvs/application"
-	"github.com/0xPellNetwork/pelldvs/avsi/types"
+	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
+	dvsservermanager "intellix/pkg/dvs_msg_handler"
+	"intellix/pkg/pelldvs"
+	pricetypes "intellix/x/price/dvs/types"
+	"sync"
+
+	"cosmossdk.io/math"
+	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
 	contractPriceOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/PriceOracle"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cometbft/cometbft/libs/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	dvsservermanager "intellix/pkg/dvs_msg_handler"
-	"intellix/pkg/pelldvs"
-	pricetypes "intellix/x/price/dvs/types"
-	"math/big"
-	"sync"
 )
 
 type TaskDispatcher struct {
 	service.BaseService
 
-	logger        log.Logger
+	logger        dvslog.Logger
 	pellDVSClient *pelldvs.Client
 	chains        map[uint64]*chainWatcher
 	mu            sync.Mutex
@@ -34,7 +34,7 @@ type chainWatcher struct {
 	client   *ethclient.Client
 }
 
-func NewTaskDispatcher(logger log.Logger, pellDVSClient *pelldvs.Client, configs []*ChainConfig) (*TaskDispatcher, error) {
+func NewTaskDispatcher(logger dvslog.Logger, pellDVSClient *pelldvs.Client, configs []*ChainConfig) (*TaskDispatcher, error) {
 	td := &TaskDispatcher{
 		logger:        logger,
 		pellDVSClient: pellDVSClient,
@@ -47,7 +47,7 @@ func NewTaskDispatcher(logger log.Logger, pellDVSClient *pelldvs.Client, configs
 		}
 	}
 
-	td.BaseService = *service.NewBaseService(logger, "TaskDispatcher", td)
+	td.BaseService = *service.NewBaseService(nil, "TaskDispatcher", td)
 	return td, nil
 }
 
@@ -121,11 +121,18 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractPriceOr
 		return
 	}
 
-	err = td.pellDVSClient.RequestDVS(context.Background(), &avsi.RequestProcessRequest{
-		Request: types.DVSRequest{
-			Data:    taskData,
-			Height:  int64(newTask.Raw.BlockNumber),
-			ChainID: new(big.Int).SetUint64(chainID),
+	quorumNumbers := make([]uint32, len(newTask.Task.QuorumNumbers))
+	for i, b := range newTask.Task.QuorumNumbers {
+		quorumNumbers[i] = uint32(b)
+	}
+
+	err = td.pellDVSClient.RequestDVS(context.Background(), &avsitypes.RequestProcessRequest{
+		Request: &avsitypes.DVSRequest{
+			Data:                       taskData,
+			Height:                     int64(newTask.Raw.BlockNumber),
+			ChainId:                    int64(chainID),
+			QuorumNumbers:              quorumNumbers,
+			QuorumThresholdPercentages: []uint32{newTask.Task.QuorumThresholdPercentage},
 		},
 	})
 	if err != nil {

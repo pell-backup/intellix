@@ -3,14 +3,11 @@ package taskgateway
 import (
 	"context"
 	"fmt"
-	tmclient "github.com/cometbft/cometbft/rpc/client/http"
-	tmtypes "github.com/cometbft/cometbft/types"
-	"github.com/cosmos/cosmos-sdk/codec"
-	sdktypes "github.com/cosmos/cosmos-sdk/codec/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
+	"net"
+	"net/rpc"
 
 	priceOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/PriceOracle"
-	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cometbft/cometbft/libs/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -19,35 +16,28 @@ import (
 	"intellix/x/price/types"
 
 	"sync"
-	"time"
 )
-
-var tmClientQuery = fmt.Sprintf("tm.event='%s'", types.EventTypeVoteFinalizedRequestPrice)
 
 type TaskGateway struct {
 	service.BaseService
 
+	server     *rpc.Server
+	serverAddr string
+	listener   net.Listener
+
 	cfg *TaskGatewayCfg
 	ctx context.Context
 
-	logger    log.Logger
+	logger    dvslog.Logger
 	ethClient *ethclient.Client
-	tmClient  *tmclient.HTTP
-	cdc       codec.Codec
 
 	contractPriceOracle *priceOracle.ContractPriceOracle
-	responseChan        chan *types.MsgVoteFinalizedRequestPrice
 	taskMap             sync.Map
 	nonceMap            sync.Map
 }
 
-func NewTaskGateway(logger log.Logger, ctx context.Context, cfg *TaskGatewayCfg) (*TaskGateway, error) {
+func NewTaskGateway(logger dvslog.Logger, ctx context.Context, cfg *TaskGatewayCfg) (*TaskGateway, error) {
 	ethClient, err := ethclient.Dial(cfg.EthEndpoint)
-	if err != nil {
-		return nil, err
-	}
-
-	tmClient, err := tmclient.New(cfg.BftNetworkRemote, "/websocket")
 	if err != nil {
 		return nil, err
 	}
@@ -57,101 +47,67 @@ func NewTaskGateway(logger log.Logger, ctx context.Context, cfg *TaskGatewayCfg)
 		return nil, err
 	}
 
+	server := rpc.NewServer()
 	tg := &TaskGateway{
+		server:              server,
 		cfg:                 cfg,
 		ctx:                 ctx,
 		logger:              logger,
 		ethClient:           ethClient,
-		tmClient:            tmClient,
-		cdc:                 newCodec(),
 		contractPriceOracle: contract,
-		responseChan:        make(chan *types.MsgVoteFinalizedRequestPrice, 100),
 		taskMap:             sync.Map{},
 		nonceMap:            sync.Map{},
 	}
+	if err := server.Register(tg); err != nil {
+		logger.Error("Failed to register RPC server", "error", err)
+		return nil, fmt.Errorf("failed to register RPC server: %v", err)
+	}
 
-	tg.BaseService = *service.NewBaseService(logger, "TaskGateway", tg)
+	tg.BaseService = *service.NewBaseService(nil, "TaskGateway", tg)
 	return tg, nil
 }
 
-func newCodec() codec.Codec {
-	registry := sdktypes.NewInterfaceRegistry()
-	registry.RegisterImplementations((*sdk.Msg)(nil), &types.MsgVoteFinalizedRequestPrice{})
-	return codec.NewProtoCodec(registry)
-}
-
 func (tg *TaskGateway) OnStart() error {
-	err := tg.tmClient.Start()
+	var err error
+	tg.listener, err = net.Listen("tcp", tg.serverAddr)
 	if err != nil {
-		return err
+		tg.logger.Error("Failed to start listener", "address", tg.serverAddr, "error", err)
+		panic(err)
 	}
-	go tg.processResponses(tg.ctx)
-	go tg.listenForVoteFinalizedRequestPrice()
+
+	go tg.server.Accept(tg.listener)
 	return nil
 }
 
-func (tg *TaskGateway) listenForVoteFinalizedRequestPrice() {
-	eventCh, err := tg.tmClient.Subscribe(tg.ctx, "task-gateway", tmClientQuery)
-	if err != nil {
-		tg.logger.Error("Error subscribing to VoteFinalizedRequestPrice", "err", err)
-		return
-	}
-
-	for {
-		select {
-		case <-tg.Quit():
-			return
-		case event := <-eventCh:
-			msg, err := tg.convertEventMsgVoteFinalizedRequestPrice(event.Data)
-			if err != nil {
-				tg.logger.Error("Error subscribing to VoteFinalizedRequestPrice", "err", err)
-				time.Sleep(2 * time.Second) // retry
-				continue
-			}
-			tg.responseChan <- msg
-		}
-	}
-}
-
-func (tg *TaskGateway) convertEventMsgVoteFinalizedRequestPrice(eventData tmtypes.TMEventData) (*types.MsgVoteFinalizedRequestPrice, error) {
-	tx, ok := eventData.(tmtypes.EventDataTx)
-	if !ok {
-		return nil, fmt.Errorf("expected EventDataTx, got %T", eventData)
-	}
-
-	// decode tx
-	var out = &types.MsgVoteFinalizedRequestPrice{}
-	err := tg.cdc.Unmarshal(tx.Tx, out)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
 func (tg *TaskGateway) OnStop() {
-	_ = tg.tmClient.Stop()
 	tg.ethClient.Close()
-	close(tg.responseChan)
-}
-
-func (tg *TaskGateway) processResponses(ctx context.Context) {
-	for response := range tg.responseChan {
-		tg.handleResponse(ctx, response)
+	if tg.listener != nil {
+		tg.listener.Close()
 	}
 }
 
-func (tg *TaskGateway) handleResponse(ctx context.Context, response *types.MsgVoteFinalizedRequestPrice) {
+func (tg *TaskGateway) RespondToTask(req *types.MsgVoteFinalizedRequestPrice, resp *RespondToTaskResponse) error {
+	err := tg.handleResponse(context.Background(), req)
+	if err != nil {
+		resp.Error = err.Error()
+		return err
+	}
+	resp.Error = ""
+	return nil
+}
+
+func (tg *TaskGateway) handleResponse(ctx context.Context, response *types.MsgVoteFinalizedRequestPrice) error {
 	value, loaded := tg.taskMap.LoadOrStore(response.TaskRaw.TaskIndex, response)
 	if loaded {
 		existingResponse := value.(*types.MsgVoteFinalizedRequestPrice)
 		if tg.shouldReplaceResponse(ctx, existingResponse, response) {
 			tg.taskMap.Store(response.TaskRaw.RequestId, response)
-			go tg.submitToChain(ctx, response)
+			return tg.submitToChain(ctx, response)
 		}
 	} else {
-		go tg.submitToChain(ctx, response)
+		return tg.submitToChain(ctx, response)
 	}
+	return nil
 }
 
 func (tg *TaskGateway) shouldReplaceResponse(ctx context.Context, existing, new *types.MsgVoteFinalizedRequestPrice) bool {
@@ -159,7 +115,7 @@ func (tg *TaskGateway) shouldReplaceResponse(ctx context.Context, existing, new 
 	return false
 }
 
-func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVoteFinalizedRequestPrice) {
+func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVoteFinalizedRequestPrice) error {
 	var sender = common.HexToAddress(tg.cfg.SenderAddress)
 	txOpts := &bind.TransactOpts{
 		From: sender,
@@ -171,12 +127,12 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVot
 	feeTokenAddr, err := convertAddressToString(response.TaskRaw.FeeToken)
 	if err != nil {
 		tg.logger.Error("Error converting fee token address", "err", err)
-		return
+		return err
 	}
 	cbAddr, err := convertAddressToString(response.TaskRaw.CallbackAddress)
 	if err != nil {
 		tg.logger.Error("Error converting callback address", "err", err)
-		return
+		return err
 	}
 
 	transaction, err := tg.contractPriceOracle.UpdatePrice(txOpts, priceOracle.IPriceOracleTask{
@@ -194,25 +150,26 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVot
 		Price:              response.PriceFeedResponse.Price.BigInt(),
 	}, priceOracle.IBLSSignatureCheckerNonSignerStakesAndSignature{
 		NonSignerQuorumBitmapIndices: response.ValidatedData.NonSignerQuorumBitmapIndices,
-		NonSignerPubkeys:             convertPbToBN254G1PointList(response.ValidatedData.NonSignersPubkeysG1),
-		QuorumApks:                   convertPbToBN254G1PointList(response.ValidatedData.QuorumApksG1),
-		ApkG2:                        *convertPbToBN254G2Point(response.ValidatedData.SignersApkG2),
-		Sigma:                        *convertPbToBN254G1Point(response.ValidatedData.SignersAggSigG1),
-		QuorumApkIndices:             response.ValidatedData.QuorumApkIndices,
-		TotalStakeIndices:            response.ValidatedData.TotalStakeIndices,
-		NonSignerStakeIndices:        convertUInt32ListToSlice(response.ValidatedData.NonSignerStakeIndices),
+		//NonSignerPubkeys:             convertPbToBN254G1PointList(response.ValidatedData.NonSignersPubkeysG1),
+		//QuorumApks:                   convertPbToBN254G1PointList(response.ValidatedData.QuorumApksG1),
+		//ApkG2:                        *convertPbToBN254G2Point(response.ValidatedData.SignersApkG2),
+		//Sigma:                        *convertPbToBN254G1Point(response.ValidatedData.SignersAggSigG1),
+		QuorumApkIndices:      response.ValidatedData.QuorumApkIndices,
+		TotalStakeIndices:     response.ValidatedData.TotalStakeIndices,
+		NonSignerStakeIndices: convertUInt32ListToSlice(response.ValidatedData.NonSignerStakeIndices),
 	})
 	if err != nil {
 		tg.logger.Error("Error assembling RequestPrice tx", "err", err)
-		return
+		return err
 	}
 
 	receipt, err := tg.sendTransaction(ctx, transaction)
 	if err != nil {
 		tg.logger.Error("Error sending transaction", "err", err)
-		return
+		return err
 	}
 	_ = receipt
+	return nil
 }
 
 func (tg *TaskGateway) sendTransaction(ctx context.Context, transaction *ethtypes.Transaction) (*ethtypes.Receipt, error) {

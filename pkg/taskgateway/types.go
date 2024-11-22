@@ -2,10 +2,8 @@ package taskgateway
 
 import (
 	"fmt"
-	priceOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/PriceOracle"
 	"github.com/ethereum/go-ethereum/common"
 	"intellix/pkg/pelldvs/types"
-	"math/big"
 )
 
 type TaskGatewayCfg struct {
@@ -40,6 +38,7 @@ func convertAddressToString(addrStr string) (*common.Address, error) {
 	return &addr, nil
 }
 
+/*
 func convertPbToBN254G1Point(pb *types.G1Point) *priceOracle.BN254G1Point {
 	return &priceOracle.BN254G1Point{
 		X: big.NewInt(0).SetBytes(pb.X),
@@ -67,11 +66,16 @@ func convertPbToBN254G2Point(pb *types.G2Point) *priceOracle.BN254G2Point {
 		},
 	}
 }
+*/
 
-func convertUInt32ListToSlice(list []*types.UInt32List) [][]uint32 {
+func convertUInt32ListToSlice(list []*types.NonSignerStakeIndice) [][]uint32 {
 	slice := make([][]uint32, len(list))
 	for i, l := range list {
-		slice[i] = l.Values
+		slice[i] = l.NonSignerStakeIndice
 	}
 	return slice
+}
+
+type RespondToTaskResponse struct {
+	Error string `json:"error"`
 }

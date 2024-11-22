@@ -21,7 +21,7 @@ validators:
 - name: alice
   bonded: 100000000stake
 
-pell_app:
+operator:
   operator_addr: '0x0000000000000000000000000000000000000001'
   wait_block_count: 10
 
