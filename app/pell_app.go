@@ -1,7 +1,6 @@
 package app
 
 import (
-	clienthelpers "cosmossdk.io/client/v2/helpers"
 	"fmt"
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
 	"github.com/0xPellNetwork/pelldvs/libs/log"
@@ -29,27 +28,22 @@ type PellApp struct {
 }
 
 type PellAppConfig struct {
-	*dvsconfig.Config
-	GatewayAddr    string  `mapstructure:"gateway_addr"`
-	RootDir        string  `mapstructure:"root_dir"`
-	OperatorAddr   string  `mapstructure:"operator_addr"`
+	DvsConfig *dvsconfig.Config `mapstructure:"-"`
+
+	RootDir      string `mapstructure:"root_dir"`
+	GatewayAddr  string `mapstructure:"gateway_addr"`
+	OperatorAddr string `mapstructure:"operator_address"`
+
 	WaitBlockCount int64   `mapstructure:"wait_block_count"`
 	GasPrices      string  `mapstructure:"gas_prices"`
 	GasAdjustment  float64 `mapstructure:"gas_adjustment"`
 }
 
 func (p PellAppConfig) Validate() error {
-	if p.RootDir == "" {
-		home, err := clienthelpers.GetNodeHomeDirectory("." + Name)
-		if err != nil {
-			return err
-		}
-		p.RootDir = home
-	}
 	if p.OperatorAddr == "" {
 		return fmt.Errorf("no operator address provided")
 	}
-	if p.Config == nil || p.Config.ValidateBasic() != nil {
+	if p.DvsConfig == nil || p.DvsConfig.ValidateBasic() != nil {
 		return fmt.Errorf("invalid pell config")
 	}
 	if p.GatewayAddr == "" {
@@ -72,6 +66,15 @@ func (p *PellApp) AppCodec() codec.Codec {
 	return p.appCodec
 }
 
+func (p *PellApp) Start() error {
+	if err := p.dvsNode.Start(); err != nil {
+		return err
+	}
+	c := make(chan interface{})
+	<-c
+	return nil
+}
+
 func NewPellApp(
 	logger log.Logger,
 	config *PellAppConfig,
@@ -84,25 +87,16 @@ func NewPellApp(
 	app.appCodec = app.AppCodec()
 	clientCtx := NewClientContext(app.appCodec, app.interfaceRegistry, tx.ConfigOptions{})
 
-	if config.RootDir == "" {
-		config.RootDir = DefaultNodeHome
-	}
-
-	config.Config.RootDir = config.RootDir
-	config.Config.SetRoot(config.RootDir)
-	dvsconfig.EnsureRoot(config.RootDir)
+	config.DvsConfig.RootDir = config.RootDir
+	config.DvsConfig.SetRoot(config.RootDir)
+	dvsconfig.EnsureRoot(config.DvsConfig.RootDir)
 
 	// dvs client
 	var err error
-	app.dvsNode, err = pelldvs.NewNode(app.logger, app, config.Config)
+	app.dvsNode, err = pelldvs.NewNode(app.logger, app, config.DvsConfig)
 	if err != nil {
 		panic(err)
 	}
-	go func() {
-		if err := app.dvsNode.Start(); err != nil {
-			logger.Error("failed to start dvs node", "error", err)
-		}
-	}()
 
 	//dvs server manager
 	app.DvsServer, err = dvsserver.NewServer(

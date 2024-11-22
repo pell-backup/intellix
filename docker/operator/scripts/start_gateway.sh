@@ -14,7 +14,6 @@ function load_defaults {
   export PELLDVS_HOME=${PELLDVS_HOME:-/root/.pelldvs}
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
-  export GATEWAY_ADDR=${GATEWAY_ADDR:-gateway:8949}
 
   export AGGREGATOR_RPC_SERVER=${AGGREGATOR_RPC_SERVER:-dvs:26653}
 }
@@ -49,21 +48,25 @@ function setup_admin_key {
 function setup_operator_config {
   setup_admin_key
 
+  ## FIXME: taskgateway config should not be in the operator config.
   ## migrate to dvs logic after fix
   # TODO: path should be relative to the operator home
+  # TODO: sender_address should be the operator address
   DATA_ORACLE_SERVICE_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/DataOracleServiceManager-Proxy.json" | jq -r .address)
-  cat <<EOF > $PELLDVS_HOME/config/operator.config.json
+  cat <<EOF > $PELLDVS_HOME/config/gateway.config.json
 {
-  "operator_address": "$ADMIN_ADDRESS",
-  "gateway_addr": "$GATEWAY_ADDR"
+  "server_addr": "0.0.0.0:8949",
+  "sender_address": "$ADMIN_ADDRESS",
+  "eth_endpoint": "$ETH_WS_URL",
+  "contract_address": "$DATA_ORACLE_SERVICE_MANAGER",
+  "private_key_store_path": "$PELLDVS_HOME/keys/admin.ecdsa.key.json"
 }
 EOF
 }
 
 function start_operator {
   # intellixd --home "$PELLDVS_HOME"
-#  cat /root/.pelldvs/config/config.toml
-  PELLDVS_HOME=$PELLDVS_HOME  intellixd start-operator
+  PELLDVS_HOME=$PELLDVS_HOME intellixd start-task-gateway
 }
 
 ## start sshd

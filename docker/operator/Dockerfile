@@ -29,7 +29,7 @@ WORKDIR /app/intellixd
 
 ## Build the app
 # TODO: use the real intellix app
-COPY ./docker/operator/tmpapp/ /app/intellixd/
+COPY .. /app/intellixd/
 RUN --mount=type=cache,target="/go/pkg/mod" \
     --mount=type=cache,target="/root/.cache/go-build" \
     make build
@@ -44,7 +44,7 @@ ENV PATH="$PATH:/root/.foundry/bin"
 RUN foundryup
 
 RUN go install github.com/mikefarah/yq/v4@latest
-COPY --from=build /app/intellixd/bin/intellixd /usr/bin/intellixd
+COPY --from=build /app/intellixd/build/intellixd /usr/bin/intellixd
 COPY --from=build /app/pelldvs/build/pelldvs /usr/bin/pelldvs
 COPY ./docker/operator/scripts /root/scripts
 COPY ./docker/ssh /root/.ssh

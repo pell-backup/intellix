@@ -81,7 +81,7 @@ include tests.mk
 
 #? build: Build Intellixd
 build:
-	CGO_ENABLED=$(CGO_ENABLED) go build $(BUILD_FLAGS) -tags '$(BUILD_TAGS)' -o $(OUTPUT) ./cmd/intellixd/
+	go build -mod=readonly -ldflags "-s -w" -o $(OUTPUT) ./cmd/intellixd/
 .PHONY: build
 
 #? install: Install Intellixd to GOBIN
