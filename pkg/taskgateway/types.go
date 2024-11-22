@@ -10,24 +10,24 @@ import (
 )
 
 type TaskGatewayCfg struct {
-	SenderAddress    string `mapstructure:"sender_address"`
-	EthEndpoint      string `mapstructure:"eth_endpoint"`
-	BftNetworkRemote string `mapstructure:"bft_network_remote"`
-	ContractAddress  string `mapstructure:"contract_address"`
+	ServerAddr      string `mapstructure:"server_addr"`
+	EthEndpoint     string `mapstructure:"eth_endpoint"`
+	SenderAddress   string `mapstructure:"sender_address"`
+	ContractAddress string `mapstructure:"contract_address"`
 }
 
 func (t TaskGatewayCfg) Validate() error {
 	if t.EthEndpoint == "" {
 		return fmt.Errorf("eth endpoint cannot be empty")
 	}
-	if t.BftNetworkRemote == "" {
-		return fmt.Errorf("cometbft network remote cannot be empty")
-	}
 	if t.ContractAddress == "" {
 		return fmt.Errorf("contract address cannot be empty")
 	}
 	if t.SenderAddress == "" {
 		return fmt.Errorf("sender address cannot be empty")
+	}
+	if t.ServerAddr == "" {
+		return fmt.Errorf("server address cannot be empty")
 	}
 	return nil
 }

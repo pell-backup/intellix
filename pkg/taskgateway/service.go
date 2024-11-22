@@ -54,6 +54,7 @@ func NewTaskGateway(logger dvslog.Logger, ctx context.Context, cfg *TaskGatewayC
 		ctx:                ctx,
 		logger:             logger,
 		ethClient:          ethClient,
+		serverAddr:         cfg.ServerAddr,
 		contractDataOracle: contract,
 		taskMap:            sync.Map{},
 		nonceMap:           sync.Map{},

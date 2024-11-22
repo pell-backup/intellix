@@ -287,22 +287,18 @@ func taskGatewayCommand() *cobra.Command {
 				return errors.New("config file not set")
 			}
 
-			senderAddress := viper.GetString("task_gateway.sender_address")
-			ethEndpoint := viper.GetString("task_gateway.eth_endpoint")
-			bftNetworkRemote := viper.GetString("task_gateway.bft_network_remote")
-			contractAddress := viper.GetString("task_gateway.contract_address")
-
-			if senderAddress == "" || ethEndpoint == "" || bftNetworkRemote == "" || contractAddress == "" {
-				return errors.New("task_gateway config is not set")
+			conf := &taskgateway.TaskGatewayCfg{}
+			err := viper.UnmarshalKey("task_gateway", conf)
+			if err != nil {
+				return err
+			}
+			err = conf.Validate()
+			if err != nil {
+				return err
 			}
 
 			dvsLogger := pkglogger.NewDVSLogAdapter(serverCtx.Logger)
-			taskGateway, err := taskgateway.NewTaskGateway(dvsLogger, context.Background(), &taskgateway.TaskGatewayCfg{
-				SenderAddress:    senderAddress,
-				EthEndpoint:      ethEndpoint,
-				BftNetworkRemote: bftNetworkRemote,
-				ContractAddress:  contractAddress,
-			})
+			taskGateway, err := taskgateway.NewTaskGateway(dvsLogger, context.Background(), conf)
 			if err != nil {
 				return fmt.Errorf("failed to create TaskGateway: %w", err)
 			}
