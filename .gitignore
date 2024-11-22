@@ -8,5 +8,12 @@ release/
 *.log
 *.ign
 build/*
+!/build/.gitkeep
 dist/*
+test/e2e/homes/*
+!test/e2e/homes/.gitkeep
+test/e2e/build/*
+!test/e2e/build/.gitkeep
+.env
+#!test/e2e/dockers/contracts-price-dvs/.env
 /config.dev.yml

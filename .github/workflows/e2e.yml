@@ -1,0 +1,45 @@
+name: e2e
+# Runs the CI end-to-end test network on all pushes to v0.38.x
+# and every pull request, but only if any Go files have been changed.
+on:
+  workflow_dispatch: # allow running workflow manually
+  pull_request:
+  push:
+    branches:
+      - master
+jobs:
+  e2e-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      TAG: ${{ github.event.pull_request.head.sha || github.workflow_sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: technote-space/get-diff-action@v6
+        with:
+          PATTERNS: |
+            **/**.go
+            go.mod
+            go.sum
+      - name: setup go private modules
+        env:
+          PELL_GH_TOKEN: ${{ secrets.PELL_GH_TOKEN }}
+          INTELLIX_GH_TOKEN: ${{ secrets.INTELLIX_GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          go env -w GOPRIVATE=github.com/0xPellNetwork,github.com/IntelliXLabs
+          go env -w GONOSUMDB=github.com/0xPellNetwork,github.com/IntelliXLabs
+          git config --global url."https://${PELL_GH_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
+          git config --global url."https://${INTELLIX_GH_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
+      - name: Build docker images
+        run: make docker-build
+      - name: Start services
+        run: make docker-up
+      - name: sleep 60 seconds
+        run: sleep 60
+      - name: Test services
+        run: cd docker && docker compose run --rm test
+      - name: Stop services
+        run: make docker-down
+        if: always()
