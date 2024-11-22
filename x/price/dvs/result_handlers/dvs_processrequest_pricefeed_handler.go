@@ -1,7 +1,7 @@
 package resulthandlers
 
 import (
-	contractPriceOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/PriceOracle"
+	contractDataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"golang.org/x/crypto/sha3"
@@ -41,7 +41,7 @@ func (p *ProcessRequestPriceFeedResultHandler) getAbiEncodeData(msg proto.Messag
 		},
 	}
 
-	bytes, err := arguments.Pack(&contractPriceOracle.IPriceOracleTaskResponse{
+	bytes, err := arguments.Pack(&contractDataOracle.IDataOracleTaskResponse{
 		ReferenceTaskIndex: r.TaskIndex,
 		Price:              r.Price.BigInt(),
 	})

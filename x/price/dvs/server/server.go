@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/spf13/pflag"
 	pkgcontext "intellix/pkg/context"
+	"intellix/pkg/taskgateway"
 	"intellix/x/price/types"
 )
 
@@ -22,8 +23,9 @@ type (
 		operatorAddress string
 		gasPrices       string
 		gasAdjustment   float64
+		waitBlockCount  int64 // price feed wait block count
 
-		waitBlockCount int64 // price feed wait block count
+		taskGatewayClient *taskgateway.Client
 	}
 )
 
@@ -31,12 +33,13 @@ func NewServer(
 	logger log.Logger,
 	clientCtx client.Context,
 
+	gatewayAddr string,
 	operatorAddress string,
 	waitBlockCount int64,
 
 	gasPrices string,
 	gasAdjustment float64,
-) Server {
+) (Server, error) {
 	if gasPrices == "" {
 		gasPrices = "0.1uatom"
 	}
@@ -60,7 +63,14 @@ func NewServer(
 	if operatorAddress != "" {
 		k.SetOperatorAddress(operatorAddress)
 	}
-	return k
+
+	taskGatewayClient, err := taskgateway.NewClient(gatewayAddr, logger)
+	if err != nil {
+		return Server{}, err
+	}
+	k.taskGatewayClient = taskGatewayClient
+
+	return k, nil
 }
 
 // Logger returns a module-specific logger.

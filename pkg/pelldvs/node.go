@@ -19,6 +19,13 @@ type Node struct {
 	node    *node.Node
 }
 
+func (n *Node) Start() error {
+	if n.node == nil {
+		return fmt.Errorf("node is nil")
+	}
+	return n.node.Start()
+}
+
 func NewNode(
 	logger log.Logger,
 	app avsitypes.Application,

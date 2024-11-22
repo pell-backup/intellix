@@ -1,9 +1,11 @@
 package taskdispatcher
 
+import "C"
 import (
 	"context"
 	"fmt"
 	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	"intellix/pkg/pelldvs"
 	pricetypes "intellix/x/price/dvs/types"
@@ -11,7 +13,7 @@ import (
 
 	"cosmossdk.io/math"
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
-	contractPriceOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/PriceOracle"
+	contractDataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cometbft/cometbft/libs/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -30,7 +32,7 @@ type TaskDispatcher struct {
 
 type chainWatcher struct {
 	chainID  uint64
-	contract *contractPriceOracle.ContractPriceOracle
+	contract *contractDataOracle.ContractDataOracle
 	client   *ethclient.Client
 }
 
@@ -67,7 +69,7 @@ func (td *TaskDispatcher) AddChain(config *ChainConfig) error {
 		return fmt.Errorf("failed to connect to Ethereum client: %w", err)
 	}
 
-	contract, err := contractPriceOracle.NewContractPriceOracle(common.HexToAddress(config.ContractAddress), ethClient)
+	contract, err := contractDataOracle.NewContractDataOracle(common.HexToAddress(config.ContractAddress), ethClient)
 	if err != nil {
 		return fmt.Errorf("failed to instantiate contract: %w", err)
 	}
@@ -89,7 +91,7 @@ func (td *TaskDispatcher) Start() error {
 }
 
 func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
-	newTaskChan := make(chan *contractPriceOracle.ContractPriceOracleNewTaskCreated)
+	newTaskChan := make(chan *contractDataOracle.ContractDataOracleNewTaskCreated)
 	// TODO: add index by height
 	// TODO: add scan mode
 	sub, err := chain.contract.WatchNewTaskCreated(&bind.WatchOpts{}, newTaskChan, nil)
@@ -112,7 +114,7 @@ func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
 	}
 }
 
-func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractPriceOracle.ContractPriceOracleNewTaskCreated) {
+func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractDataOracle.ContractDataOracleNewTaskCreated) {
 	td.logger.Info("New task created", "chainID", chainID, "TaskIndex", newTask.TaskIndex, "RequestId", newTask.Task.RequestId)
 
 	taskData, err := td.serializeTask(chainID, newTask)
@@ -143,30 +145,38 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractPriceOr
 	td.logger.Info("Task sent to PellDVS successfully", "chainID", chainID, "TaskIndex", newTask.TaskIndex)
 }
 
-func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractPriceOracle.ContractPriceOracleNewTaskCreated) ([]byte, error) {
+func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractDataOracle.ContractDataOracleNewTaskCreated) ([]byte, error) {
 	priceFeed, err := ParsePriceFeed(newTask.Task.RequestData)
 	if err != nil {
 		td.logger.Error("Failed to parse price feed", "chainID", chainID, "error", err)
 		return nil, err
 	}
 	task := newTask.Task
-	taskRequest := &pricetypes.ProcessRequestPriceFeedIn{
-		Task: &pricetypes.TaskRequest{
-			TaskIndex:                 newTask.TaskIndex,
-			RequestId:                 task.RequestId[:],
-			FeeToken:                  task.FeeToken.Hex(),
-			Payment:                   math.NewIntFromBigInt(task.Payment),
-			RequestData:               task.RequestData,
-			CallbackAddress:           task.CallbackAddress.Hex(),
-			CallbackFunctionId:        task.CallbackFunctionId[:],
-			TaskCreatedBlock:          task.TaskCreatedBlock,
-			QuorumNumbers:             task.QuorumNumbers,
-			QuorumThresholdPercentage: task.QuorumThresholdPercentage,
-		},
-		PriceFeed: &pricetypes.PriceFeedParam{
-			BaseSymbol:  priceFeed.BaseSymbol,
-			QuoteSymbol: priceFeed.QuoteSymbol,
-		},
+	var taskRequest sdk.Msg
+
+	// TODO: add more task-types
+	if task.TaskType == TaskTypePrice {
+		taskRequest = &pricetypes.ProcessRequestPriceFeedIn{
+			Task: &pricetypes.TaskRequest{
+				TaskIndex:                 newTask.TaskIndex,
+				RequestId:                 task.RequestId[:],
+				FeeToken:                  task.FeeToken.Hex(),
+				Payment:                   math.NewIntFromBigInt(task.Payment),
+				RequestData:               task.RequestData,
+				CallbackAddress:           task.CallbackAddress.Hex(),
+				CallbackFunctionId:        task.CallbackFunctionId[:],
+				TaskCreatedBlock:          task.TaskCreatedBlock,
+				QuorumNumbers:             task.QuorumNumbers,
+				QuorumThresholdPercentage: task.QuorumThresholdPercentage,
+			},
+			PriceFeed: &pricetypes.PriceFeedParam{
+				BaseSymbol:  priceFeed.BaseSymbol,
+				QuoteSymbol: priceFeed.QuoteSymbol,
+			},
+		}
+	}
+	if taskRequest == nil {
+		return nil, fmt.Errorf("invalid task request")
 	}
 
 	return dvsservermanager.EncodeMsgs(taskRequest)

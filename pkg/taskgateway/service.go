@@ -7,7 +7,7 @@ import (
 	"net"
 	"net/rpc"
 
-	priceOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/PriceOracle"
+	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -31,9 +31,9 @@ type TaskGateway struct {
 	logger    dvslog.Logger
 	ethClient *ethclient.Client
 
-	contractPriceOracle *priceOracle.ContractPriceOracle
-	taskMap             sync.Map
-	nonceMap            sync.Map
+	contractDataOracle *dataOracle.ContractDataOracle
+	taskMap            sync.Map
+	nonceMap           sync.Map
 }
 
 func NewTaskGateway(logger dvslog.Logger, ctx context.Context, cfg *TaskGatewayCfg) (*TaskGateway, error) {
@@ -42,21 +42,21 @@ func NewTaskGateway(logger dvslog.Logger, ctx context.Context, cfg *TaskGatewayC
 		return nil, err
 	}
 
-	contract, err := priceOracle.NewContractPriceOracle(common.HexToAddress(cfg.ContractAddress), ethClient)
+	contract, err := dataOracle.NewContractDataOracle(common.HexToAddress(cfg.ContractAddress), ethClient)
 	if err != nil {
 		return nil, err
 	}
 
 	server := rpc.NewServer()
 	tg := &TaskGateway{
-		server:              server,
-		cfg:                 cfg,
-		ctx:                 ctx,
-		logger:              logger,
-		ethClient:           ethClient,
-		contractPriceOracle: contract,
-		taskMap:             sync.Map{},
-		nonceMap:            sync.Map{},
+		server:             server,
+		cfg:                cfg,
+		ctx:                ctx,
+		logger:             logger,
+		ethClient:          ethClient,
+		contractDataOracle: contract,
+		taskMap:            sync.Map{},
+		nonceMap:           sync.Map{},
 	}
 	if err := server.Register(tg); err != nil {
 		logger.Error("Failed to register RPC server", "error", err)
@@ -135,7 +135,7 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVot
 		return err
 	}
 
-	transaction, err := tg.contractPriceOracle.UpdatePrice(txOpts, priceOracle.IPriceOracleTask{
+	transaction, err := tg.contractDataOracle.ResponseToTask(txOpts, dataOracle.IDataOracleTask{
 		RequestId:                 [32]byte(response.TaskRaw.RequestId),
 		FeeToken:                  *feeTokenAddr,
 		Payment:                   response.TaskRaw.Payment.BigInt(),
@@ -145,18 +145,18 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVot
 		TaskCreatedBlock:          response.TaskRaw.TaskCreatedBlock,
 		QuorumNumbers:             response.TaskRaw.QuorumNumbers,
 		QuorumThresholdPercentage: response.TaskRaw.QuorumThresholdPercentage,
-	}, priceOracle.IPriceOracleTaskResponse{
+	}, dataOracle.IDataOracleTaskResponse{
 		ReferenceTaskIndex: response.PriceFeedResponse.ReferenceTaskIndex,
 		Price:              response.PriceFeedResponse.Price.BigInt(),
-	}, priceOracle.IBLSSignatureCheckerNonSignerStakesAndSignature{
+	}, dataOracle.IBLSSignatureCheckerNonSignerStakesAndSignature{
 		NonSignerQuorumBitmapIndices: response.ValidatedData.NonSignerQuorumBitmapIndices,
-		//NonSignerPubkeys:             convertPbToBN254G1PointList(response.ValidatedData.NonSignersPubkeysG1),
-		//QuorumApks:                   convertPbToBN254G1PointList(response.ValidatedData.QuorumApksG1),
-		//ApkG2:                        *convertPbToBN254G2Point(response.ValidatedData.SignersApkG2),
-		//Sigma:                        *convertPbToBN254G1Point(response.ValidatedData.SignersAggSigG1),
-		QuorumApkIndices:      response.ValidatedData.QuorumApkIndices,
-		TotalStakeIndices:     response.ValidatedData.TotalStakeIndices,
-		NonSignerStakeIndices: convertUInt32ListToSlice(response.ValidatedData.NonSignerStakeIndices),
+		NonSignerPubkeys:             convertNonSignersPubkeysG1(response.ValidatedData.NonSignersPubkeysG1),
+		QuorumApks:                   convertQuorumApks(response.ValidatedData.QuorumApksG1),
+		ApkG2:                        *convertApkG2(response.ValidatedData.SignersApkG2),
+		Sigma:                        *convertSigma(response.ValidatedData.SignersAggSigG1),
+		QuorumApkIndices:             response.ValidatedData.QuorumApkIndices,
+		TotalStakeIndices:            response.ValidatedData.TotalStakeIndices,
+		NonSignerStakeIndices:        convertNonSignerStakeIndices(response.ValidatedData.NonSignerStakeIndices),
 	})
 	if err != nil {
 		tg.logger.Error("Error assembling RequestPrice tx", "err", err)

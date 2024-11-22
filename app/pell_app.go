@@ -30,6 +30,7 @@ type PellApp struct {
 
 type PellAppConfig struct {
 	*dvsconfig.Config
+	GatewayAddr    string  `mapstructure:"gateway_addr"`
 	RootDir        string  `mapstructure:"root_dir"`
 	OperatorAddr   string  `mapstructure:"operator_addr"`
 	WaitBlockCount int64   `mapstructure:"wait_block_count"`
@@ -50,6 +51,9 @@ func (p PellAppConfig) Validate() error {
 	}
 	if p.Config == nil || p.Config.ValidateBasic() != nil {
 		return fmt.Errorf("invalid pell config")
+	}
+	if p.GatewayAddr == "" {
+		return fmt.Errorf("no gateway address provided")
 	}
 	return nil
 }
@@ -94,9 +98,20 @@ func NewPellApp(
 	if err != nil {
 		panic(err)
 	}
+	go func() {
+		if err := app.dvsNode.Start(); err != nil {
+			logger.Error("failed to start dvs node", "error", err)
+		}
+	}()
 
 	//dvs server manager
-	app.DvsServer = dvsserver.NewServer(app.logger, clientCtx, config.OperatorAddr, config.WaitBlockCount, config.GasPrices, config.GasAdjustment)
+	app.DvsServer, err = dvsserver.NewServer(
+		app.logger, clientCtx, config.GatewayAddr, config.OperatorAddr,
+		config.WaitBlockCount, config.GasPrices, config.GasAdjustment,
+	)
+	if err != nil {
+		panic(err)
+	}
 	dvsservermanager.InitDvsMsgHelper(app.appCodec)
 	app.PostProcessRequestServer = dvsservermanager.GetPostProcessRequestHandler()
 	app.ProcessRequestServer = dvsservermanager.GetProcessRequestHandler()

@@ -4,7 +4,28 @@ import (
 	"bytes"
 	"fmt"
 	cbor "github.com/fxamacker/cbor/v2"
+	"math/big"
 )
+
+type Config struct {
+	Chains     []*ChainConfig `mapstructure:"chains"`
+	DvsAddress string         `mapstructure:"dvs_address"`
+}
+
+func (c Config) Validate() error {
+	if len(c.Chains) == 0 {
+		return fmt.Errorf("no chain specified")
+	}
+	if c.DvsAddress == "" {
+		return fmt.Errorf("dvs address is required")
+	}
+	for _, chain := range c.Chains {
+		if err := chain.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 type ChainConfig struct {
 	ChainID         uint64 `mapstructure:"chain_id"`
@@ -49,3 +70,7 @@ func ParsePriceFeed(data []byte) (*PriceFeedParam, error) {
 
 	return &PriceFeedParam{baseSymbol, quoteSymbol}, nil
 }
+
+var (
+	TaskTypePrice = new(big.Int).SetInt64(1)
+)
