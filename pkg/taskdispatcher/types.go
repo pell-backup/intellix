@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	cbor "github.com/fxamacker/cbor/v2"
-	"math/big"
 )
 
 type Config struct {
@@ -71,6 +70,6 @@ func ParsePriceFeed(data []byte) (*PriceFeedParam, error) {
 	return &PriceFeedParam{baseSymbol, quoteSymbol}, nil
 }
 
-var (
-	TaskTypePrice = new(big.Int).SetInt64(1)
+const (
+	TaskTypePrice int64 = 1
 )

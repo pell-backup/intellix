@@ -13,7 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"intellix/x/price/types"
 
 	"sync"
 )
@@ -87,7 +86,7 @@ func (tg *TaskGateway) OnStop() {
 	}
 }
 
-func (tg *TaskGateway) RespondToTask(req *types.MsgVoteFinalizedRequestPrice, resp *RespondToTaskResponse) error {
+func (tg *TaskGateway) RespondToTask(req *RPCVoteFinalizedRequestPrice, resp *RespondToTaskResponse) error {
 	err := tg.handleResponse(context.Background(), req)
 	if err != nil {
 		resp.Error = err.Error()
@@ -97,12 +96,12 @@ func (tg *TaskGateway) RespondToTask(req *types.MsgVoteFinalizedRequestPrice, re
 	return nil
 }
 
-func (tg *TaskGateway) handleResponse(ctx context.Context, response *types.MsgVoteFinalizedRequestPrice) error {
+func (tg *TaskGateway) handleResponse(ctx context.Context, response *RPCVoteFinalizedRequestPrice) error {
 	value, loaded := tg.taskMap.LoadOrStore(response.TaskRaw.TaskIndex, response)
 	if loaded {
-		existingResponse := value.(*types.MsgVoteFinalizedRequestPrice)
+		existingResponse := value.(*RPCVoteFinalizedRequestPrice)
 		if tg.shouldReplaceResponse(ctx, existingResponse, response) {
-			tg.taskMap.Store(response.TaskRaw.RequestId, response)
+			tg.taskMap.Store(response.TaskRaw.RequestID, response)
 			return tg.submitToChain(ctx, response)
 		}
 	} else {
@@ -111,18 +110,24 @@ func (tg *TaskGateway) handleResponse(ctx context.Context, response *types.MsgVo
 	return nil
 }
 
-func (tg *TaskGateway) shouldReplaceResponse(ctx context.Context, existing, new *types.MsgVoteFinalizedRequestPrice) bool {
+func (tg *TaskGateway) shouldReplaceResponse(ctx context.Context, existing, new *RPCVoteFinalizedRequestPrice) bool {
 	// TODO: add security threshold comparison
 	return false
 }
 
-func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVoteFinalizedRequestPrice) error {
+func (tg *TaskGateway) submitToChain(ctx context.Context, resp *RPCVoteFinalizedRequestPrice) error {
 	var sender = common.HexToAddress(tg.cfg.SenderAddress)
 	txOpts := &bind.TransactOpts{
 		From: sender,
 		Signer: func(common.Address, *ethtypes.Transaction) (*ethtypes.Transaction, error) {
 			return nil, nil
 		},
+	}
+
+	response, err := resp.ToProtoMessage()
+	if err != nil {
+		tg.logger.Error("Error converting response to proto message", "err", err)
+		return err
 	}
 
 	feeTokenAddr, err := convertAddressToString(response.TaskRaw.FeeToken)
@@ -136,7 +141,7 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVot
 		return err
 	}
 
-	transaction, err := tg.contractDataOracle.ResponseToTask(txOpts, dataOracle.IDataOracleTask{
+	task := dataOracle.IDataOracleTask{
 		RequestId:                 [32]byte(response.TaskRaw.RequestId),
 		FeeToken:                  *feeTokenAddr,
 		Payment:                   response.TaskRaw.Payment.BigInt(),
@@ -146,10 +151,12 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVot
 		TaskCreatedBlock:          response.TaskRaw.TaskCreatedBlock,
 		QuorumNumbers:             response.TaskRaw.QuorumNumbers,
 		QuorumThresholdPercentage: response.TaskRaw.QuorumThresholdPercentage,
-	}, dataOracle.IDataOracleTaskResponse{
+	}
+	taskResp := dataOracle.IDataOracleTaskResponse{
 		ReferenceTaskIndex: response.PriceFeedResponse.ReferenceTaskIndex,
 		Price:              response.PriceFeedResponse.Price.BigInt(),
-	}, dataOracle.IBLSSignatureCheckerNonSignerStakesAndSignature{
+	}
+	sign := dataOracle.IBLSSignatureCheckerNonSignerStakesAndSignature{
 		NonSignerQuorumBitmapIndices: response.ValidatedData.NonSignerQuorumBitmapIndices,
 		NonSignerPubkeys:             convertNonSignersPubkeysG1(response.ValidatedData.NonSignersPubkeysG1),
 		QuorumApks:                   convertQuorumApks(response.ValidatedData.QuorumApksG1),
@@ -158,7 +165,11 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *types.MsgVot
 		QuorumApkIndices:             response.ValidatedData.QuorumApkIndices,
 		TotalStakeIndices:            response.ValidatedData.TotalStakeIndices,
 		NonSignerStakeIndices:        convertNonSignerStakeIndices(response.ValidatedData.NonSignerStakeIndices),
-	})
+	}
+	tg.logger.Info("Submitting response to chain", "task", fmt.Sprintf("%+v", task),
+		"taskResp", fmt.Sprintf("%+v", taskResp), "signer", fmt.Sprintf("%+v", sign))
+
+	transaction, err := tg.contractDataOracle.ResponseToTask(txOpts, task, taskResp, sign)
 	if err != nil {
 		tg.logger.Error("Error assembling RequestPrice tx", "err", err)
 		return err

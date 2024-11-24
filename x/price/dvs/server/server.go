@@ -62,6 +62,10 @@ func NewServer(
 
 	if operatorAddress != "" {
 		k.SetOperatorAddress(operatorAddress)
+		_, err := clientCtx.Keyring.Key(clientCtx.GetFromName())
+		if err != nil {
+			return Server{}, fmt.Errorf("operator key not found in keyring: %w", err)
+		}
 	}
 
 	taskGatewayClient, err := taskgateway.NewClient(gatewayAddr, logger)

@@ -28,6 +28,7 @@ func NewClient(
 		remoteAddr = config.DefaultConfig().RPC.ListenAddress
 	}
 
+	c.logger.Info("NewDVSClient", "remoteAddr", remoteAddr)
 	dvsClient, err := client.New(remoteAddr)
 	if err != nil {
 		c.logger.Error("Failed to create DVS client", "error", err)

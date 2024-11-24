@@ -52,20 +52,6 @@ services:
     volumes:
       - ./pelldvs/scripts:/root/scripts
 
-  gateway:
-    image: intellixlabs-intellix-operator:latest
-    environment:
-      - ETH_RPC_URL=http://eth:8545
-      - ETH_WS_URL=ws://eth:8545
-    depends_on:
-      dvs:
-        condition: service_started
-    entrypoint: [ "bash", "/root/scripts/start_gateway.sh" ]
-    ports:
-      - "${HOST_PORT:-8092}:${CONTAINER_PORT:-8949}"
-    volumes:
-      - ./operator/scripts:/root/scripts
-
   dispatcher:
     image: intellixlabs-intellix-operator:latest
     environment:
@@ -80,6 +66,20 @@ services:
     volumes:
       - ./operator/scripts:/root/scripts
 
+  abci:
+    image: intellixlabs-intellix-operator:latest
+    environment:
+      - ETH_RPC_URL=http://eth:8545
+      - ETH_WS_URL=ws://eth:8545
+    depends_on:
+      gateway:
+        condition: service_started
+    entrypoint: [ "bash", "/root/scripts/start_abci.sh" ]
+    ports:
+      - "26657:26657"
+    volumes:
+      - ./operator/scripts:/root/scripts
+
   operator:
     image: intellixlabs-intellix-operator:latest
     environment:
@@ -89,6 +89,22 @@ services:
       gateway:
         condition: service_started
     entrypoint: [ "bash", "/root/scripts/start_operator.sh" ]
+    ports:
+      - "2345:2345"
+    volumes:
+      - ./operator/scripts:/root/scripts
+
+  gateway:
+    image: intellixlabs-intellix-operator:latest
+    environment:
+      - ETH_RPC_URL=http://eth:8545
+      - ETH_WS_URL=ws://eth:8545
+    depends_on:
+      dvs:
+        condition: service_started
+    entrypoint: [ "bash", "/root/scripts/start_gateway.sh" ]
+    ports:
+      - "${HOST_PORT:-8092}:${CONTAINER_PORT:-8949}"
     volumes:
       - ./operator/scripts:/root/scripts
 

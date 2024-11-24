@@ -4,13 +4,14 @@ import "C"
 import (
 	"context"
 	"fmt"
-	dvsservermanager "intellix/pkg/dvs_msg_handler"
+	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	"intellix/pkg/dvs_msg_handler/tx"
 	"intellix/pkg/pelldvs"
 	pricetypes "intellix/x/price/dvs/types"
 	"sync"
-
-	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"cosmossdk.io/math"
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
@@ -29,6 +30,7 @@ type TaskDispatcher struct {
 	pellDVSClient *pelldvs.Client
 	chains        map[uint64]*chainWatcher
 	mu            sync.Mutex
+	msgEncoder    tx.MsgEncoder
 }
 
 type chainWatcher struct {
@@ -37,11 +39,17 @@ type chainWatcher struct {
 	client   *ethclient.Client
 }
 
+func newTaskProtoEncoder() tx.MsgEncoder {
+	cdc := codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
+	return tx.NewDefaultDecoder(cdc)
+}
+
 func NewTaskDispatcher(logger dvslog.Logger, pellDVSClient *pelldvs.Client, configs []*ChainConfig) (*TaskDispatcher, error) {
 	td := &TaskDispatcher{
 		logger:        logger,
 		pellDVSClient: pellDVSClient,
 		chains:        make(map[uint64]*chainWatcher),
+		msgEncoder:    newTaskProtoEncoder(),
 	}
 
 	for _, config := range configs {
@@ -57,6 +65,7 @@ func NewTaskDispatcher(logger dvslog.Logger, pellDVSClient *pelldvs.Client, conf
 func (td *TaskDispatcher) AddChain(config *ChainConfig) error {
 	td.mu.Lock()
 	defer td.mu.Unlock()
+	td.logger.Info(fmt.Sprintf("listen chain, chainID: %d, url: %s, address: %s", config.ChainID, config.EthURL, config.ContractAddress))
 
 	if err := config.Validate(); err != nil {
 		return err
@@ -92,6 +101,7 @@ func (td *TaskDispatcher) Start() error {
 }
 
 func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
+	td.logger.Info("now listen for new tasks")
 	newTaskChan := make(chan *contractDataOracle.ContractDataOracleNewTaskCreated)
 	// TODO: add index by height
 	// TODO: add scan mode
@@ -156,7 +166,7 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractDataOra
 	var taskRequest sdk.Msg
 
 	// TODO: add more task-types
-	if task.TaskType == TaskTypePrice {
+	if task.TaskType.Int64() == TaskTypePrice {
 		taskRequest = &pricetypes.ProcessRequestPriceFeedIn{
 			Task: &pricetypes.TaskRequest{
 				TaskIndex:                 newTask.TaskIndex,
@@ -180,7 +190,7 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractDataOra
 		return nil, fmt.Errorf("invalid task request")
 	}
 
-	return dvsservermanager.EncodeMsgs(taskRequest)
+	return td.msgEncoder.EncodeMsgs(taskRequest)
 }
 
 func (td *TaskDispatcher) OnStart() error {

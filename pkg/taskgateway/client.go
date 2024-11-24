@@ -27,15 +27,20 @@ func NewClient(address string, logger log.Logger) (*Client, error) {
 	}
 
 	logger.Info("Connected to RPC server", "address", address)
-	return &Client{client: client}, nil
+	return &Client{client: client, logger: logger}, nil
 }
 
 func (c *Client) RespondToTask(req *types.MsgVoteFinalizedRequestPrice) error {
 	resp := &RespondToTaskResponse{}
 
-	err := c.client.Call("Server.RespondToTask", req, resp)
+	body, err := MsgVoteFinalizedRequestPriceFromProtoMessage(req)
 	if err != nil {
-		c.logger.Error("RPC call failed", "error", err)
+		return err
+	}
+
+	err = c.client.Call("TaskGateway.RespondToTask", body, resp)
+	if err != nil {
+		c.logger.Error("RPC call failed", "error", err.Error())
 		return err
 	}
 

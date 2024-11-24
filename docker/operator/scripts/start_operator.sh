@@ -18,6 +18,9 @@ function load_defaults {
   export OPERATOR_KEY_NAME=${OPERATOR_KEY_NAME:-operator}
 
   export AGGREGATOR_RPC_SERVER=${AGGREGATOR_RPC_SERVER:-dvs:26653}
+  export COSMOS_KEYRING_BACKEND=${COSMOS_KEYRING_BACKEND:-test}
+  export COSMOS_CHAIN_ID=${COSMOS_CHAIN_ID:-intellixd}
+  export COSMOS_NODE_URI=${COSMOS_NODE_URI:-tcp://abci:26657}
 }
 
 function dvs_healthcheck {
@@ -62,9 +65,14 @@ function setup_admin_key {
   export ADMIN_ADDRESS=$(pelldvs keys show admin --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
 }
 
+function gen_cosmos_key {
+  # TODO: remote test keyring
+  intellixd keys add "$OPERATOR_KEY_NAME" --keyring-backend test --home "$PELLDVS_HOME"
+}
 
 function setup_operator_config {
   setup_admin_key
+  gen_cosmos_key
 
   ## migrate to dvs logic after fix
   export OPERATOR_ADDRESS=$(pelldvs keys show $OPERATOR_KEY_NAME --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
@@ -72,7 +80,9 @@ function setup_operator_config {
   cat <<EOF > $PELLDVS_HOME/config/operator.config.json
 {
   "operator_address": "$OPERATOR_ADDRESS",
-  "gateway_addr": "$GATEWAY_ADDR"
+  "gateway_addr": "$GATEWAY_ADDR",
+  "cosmos_node_uri": "$COSMOS_NODE_URI",
+  "cosmos_chain_id": "$COSMOS_CHAIN_ID"
 }
 EOF
 }
@@ -81,6 +91,16 @@ function start_operator {
   # intellixd --home "$PELLDVS_HOME"
 #  cat /root/.pelldvs/config/config.toml
   PELLDVS_HOME=$PELLDVS_HOME  intellixd start-operator
+}
+
+function start_operator_debug {
+  # intellixd --home "$PELLDVS_HOME"
+#  cat /root/.pelldvs/config/config.toml
+  go install github.com/go-delve/delve/cmd/dlv@latest
+  dlv exec /usr/bin/intellixd \
+    --listen=:2345 --headless=true --api-version=2 --accept-multiclient\
+    -- start-operator --home "$PELLDVS_HOME"
+#    intellixd
 }
 
 ## start sshd

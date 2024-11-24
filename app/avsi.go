@@ -31,6 +31,7 @@ func (p *PellApp) ProcessRequest(ctx context.Context, req *avsitypes.RequestProc
 	handlerSrc := dvsservermanager.GetProcessRequestHandlerSrc()
 	res, err := handlerSrc.InvokeRouterRawByData(pkgCtx, req.Request.Data)
 	if err != nil {
+		p.logger.Error("process request error", "err", err)
 		return nil, err
 	}
 
@@ -49,6 +50,7 @@ func (p *PellApp) PostRequest(ctx context.Context, req *avsitypes.RequestPostReq
 	handlerSrc := dvsservermanager.GetPostProcessRequestHandlerSrc()
 	_, err := handlerSrc.InvokeRouterRawByData(pkgCtx, req.DvsRequest.Data, dvstypes.NewValidatedResponse(req.ValidatedResponse))
 	if err != nil {
+		p.logger.Error("post request error", "err", err)
 		return nil, err
 	}
 

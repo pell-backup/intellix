@@ -43,10 +43,12 @@ func (d *DvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, r
 	//		BlockRange:    nil,
 	//	}, nil
 	//}
+	d.logger.Info("ProcessRequestPriceFeed", "PriceFeedParam", fmt.Sprintf("%+v", request.PriceFeed))
 
 	// fetch raw price from chain
 	rawPrices, err := fetchRawPrices(pkgContext, d.Logger(), request.PriceFeed.BaseSymbol, request.PriceFeed.QuoteSymbol)
 	if err != nil {
+		d.logger.Error("ProcessRequestPriceFeed fetchRawPrices error: " + err.Error())
 		return nil, fmt.Errorf("failed to fetch raw prices: %w", err)
 	}
 
@@ -67,6 +69,12 @@ func (d *DvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, r
 }
 
 func (d *DvsProcessRequestServer) broadcastVoteRequestPriceFeed(ctx pkgcontext.Context, task *types.ProcessRequestPriceFeedIn, priceFeed *types.PriceFeedParam, rawPrices map[string]*big.Int) error {
+	d.Logger().Info("broadcastVoteRequestPriceFeed",
+		"rawPrices", fmt.Sprintf("%+v", rawPrices),
+		"task", fmt.Sprintf("%+v", task),
+		"priceFeed", fmt.Sprintf("%+v", priceFeed),
+	)
+
 	var prices []*pricetypes.VoteRequestPriceFeed
 	for dataSource, price := range rawPrices {
 		prices = append(prices, &pricetypes.VoteRequestPriceFeed{
@@ -86,6 +94,7 @@ func (d *DvsProcessRequestServer) broadcastVoteRequestPriceFeed(ctx pkgcontext.C
 		BlockHeight: uint64(ctx.BlockHeight()),
 	}
 	if err := d.Server.SignAndBroadcastTx(ctx, &msg); err != nil {
+		d.Logger().Error("broadcastVoteRequestPriceFeed SignAndBroadcastTx error: " + err.Error())
 		return fmt.Errorf("failed to broadcast VoteRequestPriceFeed for data error: %w", err)
 	}
 
@@ -148,7 +157,7 @@ func (d *DvsProcessRequestServer) isVoteRequestPriceFeedTx(tx cmttypes.Tx) (*pri
 	decoder := d.clientCtx.TxConfig.TxDecoder()
 	data, err := decoder(tx)
 	if err != nil {
-		d.Logger().Error("TxDecoder decode tx error: " + err.Error())
+		d.logger.Error("TxDecoder decode tx error: " + err.Error())
 		return nil, false
 	}
 

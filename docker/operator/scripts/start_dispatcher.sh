@@ -41,7 +41,7 @@ function setup_dispatcher_config {
   DATA_ORACLE_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/DataOracle-Proxy.json" | jq -r .address)
   cat <<EOF > $PELLDVS_HOME/config/dispatcher.config.json
 {
-  "dvs_address": "$ETH_RPC_URL",
+  "dvs_address": "tcp://operator:26657",
   "chains": [
     {
       "chain_id": 1337,

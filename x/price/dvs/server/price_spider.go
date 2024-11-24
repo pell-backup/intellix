@@ -62,6 +62,7 @@ type CoinbaseFetchPriceService struct {
 func (s *CoinbaseFetchPriceService) fetchCoinPrice(baseSymbol, quote string, wg *sync.WaitGroup, priceChan chan<- *PriceInfo) {
 	defer wg.Done()
 	url := fmt.Sprintf("https://api.coinbase.com/v2/prices/%s-%s/spot", baseSymbol, quote)
+	s.logger.Info("Fetching data from Coinbase", "url", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		s.logger.Error("Error fetching data from Coinbase:", err.Error())
@@ -88,6 +89,7 @@ func (s *CoinbaseFetchPriceService) fetchCoinPrice(baseSymbol, quote string, wg 
 		s.logger.Error("Error parsing price from Coinbase failed")
 		return
 	}
+	s.logger.Info("Fetched price from Coinbase", "base", baseSymbol, "quote", quote, "price", price)
 
 	priceChan <- &PriceInfo{DataSource: dataSourceCoinbase, Price: price}
 }
@@ -99,6 +101,7 @@ type BinanceFetchPriceService struct {
 func (s *BinanceFetchPriceService) fetchCoinPrice(baseSymbol, quote string, wg *sync.WaitGroup, priceChan chan<- *PriceInfo) {
 	defer wg.Done()
 	url := fmt.Sprintf("https://api.binance.com/api/v3/ticker/price?symbol=%s%s", baseSymbol, quote)
+	s.logger.Info("Fetching data from Binance", "url", url)
 	resp, err := http.Get(url)
 	if err != nil {
 		s.logger.Error("Error fetching data from Binance:", err.Error())
@@ -106,8 +109,14 @@ func (s *BinanceFetchPriceService) fetchCoinPrice(baseSymbol, quote string, wg *
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		s.logger.Error("Error fetching data from Binance:", resp.Status)
+		return
+	}
+
 	type BinanceResponse struct {
-		Price string `json:"price"`
+		Symbol string `json:"symbol"`
+		Price  string `json:"price"`
 	}
 
 	var binanceResp BinanceResponse
@@ -121,6 +130,8 @@ func (s *BinanceFetchPriceService) fetchCoinPrice(baseSymbol, quote string, wg *
 		fmt.Println("Error parsing price from Binance:", err)
 		return
 	}
+
+	s.logger.Info("Fetched price from Binance", "base", baseSymbol, "quote", quote, "price", price)
 
 	priceChan <- &PriceInfo{DataSource: dataSourceBinance, Price: price}
 }
