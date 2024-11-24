@@ -11,7 +11,6 @@ ARG GITHUB_TOKEN
 ARG PELLDVS_VERSION
 RUN if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN is not set" && exit 1; fi
 RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
-RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
 RUN git clone https://github.com/0xPellNetwork/pelldvs.git --branch $PELLDVS_VERSION --depth 1
 
 ## Build pelldvs
@@ -22,14 +21,9 @@ RUN --mount=type=cache,target="/go/pkg/mod" \
 
 
 ########## Build intellixd ##########
-## Download dependencies before copying the app to leverage docker cache
 WORKDIR /app/intellixd
-#COPY go.mod go.sum ./
-#RUN --mount=type=cache,target="/go/pkg/mod" go mod download
-
-## Build the app
-# TODO: use the real intellix app
 COPY .. /app/intellixd/
+RUN --mount=type=cache,target="/go/pkg/mod" go mod download
 RUN --mount=type=cache,target="/go/pkg/mod" \
     --mount=type=cache,target="/root/.cache/go-build" \
     make build

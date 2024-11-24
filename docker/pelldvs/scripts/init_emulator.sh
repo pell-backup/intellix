@@ -80,8 +80,8 @@ function create_registry_router {
 }
 
 function init_pell_emulator {
-  ## Initialize mocksyncer and config will be written in /root/.pelldvs/mocksyncer/contract.address.json
-  pelldvs mocksyncer init \
+  ## Initialize pell_emulator and config will be written in /root/.pelldvs/pell_emulator/contract.address.json
+  pelldvs pell_emulator init \
     --home $PELLDVS_HOME
 
   ## Get contracts addresses from Hardhat
@@ -101,8 +101,8 @@ function init_pell_emulator {
   ## Update emulator contracts addresses
   update-emulator-address() {
     JQ_EXPR="$1"
-    jq "$JQ_EXPR" /root/.pelldvs/mocksyncer/contract.address.json >/tmp/tmp.json &&
-      mv /tmp/tmp.json /root/.pelldvs/mocksyncer/contract.address.json
+    jq "$JQ_EXPR" /root/.pelldvs/pell_emulator/contract.address.json >/tmp/tmp.json &&
+      mv /tmp/tmp.json /root/.pelldvs/pell_emulator/contract.address.json
   }
 
   update-emulator-address '.PellDelegationManager = "'$PELL_DELEGATION_MNAGER'"'
@@ -118,13 +118,13 @@ function init_pell_emulator {
   update-emulator-address '.DVSRegistryCoordinator = "'$DVS_REGISTRY_COORDINATOR'"'
   update-emulator-address '.DVSIndexRegistry = "'$DVS_INDEX_REGISTRY'"'
   update-emulator-address '.DVSStakeRegistry = "'$DVS_STAKE_REGISTRY'"'
-  cat /root/.pelldvs/mocksyncer/contract.address.json | jq
+  cat /root/.pelldvs/pell_emulator/contract.address.json | jq
 
 }
 
 function start_pell_emulator {
-  ## start mocksyncer
-  pelldvs mocksyncer start \
+  ## start pell_emulator
+  pelldvs pell_emulator start \
     --home "$PELLDVS_HOME" \
     --rpc-url "$ETH_RPC_URL" \
     --ws-url "$ETH_WS_URL" \

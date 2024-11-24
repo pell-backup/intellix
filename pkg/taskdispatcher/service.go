@@ -4,12 +4,13 @@ import "C"
 import (
 	"context"
 	"fmt"
-	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	"intellix/pkg/pelldvs"
 	pricetypes "intellix/x/price/dvs/types"
 	"sync"
+
+	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"cosmossdk.io/math"
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
@@ -115,7 +116,7 @@ func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
 }
 
 func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractDataOracle.ContractDataOracleNewTaskCreated) {
-	td.logger.Info("New task created", "chainID", chainID, "TaskIndex", newTask.TaskIndex, "RequestId", newTask.Task.RequestId)
+	td.logger.Info("New task created", "chainID", chainID, "TaskIndex", newTask.TaskIndex, "RequestId", newTask.Task.RequestId, "TaskType", newTask.Task.TaskType)
 
 	taskData, err := td.serializeTask(chainID, newTask)
 	if err != nil {

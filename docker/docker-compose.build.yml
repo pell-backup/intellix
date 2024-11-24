@@ -19,7 +19,7 @@ services:
         - HTTP_PROXY=$HTTP_PROXY
         - HTTPS_PROXY=$HTTPS_PROXY
         - GITHUB_TOKEN=$GITHUB_TOKEN
-        - PELLDVS_VERSION=v0.0.7
+        - PELLDVS_VERSION=v0.0.9
 
   operator:
     build:
@@ -29,4 +29,4 @@ services:
         - HTTP_PROXY=$HTTP_PROXY
         - HTTPS_PROXY=$HTTPS_PROXY
         - GITHUB_TOKEN=$GITHUB_TOKEN
-        - PELLDVS_VERSION=v0.0.7
+        - PELLDVS_VERSION=v0.0.9

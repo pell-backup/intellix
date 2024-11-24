@@ -72,7 +72,7 @@ services:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
     depends_on:
-      dvs:
+      gateway:
         condition: service_started
     entrypoint: [ "bash", "/root/scripts/start_dispatcher.sh" ]
     ports:
@@ -86,11 +86,9 @@ services:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
     depends_on:
-      dvs:
+      gateway:
         condition: service_started
     entrypoint: [ "bash", "/root/scripts/start_operator.sh" ]
-    ports:
-      - "${HOST_PORT:-8090}:${CONTAINER_PORT:-8090}"
     volumes:
       - ./operator/scripts:/root/scripts
 

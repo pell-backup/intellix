@@ -15,6 +15,7 @@ function load_defaults {
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
 
+  export GATEWAY_PORT=${GATEWAY_PORT:-8949}
   export AGGREGATOR_RPC_SERVER=${AGGREGATOR_RPC_SERVER:-dvs:26653}
 }
 
@@ -34,38 +35,34 @@ function dvs_healthcheck {
   set -e
 }
 
-## FIXME: remove this logic after fix. Operator should never use admin key.
-function setup_admin_key {
-  export ADMIN_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-  if ! pelldvs keys show admin --home "$PELLDVS_HOME" >/dev/null 2>&1; then
-    echo -ne '\n\n' | pelldvs keys import --key-type ecdsa --insecure admin $ADMIN_KEY --home $PELLDVS_HOME >/dev/null
+function setup_gateway_key {
+  export GATEWAY_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+  if ! pelldvs keys show gateway --home "$PELLDVS_HOME" >/dev/null 2>&1; then
+    echo -ne '\n\n' | pelldvs keys import --key-type ecdsa --insecure gateway $GATEWAY_KEY --home $PELLDVS_HOME >/dev/null
   fi
 
-  export ADMIN_ADDRESS=$(pelldvs keys show admin --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
+  export GATEWAY_ADDRESS=$(pelldvs keys show gateway --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
 }
 
 
-function setup_operator_config {
-  setup_admin_key
+function setup_gateway_config {
+  setup_gateway_key
+  DATA_ORACLE_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/DataOracle-Proxy.json" | jq -r .address)
 
-  ## FIXME: taskgateway config should not be in the operator config.
-  ## migrate to dvs logic after fix
-  # TODO: path should be relative to the operator home
-  # TODO: sender_address should be the operator address
-  DATA_ORACLE_SERVICE_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/DataOracleServiceManager-Proxy.json" | jq -r .address)
+  # TODO: remove sender_address from config
   cat <<EOF > $PELLDVS_HOME/config/gateway.config.json
 {
-  "server_addr": "0.0.0.0:8949",
-  "sender_address": "$ADMIN_ADDRESS",
+  "server_addr": "0.0.0.0:$GATEWAY_PORT",
+  "sender_address": "$GATEWAY_ADDRESS",
   "eth_endpoint": "$ETH_WS_URL",
-  "contract_address": "$DATA_ORACLE_SERVICE_MANAGER",
-  "private_key_store_path": "$PELLDVS_HOME/keys/admin.ecdsa.key.json"
+  "contract_address": "$DATA_ORACLE_ADDRESS",
+  "private_key_store_path": "$PELLDVS_HOME/keys/gateway.ecdsa.key.json"
 }
 EOF
 }
 
-function start_operator {
-  # intellixd --home "$PELLDVS_HOME"
+function start_gateway {
+  ## TODO: add home dir flag
   PELLDVS_HOME=$PELLDVS_HOME intellixd start-task-gateway
 }
 
@@ -78,14 +75,10 @@ load_defaults
 logt "Check if DVS is ready"
 dvs_healthcheck
 
-if [ ! -f /root/operator_initialized ]; then
-  logt "Init operator"
-  source "$(dirname "$0")/init_operator.sh"
-  touch /root/operator_initialized
-fi
+logt "Setup gateway config"
+setup_gateway_config
 
-logt "Setup operator config"
-setup_operator_config
+touch /root/gateway_initialized
 
-logt "Starting operator..."
-start_operator
+logt "Starting gateway..."
+start_gateway

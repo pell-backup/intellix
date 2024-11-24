@@ -15,6 +15,7 @@ function load_defaults {
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
   export GATEWAY_ADDR=${GATEWAY_ADDR:-gateway:8949}
+  export OPERATOR_KEY_NAME=${OPERATOR_KEY_NAME:-operator}
 
   export AGGREGATOR_RPC_SERVER=${AGGREGATOR_RPC_SERVER:-dvs:26653}
 }
@@ -28,6 +29,22 @@ function dvs_healthcheck {
       break
     fi
     echo "DVS RPC port not ready, retrying in 2 seconds..."
+    sleep 2
+  done
+  ## Wait for aggregator to be ready
+  sleep 3
+  set -e
+}
+
+function gateway_healthcheck {
+  set +e
+  while true; do
+    curl -s $GATEWAY_ADDR >/dev/null
+    if [ $? -eq 52 ]; then
+      echo "Gateway is ready, proceeding to the next step..."
+      break
+    fi
+    echo "Gateway not ready, retrying in 2 seconds..."
     sleep 2
   done
   ## Wait for aggregator to be ready
@@ -50,11 +67,11 @@ function setup_operator_config {
   setup_admin_key
 
   ## migrate to dvs logic after fix
-  # TODO: path should be relative to the operator home
-  DATA_ORACLE_SERVICE_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/DataOracleServiceManager-Proxy.json" | jq -r .address)
+  export OPERATOR_ADDRESS=$(pelldvs keys show $OPERATOR_KEY_NAME --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
+  ## TODO: use operator key on config.toml and gateway should be on app.toml
   cat <<EOF > $PELLDVS_HOME/config/operator.config.json
 {
-  "operator_address": "$ADMIN_ADDRESS",
+  "operator_address": "$OPERATOR_ADDRESS",
   "gateway_addr": "$GATEWAY_ADDR"
 }
 EOF
@@ -74,6 +91,9 @@ load_defaults
 
 logt "Check if DVS is ready"
 dvs_healthcheck
+
+logt "Check if Gateway is ready"
+gateway_healthcheck
 
 if [ ! -f /root/operator_initialized ]; then
   logt "Init operator"
