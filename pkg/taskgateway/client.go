@@ -2,7 +2,6 @@ package taskgateway
 
 import (
 	"fmt"
-	"intellix/x/price/types"
 	"net/rpc"
 
 	"github.com/0xPellNetwork/pelldvs/libs/log"
@@ -10,8 +9,9 @@ import (
 
 // Client represents RPC client
 type Client struct {
-	client *rpc.Client
-	logger log.Logger
+	client  *rpc.Client
+	logger  log.Logger
+	address string
 }
 
 // NewClient creates a new TaskGateway RPC client
@@ -27,21 +27,50 @@ func NewClient(address string, logger log.Logger) (*Client, error) {
 	}
 
 	logger.Info("Connected to RPC server", "address", address)
-	return &Client{client: client, logger: logger}, nil
+	return &Client{
+		client:  client,
+		logger:  logger,
+		address: address,
+	}, nil
 }
 
-func (c *Client) RespondToTask(req *types.MsgVoteFinalizedRequestPrice) error {
-	resp := &RespondToTaskResponse{}
+// reconnect attempts to reconnect to the RPC server
+func (c *Client) reconnect() error {
+	if c.client != nil {
+		c.client.Close()
+	}
 
-	body, err := MsgVoteFinalizedRequestPriceFromProtoMessage(req)
+	client, err := rpc.Dial("tcp", c.address)
 	if err != nil {
+		c.logger.Error("Failed to reconnect to RPC server", "error", err)
 		return err
 	}
 
-	err = c.client.Call("TaskGateway.RespondToTask", body, resp)
+	c.client = client
+	c.logger.Info("Reconnected to RPC server", "address", c.address)
+	return nil
+}
+
+func (c *Client) RespondToTask(req *RPCVoteFinalizedRequestPrice) error {
+	resp := &RespondToTaskResponse{}
+
+	err := c.client.Call("TaskGateway.RespondToTask", req, resp)
 	if err != nil {
-		c.logger.Error("RPC call failed", "error", err.Error())
-		return err
+		// retry
+		if err.Error() == "connection is shut down" {
+			c.logger.Info("Connection lost, attempting to reconnect...")
+			if err := c.reconnect(); err != nil {
+				return fmt.Errorf("failed to reconnect: %v", err)
+			}
+			err = c.client.Call("TaskGateway.RespondToTask", req, resp)
+			if err != nil {
+				c.logger.Error("RPC call failed after reconnection", "error", err.Error())
+				return err
+			}
+		} else {
+			c.logger.Error("RPC call failed", "error", err.Error())
+			return err
+		}
 	}
 
 	if resp.Error != "" {

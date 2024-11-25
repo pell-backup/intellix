@@ -2,7 +2,14 @@ package server
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	"github.com/cosmos/cosmos-sdk/x/authz"
+	pkgcontext "intellix/pkg/context"
+	"intellix/pkg/taskgateway"
+	"intellix/x/price/types"
+
 	"github.com/0xPellNetwork/pelldvs/libs/log"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -10,15 +17,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/spf13/pflag"
-	pkgcontext "intellix/pkg/context"
-	"intellix/pkg/taskgateway"
-	"intellix/x/price/types"
 )
 
 type (
 	Server struct {
 		logger    log.Logger
 		clientCtx client.Context
+		key       *keyring.Record
 
 		operatorAddress string
 		gasPrices       string
@@ -32,6 +37,7 @@ type (
 func NewServer(
 	logger log.Logger,
 	clientCtx client.Context,
+	key *keyring.Record,
 
 	gatewayAddr string,
 	operatorAddress string,
@@ -53,6 +59,7 @@ func NewServer(
 	k := Server{
 		logger:    logger,
 		clientCtx: clientCtx,
+		key:       key,
 
 		operatorAddress: operatorAddress,
 		waitBlockCount:  waitBlockCount,
@@ -118,13 +125,19 @@ func (k *Server) GetLatestBlock(ctx context.Context) (*cmttypes.Block, error) {
 }
 
 // SignAndBroadcastTx signs and broadcasts a transaction
-func (k *Server) SignAndBroadcastTx(ctx pkgcontext.Context, msg sdk.Msg) error {
+func (k *Server) SignAndBroadcastTx(ctx pkgcontext.Context, msgs []sdk.Msg) error {
 	txf, err := k.prepareTxFactory(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to prepare tx factory: %w", err)
 	}
 
-	txBuilder, err := txf.BuildUnsignedTx(msg)
+	address, err := k.key.GetAddress()
+	if err != nil {
+		return err
+	}
+	execMsg := authz.NewMsgExec(address, msgs)
+
+	txBuilder, err := txf.BuildUnsignedTx(&execMsg)
 	if err != nil {
 		return fmt.Errorf("failed to build unsigned tx: %w", err)
 	}
@@ -138,6 +151,10 @@ func (k *Server) SignAndBroadcastTx(ctx pkgcontext.Context, msg sdk.Msg) error {
 	if err != nil {
 		return fmt.Errorf("failed to encode tx: %w", err)
 	}
+
+	// base64 encode tx bytes
+	base64Tx := base64.StdEncoding.EncodeToString(txBytes)
+	k.Logger().Info("Broadcasting tx", "tx", base64Tx)
 
 	res, err := k.clientCtx.BroadcastTx(txBytes)
 	if err != nil {

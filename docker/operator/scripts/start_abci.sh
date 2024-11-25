@@ -73,7 +73,12 @@ EOF
 
 function start_abci {
   # intellixd --home "$PELLDVS_HOME"
-  PELLDVS_HOME=$PELLDVS_HOME intellixd start --minimum-gas-prices=0.0001stake
+  PELLDVS_HOME=$PELLDVS_HOME intellixd start \
+    --minimum-gas-prices=0.001stake \
+    --api.enable=true \
+    --api.address="tcp://0.0.0.0:1317" \
+    --grpc.enable=true \
+    --grpc.address="0.0.0.0:9090"
 }
 
 ## start sshd

@@ -2,10 +2,14 @@ package taskgateway
 
 import (
 	"context"
+	"cosmossdk.io/math"
 	"fmt"
 	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"math/big"
 	"net"
 	"net/rpc"
+	"os"
 
 	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/service"
@@ -27,8 +31,9 @@ type TaskGateway struct {
 	cfg *TaskGatewayCfg
 	ctx context.Context
 
-	logger    dvslog.Logger
-	ethClient *ethclient.Client
+	logger     dvslog.Logger
+	ethClient  *ethclient.Client
+	privateKey *keystore.Key
 
 	contractDataOracle *dataOracle.ContractDataOracle
 	taskMap            sync.Map
@@ -46,6 +51,19 @@ func NewTaskGateway(logger dvslog.Logger, ctx context.Context, cfg *TaskGatewayC
 		return nil, err
 	}
 
+	// Read private key
+	keyJSON, err := os.ReadFile(cfg.PrivateKeyStorePath)
+	if err != nil {
+		logger.Error("Failed to read private key file", "error", err)
+		return nil, fmt.Errorf("failed to read private key file: %v", err)
+	}
+
+	key, err := keystore.DecryptKey(keyJSON, "")
+	if err != nil {
+		logger.Error("Failed to decrypt private key", "error", err)
+		return nil, fmt.Errorf("failed to decrypt private key: %v", err)
+	}
+
 	server := rpc.NewServer()
 	tg := &TaskGateway{
 		server:             server,
@@ -53,6 +71,7 @@ func NewTaskGateway(logger dvslog.Logger, ctx context.Context, cfg *TaskGatewayC
 		ctx:                ctx,
 		logger:             logger,
 		ethClient:          ethClient,
+		privateKey:         key,
 		serverAddr:         cfg.ServerAddr,
 		contractDataOracle: contract,
 		taskMap:            sync.Map{},
@@ -96,16 +115,26 @@ func (tg *TaskGateway) RespondToTask(req *RPCVoteFinalizedRequestPrice, resp *Re
 	return nil
 }
 
+func (tg *TaskGateway) getAuthOpts(chainId int64) (*bind.TransactOpts, error) {
+	// Create transaction authenticator
+	auth, err := bind.NewKeyedTransactorWithChainID(tg.privateKey.PrivateKey, big.NewInt(chainId))
+	if err != nil {
+		tg.logger.Error("Failed to create transaction authenticator", "error", err)
+		return nil, fmt.Errorf("failed to create transaction authenticator: %v", err)
+	}
+	return auth, nil
+}
+
 func (tg *TaskGateway) handleResponse(ctx context.Context, response *RPCVoteFinalizedRequestPrice) error {
 	value, loaded := tg.taskMap.LoadOrStore(response.TaskRaw.TaskIndex, response)
 	if loaded {
 		existingResponse := value.(*RPCVoteFinalizedRequestPrice)
 		if tg.shouldReplaceResponse(ctx, existingResponse, response) {
 			tg.taskMap.Store(response.TaskRaw.RequestID, response)
-			return tg.submitToChain(ctx, response)
+			return tg.wrapSubmitToChain(ctx, response)
 		}
 	} else {
-		return tg.submitToChain(ctx, response)
+		return tg.wrapSubmitToChain(ctx, response)
 	}
 	return nil
 }
@@ -115,21 +144,25 @@ func (tg *TaskGateway) shouldReplaceResponse(ctx context.Context, existing, new 
 	return false
 }
 
-func (tg *TaskGateway) submitToChain(ctx context.Context, resp *RPCVoteFinalizedRequestPrice) error {
-	var sender = common.HexToAddress(tg.cfg.SenderAddress)
-	txOpts := &bind.TransactOpts{
-		From: sender,
-		Signer: func(common.Address, *ethtypes.Transaction) (*ethtypes.Transaction, error) {
-			return nil, nil
-		},
-	}
+func (tg *TaskGateway) wrapSubmitToChain(ctx context.Context, request *RPCVoteFinalizedRequestPrice) error {
+	var wg = &sync.WaitGroup{}
+	wg.Add(1)
+	var err error
+	go func() {
+		defer func() {
+			if r := recover(); r != nil {
+				tg.logger.Error("Failed to submit vote finalized request", "error", r)
+				err = fmt.Errorf("%v", r)
+			}
+			wg.Done()
+		}()
+		err = tg.submitToChain(ctx, request)
+	}()
+	wg.Wait()
+	return err
+}
 
-	response, err := resp.ToProtoMessage()
-	if err != nil {
-		tg.logger.Error("Error converting response to proto message", "err", err)
-		return err
-	}
-
+func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinalizedRequestPrice) error {
 	feeTokenAddr, err := convertAddressToString(response.TaskRaw.FeeToken)
 	if err != nil {
 		tg.logger.Error("Error converting fee token address", "err", err)
@@ -141,20 +174,32 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, resp *RPCVoteFinalized
 		return err
 	}
 
+	paymentInt, ok := math.NewIntFromString(response.TaskRaw.Payment)
+	if !ok {
+		tg.logger.Error("Error converting taskRaw payment", "payment", response.TaskRaw.Payment)
+		return fmt.Errorf("error converting taskRaw payment")
+	}
 	task := dataOracle.IDataOracleTask{
-		RequestId:                 [32]byte(response.TaskRaw.RequestId),
+		TaskType:                  math.NewInt(response.TaskRaw.TaskType).BigInt(),
+		RequestId:                 [32]byte(response.TaskRaw.RequestID),
 		FeeToken:                  *feeTokenAddr,
-		Payment:                   response.TaskRaw.Payment.BigInt(),
+		Payment:                   paymentInt.BigInt(),
 		RequestData:               response.TaskRaw.RequestData,
 		CallbackAddress:           *cbAddr,
-		CallbackFunctionId:        [4]byte(response.TaskRaw.CallbackFunctionId),
+		CallbackFunctionId:        [4]byte(response.TaskRaw.CallbackFunctionID),
 		TaskCreatedBlock:          response.TaskRaw.TaskCreatedBlock,
 		QuorumNumbers:             response.TaskRaw.QuorumNumbers,
 		QuorumThresholdPercentage: response.TaskRaw.QuorumThresholdPercentage,
 	}
+	priceInt, ok := math.NewIntFromString(response.PriceFeedResponse.Price)
+
+	if !ok {
+		tg.logger.Error("Error converting taskRaw price", "price", response.PriceFeedResponse.Price)
+		return fmt.Errorf("error converting priceFeedResponse price")
+	}
 	taskResp := dataOracle.IDataOracleTaskResponse{
 		ReferenceTaskIndex: response.PriceFeedResponse.ReferenceTaskIndex,
-		Price:              response.PriceFeedResponse.Price.BigInt(),
+		Price:              priceInt.BigInt(),
 	}
 	sign := dataOracle.IBLSSignatureCheckerNonSignerStakesAndSignature{
 		NonSignerQuorumBitmapIndices: response.ValidatedData.NonSignerQuorumBitmapIndices,
@@ -164,12 +209,18 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, resp *RPCVoteFinalized
 		Sigma:                        *convertSigma(response.ValidatedData.SignersAggSigG1),
 		QuorumApkIndices:             response.ValidatedData.QuorumApkIndices,
 		TotalStakeIndices:            response.ValidatedData.TotalStakeIndices,
-		NonSignerStakeIndices:        convertNonSignerStakeIndices(response.ValidatedData.NonSignerStakeIndices),
+		NonSignerStakeIndices:        response.ValidatedData.NonSignerStakeIndices,
 	}
+
+	authOpts, err := tg.getAuthOpts(response.ChainID)
+	if err != nil {
+		return err
+	}
+
 	tg.logger.Info("Submitting response to chain", "task", fmt.Sprintf("%+v", task),
 		"taskResp", fmt.Sprintf("%+v", taskResp), "signer", fmt.Sprintf("%+v", sign))
 
-	transaction, err := tg.contractDataOracle.ResponseToTask(txOpts, task, taskResp, sign)
+	transaction, err := tg.contractDataOracle.ResponseToTask(authOpts, task, taskResp, sign)
 	if err != nil {
 		tg.logger.Error("Error assembling RequestPrice tx", "err", err)
 		return err

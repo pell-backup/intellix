@@ -26,7 +26,7 @@ COPY .. /app/intellixd/
 RUN --mount=type=cache,target="/go/pkg/mod" go mod download
 RUN --mount=type=cache,target="/go/pkg/mod" \
     --mount=type=cache,target="/root/.cache/go-build" \
-    make build
+    make build-debug
 
 ########## Setup runtime env ##########
 FROM golang:1.22-bullseye AS runtime

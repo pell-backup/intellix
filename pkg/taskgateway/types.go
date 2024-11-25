@@ -1,22 +1,21 @@
 package taskgateway
 
 import (
-	"cosmossdk.io/math"
+	"errors"
 	"fmt"
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
-	"github.com/cosmos/gogoproto/proto"
 	"github.com/ethereum/go-ethereum/common"
-	"intellix/pkg/pelldvs/types"
-	pricetypes "intellix/x/price/types"
 	"math/big"
+	"os"
 )
 
 type TaskGatewayCfg struct {
-	ServerAddr      string `mapstructure:"server_addr"`
-	EthEndpoint     string `mapstructure:"eth_endpoint"`
-	SenderAddress   string `mapstructure:"sender_address"`
-	ContractAddress string `mapstructure:"contract_address"`
+	ServerAddr          string `mapstructure:"server_addr"`
+	EthEndpoint         string `mapstructure:"eth_endpoint"`
+	SenderAddress       string `mapstructure:"sender_address"`
+	ContractAddress     string `mapstructure:"contract_address"`
+	PrivateKeyStorePath string `mapstructure:"private_key_store_path"`
 }
 
 func (t TaskGatewayCfg) Validate() error {
@@ -32,6 +31,12 @@ func (t TaskGatewayCfg) Validate() error {
 	if t.ServerAddr == "" {
 		return fmt.Errorf("server address cannot be empty")
 	}
+	if t.PrivateKeyStorePath == "" {
+		return fmt.Errorf("key_store_path cannot be empty")
+	}
+	if _, err := os.Stat(t.PrivateKeyStorePath); errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("key_store_path does not exist")
+	}
 	return nil
 }
 
@@ -45,11 +50,11 @@ func convertAddressToString(addrStr string) (*common.Address, error) {
 }
 
 func convertNonSignersPubkeysG1(pb [][]byte) []dataOracle.BN254G1Point {
-	list := make([]dataOracle.BN254G1Point, len(pb))
+	list := []dataOracle.BN254G1Point{}
 	for i, p := range pb {
 		list[i] = dataOracle.BN254G1Point{
-			X: big.NewInt(0).SetBytes(p[:32]),
-			Y: big.NewInt(0).SetBytes(p[32:64]),
+			X: new(big.Int).SetBytes(p[:32]),
+			Y: new(big.Int).SetBytes(p[32:]),
 		}
 	}
 	return list
@@ -64,7 +69,7 @@ func convertToBN254G1Point(input *bls.G1Point) dataOracle.BN254G1Point {
 }
 
 func convertQuorumApks(pb [][]byte) []dataOracle.BN254G1Point {
-	list := make([]dataOracle.BN254G1Point, len(pb))
+	list := []dataOracle.BN254G1Point{}
 	for _, apk := range pb {
 		tapk := bls.NewZeroG1Point()
 		_ = tapk.Unmarshal(apk)
@@ -76,12 +81,12 @@ func convertQuorumApks(pb [][]byte) []dataOracle.BN254G1Point {
 func convertApkG2(pb []byte) *dataOracle.BN254G2Point {
 	return &dataOracle.BN254G2Point{
 		X: [2]*big.Int{
-			big.NewInt(0).SetBytes(pb[:32]),
-			big.NewInt(0).SetBytes(pb[32:64]),
+			new(big.Int).SetBytes(pb[:32]),
+			new(big.Int).SetBytes(pb[32:64]),
 		},
 		Y: [2]*big.Int{
-			big.NewInt(0).SetBytes(pb[64:96]),
-			big.NewInt(0).SetBytes(pb[96:]),
+			new(big.Int).SetBytes(pb[64:96]),
+			new(big.Int).SetBytes(pb[96:]),
 		},
 	}
 }
@@ -93,20 +98,13 @@ func convertSigma(pb []byte) *dataOracle.BN254G1Point {
 	}
 }
 
-func convertNonSignerStakeIndices(list []*types.NonSignerStakeIndice) [][]uint32 {
-	slice := make([][]uint32, len(list))
-	for i, l := range list {
-		slice[i] = l.NonSignerStakeIndice
-	}
-	return slice
-}
-
 type RespondToTaskResponse struct {
 	Error string `json:"error"`
 }
 
 // RPCTaskRaw represents a serializable version of TaskRaw
 type RPCTaskRaw struct {
+	TaskType                  int64  `json:"task_type"`
 	TaskIndex                 uint32 `json:"task_index"`
 	RequestID                 []byte `json:"request_id"`
 	FeeToken                  string `json:"fee_token"`
@@ -125,85 +123,24 @@ type RPCPriceFeedResponse struct {
 	Price              string `json:"price"`
 }
 
+type RPCValidatedData struct {
+	Data                         []byte     `json:"data,omitempty"`
+	Error                        string     `json:"error,omitempty"`
+	Hash                         []byte     `json:"hash,omitempty"`
+	NonSignersPubkeysG1          [][]byte   `json:"non_signers_pubkeys_g_1,omitempty"`
+	QuorumApksG1                 [][]byte   `json:"quorum_apks_g_1,omitempty"`
+	SignersApkG2                 []byte     `json:"signers_apk_g_2,omitempty"`
+	SignersAggSigG1              []byte     `json:"signers_agg_sig_g_1,omitempty"`
+	NonSignerQuorumBitmapIndices []uint32   `json:"non_signer_quorum_bitmap_indices,omitempty"`
+	QuorumApkIndices             []uint32   `json:"quorum_apk_indices,omitempty"`
+	TotalStakeIndices            []uint32   `json:"total_stake_indices,omitempty"`
+	NonSignerStakeIndices        [][]uint32 `json:"non_signer_stake_indices,omitempty"`
+}
+
 // RPCVoteFinalizedRequestPrice represents a serializable version of MsgVoteFinalizedRequestPrice
 type RPCVoteFinalizedRequestPrice struct {
+	ChainID           int64                 `json:"chain_id"`
 	TaskRaw           *RPCTaskRaw           `json:"task_raw"`
-	ValidatedData     []byte                `json:"validated_data"`
+	ValidatedData     *RPCValidatedData     `json:"validated_data"`
 	PriceFeedResponse *RPCPriceFeedResponse `json:"price_feed_response"`
-}
-
-// ToProtoMessage converts RPCVoteFinalizedRequestPrice to MsgVoteFinalizedRequestPrice
-func (r *RPCVoteFinalizedRequestPrice) ToProtoMessage() (*pricetypes.MsgVoteFinalizedRequestPrice, error) {
-	if r == nil {
-		return nil, fmt.Errorf("nil RPCVoteFinalizedRequestPrice")
-	}
-	payment, ok := math.NewIntFromString(r.TaskRaw.Payment)
-	if !ok {
-		return nil, fmt.Errorf("failed to convert payment: %s", r.TaskRaw.Payment)
-	}
-
-	taskRaw := &pricetypes.TaskRaw{
-		TaskIndex:                 r.TaskRaw.TaskIndex,
-		RequestId:                 r.TaskRaw.RequestID,
-		FeeToken:                  r.TaskRaw.FeeToken,
-		Payment:                   payment,
-		RequestData:               r.TaskRaw.RequestData,
-		CallbackAddress:           r.TaskRaw.CallbackAddress,
-		CallbackFunctionId:        r.TaskRaw.CallbackFunctionID,
-		TaskCreatedBlock:          r.TaskRaw.TaskCreatedBlock,
-		QuorumNumbers:             r.TaskRaw.QuorumNumbers,
-		QuorumThresholdPercentage: r.TaskRaw.QuorumThresholdPercentage,
-	}
-	price, ok := math.NewIntFromString(r.PriceFeedResponse.Price)
-	if !ok {
-		return nil, fmt.Errorf("failed to convert price: %s", r.PriceFeedResponse.Price)
-	}
-
-	priceFeedResponse := &pricetypes.PriceFeedResponse{
-		ReferenceTaskIndex: r.PriceFeedResponse.ReferenceTaskIndex,
-		Price:              price,
-	}
-
-	validatedData := &types.RequestPostRequestValidatedData{}
-	if err := proto.Unmarshal(r.ValidatedData, validatedData); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal validated data: %v", err)
-	}
-
-	return &pricetypes.MsgVoteFinalizedRequestPrice{
-		TaskRaw:           taskRaw,
-		ValidatedData:     validatedData,
-		PriceFeedResponse: priceFeedResponse,
-	}, nil
-}
-
-// FromProtoMessage converts MsgVoteFinalizedRequestPrice to RPCVoteFinalizedRequestPrice
-func MsgVoteFinalizedRequestPriceFromProtoMessage(msg *pricetypes.MsgVoteFinalizedRequestPrice) (*RPCVoteFinalizedRequestPrice, error) {
-	if msg == nil {
-		return nil, fmt.Errorf("nil MsgVoteFinalizedRequestPrice")
-	}
-
-	validatedData, err := proto.Marshal(msg.ValidatedData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal validated data: %v", err)
-	}
-
-	return &RPCVoteFinalizedRequestPrice{
-		TaskRaw: &RPCTaskRaw{
-			TaskIndex:                 msg.TaskRaw.TaskIndex,
-			RequestID:                 msg.TaskRaw.RequestId,
-			FeeToken:                  msg.TaskRaw.FeeToken,
-			Payment:                   msg.TaskRaw.Payment.String(),
-			RequestData:               msg.TaskRaw.RequestData,
-			CallbackAddress:           msg.TaskRaw.CallbackAddress,
-			CallbackFunctionID:        msg.TaskRaw.CallbackFunctionId,
-			TaskCreatedBlock:          msg.TaskRaw.TaskCreatedBlock,
-			QuorumNumbers:             msg.TaskRaw.QuorumNumbers,
-			QuorumThresholdPercentage: msg.TaskRaw.QuorumThresholdPercentage,
-		},
-		ValidatedData: validatedData,
-		PriceFeedResponse: &RPCPriceFeedResponse{
-			ReferenceTaskIndex: msg.PriceFeedResponse.ReferenceTaskIndex,
-			Price:              msg.PriceFeedResponse.Price.String(),
-		},
-	}, nil
 }

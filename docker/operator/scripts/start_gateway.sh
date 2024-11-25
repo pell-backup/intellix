@@ -66,6 +66,15 @@ function start_gateway {
   PELLDVS_HOME=$PELLDVS_HOME intellixd start-task-gateway
 }
 
+function start_gateway_debug {
+  ## TODO: add home dir flag
+  go install github.com/go-delve/delve/cmd/dlv@latest
+  dlv exec /usr/bin/intellixd \
+    --listen=:2345 --headless=true --api-version=2 --accept-multiclient\
+    -- start-task-gateway
+  # PELLDVS_HOME=$PELLDVS_HOME intellixd start-task-gateway
+}
+
 ## start sshd
 /usr/sbin/sshd
 

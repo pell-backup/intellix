@@ -132,9 +132,15 @@ func NewPellApp(
 		WithKeyring(kr)
 	clientCtx = clientCtx.WithNodeURI(config.CosmosNodeUri).WithChainID(config.CosmosChainId)
 
+	key, err := clientCtx.Keyring.Key(getOperatorName())
+	if err != nil {
+		panic(err)
+	}
+
 	//dvs server manager
 	app.DvsServer, err = dvsserver.NewServer(
-		app.logger, clientCtx, config.GatewayAddr, config.OperatorAddr,
+		app.logger, clientCtx, key,
+		config.GatewayAddr, config.OperatorAddr,
 		config.WaitBlockCount, config.GasPrices, config.GasAdjustment,
 	)
 	if err != nil {

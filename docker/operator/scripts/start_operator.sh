@@ -113,7 +113,7 @@ logt "Check if DVS is ready"
 dvs_healthcheck
 
 logt "Check if Gateway is ready"
-gateway_healthcheck
+#gateway_healthcheck
 
 if [ ! -f /root/operator_initialized ]; then
   logt "Init operator"
