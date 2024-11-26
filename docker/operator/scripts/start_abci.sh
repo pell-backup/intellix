@@ -12,7 +12,7 @@ function load_defaults {
   export HARDHAT_DVS_PATH="/app/price-oracle-dvs/deployments/localhost"
 
 
-  export PELLDVS_HOME=${PELLDVS_HOME:-/root/.pelldvs}
+  export INTELLIX_HOME=${INTELLIX_HOME:-/root/.intellix}
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
 
@@ -43,39 +43,12 @@ function init_genesis {
   intellixd genesis collect-gentxs
 }
 
-function init_validator {
-  echo "Initializing validator"
-  export DEFAULT_VALIDATOR_KEY=${DEFAULT_VALIDATOR_KEY:-validator}
-  intellixd keys add $DEFAULT_VALIDATOR_KEY --keyring-backend test
-
-  export DEFAULT_VALIDATOR_ADDR=$(intellixd keys show $DEFAULT_VALIDATOR_KEY -a --keyring-backend test)
-
-  cat <<EOF > $HOME/$DEFAULT_VALIDATOR_KEY.json
-{
-        "pubkey": $(intellixd tendermint show-validator),
-        "amount": "1000000stake",
-        "moniker": "$COSMOS_NODE_NAME",
-        "identity": "",
-        "commission-rate": "0.1",
-        "commission-max-rate": "0.2",
-        "commission-max-change-rate": "0.01",
-        "min-self-delegation": "1"
-}
-EOF
-
-  intellixd tx staking create-validator $HOME/$DEFAULT_VALIDATOR_KEY.json \
-    --from $DEFAULT_KEY \
-    --chain-id $COSMOS_CHAIN_ID \
-    --keyring-backend test -y
-
-  intellixd tx bank send $ACCOUNT_ADDRESS $DEFAULT_VALIDATOR_ADDR 10000000stake \
-    --chain-id $COSMOS_CHAIN_ID \
-    --keyring-backend test -y
+function init_config {
+  dasel put -f $INTELLIX_HOME/config/config.toml -v 'tcp://0.0.0.0:26657' 'rpc.laddr' > $INTELLIX_HOME/config/config.toml
 }
 
 function start_abci {
-  # intellixd --home "$PELLDVS_HOME"
-  PELLDVS_HOME=$PELLDVS_HOME intellixd start \
+  intellixd start \
     --minimum-gas-prices=0.01stake \
     --api.enable=true \
     --api.address="tcp://0.0.0.0:1317" \
@@ -89,11 +62,17 @@ function start_abci {
 logt "Load Default Values for ENV Vars if not set."
 load_defaults
 
-logt "Init Genesis"
-init_genesis
+if [ ! -f /root/genesis_initialized ]; then
 
-logt "Starting ABCI..."
+  logt "Init Genesis"
+  init_genesis
+
+  touch /root/genesis_initialized
+
+fi
+
+logt "Init Config"
+init_config
+
+logt "Starting ABCI in background..."
 start_abci
-
-logt "Init Validator"
-init_validator

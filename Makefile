@@ -85,7 +85,6 @@ build:
 .PHONY: build
 
 build-debug:
-	#go build -mod=readonly -ldflags "-s -w" -o $(OUTPUT) ./cmd/intellixd/
 	go build -o $(OUTPUT) ./cmd/intellixd/
 .PHONY: build
 

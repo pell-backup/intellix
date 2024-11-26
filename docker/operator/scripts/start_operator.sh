@@ -81,9 +81,6 @@ function gen_cosmos_key {
 }
 
 function setup_operator_config {
-  setup_admin_key
-  gen_cosmos_key
-
   ## migrate to dvs logic after fix
   export OPERATOR_ADDRESS=$(pelldvs keys show $OPERATOR_KEY_NAME --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
   ## TODO: use operator key on config.toml and gateway should be on app.toml
@@ -100,7 +97,7 @@ EOF
 function start_operator {
   # intellixd --home "$PELLDVS_HOME"
 #  cat /root/.pelldvs/config/config.toml
-  PELLDVS_HOME=$PELLDVS_HOME  intellixd start-operator
+  PELLDVS_HOME=$PELLDVS_HOME intellixd start-operator
 }
 
 function start_operator_debug {

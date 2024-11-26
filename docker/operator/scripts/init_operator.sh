@@ -48,6 +48,10 @@ function init_pelldvs_config {
   scp dvs://$PELLDVS_HOME/config/chain.detail.json $PELLDVS_HOME/config/chain.detail.json
 }
 
+function gen_cosmos_key {
+  # TODO: remote test keyring
+  intellixd keys add "$OPERATOR_KEY_NAME" --keyring-backend test --home "$PELLDVS_HOME"
+}
 
 function setup_operator_key {
   if pelldvs keys show $OPERATOR_KEY_NAME --home "$PELLDVS_HOME" >/dev/null 2>&1; then
@@ -94,6 +98,7 @@ init_pelldvs_config
 
 logt "Setup Operator Key"
 setup_operator_key
+gen_cosmos_key
 
 logt "Register Operator"
 register_operator

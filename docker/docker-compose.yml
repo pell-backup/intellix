@@ -49,6 +49,8 @@ services:
       emulator:
         condition: service_started
     entrypoint: [ "bash", "/root/scripts/start_dvs.sh" ]
+    ports:
+      - "26653:26653"
     volumes:
       - ./pelldvs/scripts:/root/scripts
 
@@ -75,8 +77,8 @@ services:
       gateway:
         condition: service_started
     entrypoint: [ "bash", "/root/scripts/start_abci.sh" ]
-#    ports:
-#      - "26657:26657"
+    # ports:
+    #   - "26657:26657"
     volumes:
       - ./operator/scripts:/root/scripts
 
@@ -85,6 +87,7 @@ services:
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
+      - COSMOS_NODE_URI=tcp://host.docker.internal:26657
     depends_on:
       gateway:
         condition: service_started
