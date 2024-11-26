@@ -22,7 +22,7 @@ func (k msgServer) VoteFinalizedRequestPrice(ctx context.Context, msg *types.Msg
 	sdkCtx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeVoteFinalizedRequestPrice,
-			sdk.NewAttribute(types.AttributeKeyTaskIndex, fmt.Sprintf("%d", msg.TaskRaw.TaskIndex)),
+			sdk.NewAttribute(types.AttributeKeyTaskIndex, fmt.Sprintf("%d", msg.TaskIndex)),
 		),
 	)
 
@@ -30,7 +30,7 @@ func (k msgServer) VoteFinalizedRequestPrice(ctx context.Context, msg *types.Msg
 }
 
 func (k msgServer) validateMsgVoteFinalizedRequestPrice(msg *types.MsgVoteFinalizedRequestPrice) error {
-	if msg.TaskRaw == nil || msg.ValidatedData == nil || msg.PriceFeedResponse == nil {
+	if msg.RequestId == nil {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid msg")
 	}
 
@@ -44,7 +44,7 @@ func (k msgServer) saveFinalizedRequestPrice(ctx sdk.Context, msg *types.MsgVote
 		return errorsmod.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
 
-	if err := store.Set(types.FinalizedRequestPrice(msg.TaskRaw.TaskIndex), data); err != nil {
+	if err := store.Set(types.FinalizedRequestPrice(msg.TaskIndex), data); err != nil {
 		return errorsmod.Wrap(sdkerrors.ErrIO, err.Error())
 	}
 	return nil

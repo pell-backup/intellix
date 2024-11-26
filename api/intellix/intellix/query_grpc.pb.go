@@ -8,7 +8,6 @@ package intellix
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -49,22 +48,20 @@ func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts .
 }
 
 // QueryServer is the server API for Query service.
-// All implementations must embed UnimplementedQueryServer
+// All implementations should embed UnimplementedQueryServer
 // for forward compatibility
 type QueryServer interface {
 	// Parameters queries the parameters of the module.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
-	mustEmbedUnimplementedQueryServer()
 }
 
-// UnimplementedQueryServer must be embedded to have forward compatible implementations.
+// UnimplementedQueryServer should be embedded to have forward compatible implementations.
 type UnimplementedQueryServer struct {
 }
 
 func (UnimplementedQueryServer) Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
 }
-func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
 // UnsafeQueryServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to QueryServer will

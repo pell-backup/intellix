@@ -24,15 +24,15 @@ func (m MsgVoteFinalizedRequestPrice) Type() string { return TypeVoteFinalizedRe
 
 // ValidateBasic checks whether the given MsgEditDataSource instance (sdk.Msg interface).
 func (m MsgVoteFinalizedRequestPrice) ValidateBasic() error {
-	if m.ValidatedData == nil || m.PriceFeedResponse == nil {
-		return fmt.Errorf("empty data")
+	if m.TaskIndex == 0 {
+		return fmt.Errorf("task_index cannot be zero")
 	}
 	return nil
 }
 
 // GetSigners returns the required signers for the given MsgEditDataSource (sdk.Msg interface).
 func (m MsgVoteFinalizedRequestPrice) GetSigners() []sdk.AccAddress {
-	sender, _ := sdk.AccAddressFromBech32(m.TaskRaw.CallbackAddress)
+	sender, _ := sdk.AccAddressFromBech32(m.CallbackAddress)
 	return []sdk.AccAddress{sender}
 }
 

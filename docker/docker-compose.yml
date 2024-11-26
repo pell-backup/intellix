@@ -75,8 +75,8 @@ services:
       gateway:
         condition: service_started
     entrypoint: [ "bash", "/root/scripts/start_abci.sh" ]
-    ports:
-      - "26657:26657"
+#    ports:
+#      - "26657:26657"
     volumes:
       - ./operator/scripts:/root/scripts
 

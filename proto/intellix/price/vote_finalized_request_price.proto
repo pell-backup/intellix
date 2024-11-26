@@ -11,14 +11,9 @@ import "intellix/pelldvs/dvs_post_process_validated.proto";
 option go_package = "intellix/x/price/types";
 
 message MsgVoteFinalizedRequestPrice {
+  option (cosmos.msg.v1.signer) = "sender";
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
 
-  TaskRaw task_raw = 1;
-  pelldvs.RequestPostRequestValidatedData validated_data = 2;
-  PriceFeedResponse price_feed_response = 3;
-}
-
-message TaskRaw {
   uint32 task_index = 1;
   bytes request_id = 2;
   string fee_token = 3;
@@ -32,12 +27,11 @@ message TaskRaw {
   uint32 task_created_block = 8;
   bytes quorum_numbers = 9;
   uint32 quorum_threshold_percentage = 10;
-}
 
-message PriceFeedResponse {
-  uint32 reference_task_index = 1;
-  bytes price = 2[
+  uint32 reference_task_index = 11;
+  bytes price = 12[
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
+  string sender = 13 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }

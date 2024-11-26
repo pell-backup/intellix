@@ -19,6 +19,7 @@ RUN --mount=type=cache,target="/go/pkg/mod" \
     --mount=type=cache,target="/root/.cache/go-build" \
     make pelldvs-build
 
+RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
 
 ########## Build intellixd ##########
 WORKDIR /app/intellixd

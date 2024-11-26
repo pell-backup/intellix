@@ -20,6 +20,8 @@ function load_defaults {
   export COSMOS_NODE_NAME=${COSMOS_NODE_NAME:-node0}
   export COSMOS_CHAIN_ID=${COSMOS_CHAIN_ID:-intellix}
   export COSMOS_KEYRING_BACKEND=${COSMOS_KEYRING_BACKEND:-test}
+
+  export OPERATOR_KEY_NAME=${OPERATOR_KEY_NAME:-operator}
 }
 
 
@@ -32,8 +34,8 @@ function init_genesis {
   intellixd keys add $DEFAULT_KEY --keyring-backend test
   ACCOUNT_ADDRESS=$(intellixd keys show $DEFAULT_KEY -a --keyring-backend test)
   
-  intellixd genesis add-genesis-account $ACCOUNT_ADDRESS 10000000000stake
-  intellixd genesis gentx $DEFAULT_KEY 10000000000stake \
+  intellixd genesis add-genesis-account $ACCOUNT_ADDRESS 20000000000stake
+  intellixd genesis gentx $DEFAULT_KEY 1000000stake \
     --chain-id $COSMOS_CHAIN_ID \
     --moniker $COSMOS_NODE_NAME \
     --keyring-backend test \
@@ -74,7 +76,7 @@ EOF
 function start_abci {
   # intellixd --home "$PELLDVS_HOME"
   PELLDVS_HOME=$PELLDVS_HOME intellixd start \
-    --minimum-gas-prices=0.001stake \
+    --minimum-gas-prices=0.01stake \
     --api.enable=true \
     --api.address="tcp://0.0.0.0:1317" \
     --grpc.enable=true \

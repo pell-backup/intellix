@@ -2,9 +2,9 @@ package server
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	pkgcontext "intellix/pkg/context"
 	"intellix/pkg/taskgateway"
@@ -19,25 +19,25 @@ import (
 	"github.com/spf13/pflag"
 )
 
-type (
-	Server struct {
-		logger    log.Logger
-		clientCtx client.Context
-		key       *keyring.Record
+type Server struct {
+	logger        log.Logger
+	clientCtx     client.Context
+	cosmosChainId string
+	key           *keyring.Record
 
-		operatorAddress string
-		gasPrices       string
-		gasAdjustment   float64
-		waitBlockCount  int64 // price feed wait block count
+	operatorAddress string
+	gasPrices       string
+	gasAdjustment   float64
+	waitBlockCount  int64 // price feed wait block count
 
-		taskGatewayClient *taskgateway.Client
-	}
-)
+	taskGatewayClient *taskgateway.Client
+}
 
 func NewServer(
 	logger log.Logger,
 	clientCtx client.Context,
 	key *keyring.Record,
+	cosmosChainId string,
 
 	gatewayAddr string,
 	operatorAddress string,
@@ -47,19 +47,20 @@ func NewServer(
 	gasAdjustment float64,
 ) (Server, error) {
 	if gasPrices == "" {
-		gasPrices = "0.1uatom"
+		gasPrices = "1stake"
 	}
 	if gasAdjustment == 0 {
 		gasAdjustment = 1.5
 	}
 	if waitBlockCount == 0 {
-		waitBlockCount = 10
+		waitBlockCount = 1
 	}
 
 	k := Server{
-		logger:    logger,
-		clientCtx: clientCtx,
-		key:       key,
+		logger:        logger,
+		clientCtx:     clientCtx,
+		key:           key,
+		cosmosChainId: cosmosChainId,
 
 		operatorAddress: operatorAddress,
 		waitBlockCount:  waitBlockCount,
@@ -82,6 +83,14 @@ func NewServer(
 	k.taskGatewayClient = taskGatewayClient
 
 	return k, nil
+}
+
+func (k *Server) SenderAddress() (sdk.AccAddress, error) {
+	addr, err := k.key.GetAddress()
+	if err != nil {
+		return sdk.AccAddress{}, fmt.Errorf("failed to get address: %w", err)
+	}
+	return addr, nil
 }
 
 // Logger returns a module-specific logger.
@@ -125,7 +134,7 @@ func (k *Server) GetLatestBlock(ctx context.Context) (*cmttypes.Block, error) {
 }
 
 // SignAndBroadcastTx signs and broadcasts a transaction
-func (k *Server) SignAndBroadcastTx(ctx pkgcontext.Context, msgs []sdk.Msg) error {
+func (k *Server) SignAndBroadcastTx(ctx pkgcontext.Context, msg sdk.Msg) error {
 	txf, err := k.prepareTxFactory(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to prepare tx factory: %w", err)
@@ -135,7 +144,7 @@ func (k *Server) SignAndBroadcastTx(ctx pkgcontext.Context, msgs []sdk.Msg) erro
 	if err != nil {
 		return err
 	}
-	execMsg := authz.NewMsgExec(address, msgs)
+	execMsg := authz.NewMsgExec(address, []sdk.Msg{msg})
 
 	txBuilder, err := txf.BuildUnsignedTx(&execMsg)
 	if err != nil {
@@ -151,10 +160,6 @@ func (k *Server) SignAndBroadcastTx(ctx pkgcontext.Context, msgs []sdk.Msg) erro
 	if err != nil {
 		return fmt.Errorf("failed to encode tx: %w", err)
 	}
-
-	// base64 encode tx bytes
-	base64Tx := base64.StdEncoding.EncodeToString(txBytes)
-	k.Logger().Info("Broadcasting tx", "tx", base64Tx)
 
 	res, err := k.clientCtx.BroadcastTx(txBytes)
 	if err != nil {
@@ -176,8 +181,21 @@ func (k *Server) prepareTxFactory(ctx pkgcontext.Context) (tx.Factory, error) {
 	}
 
 	txf = txf.WithGasPrices(k.gasPrices).WithGasAdjustment(k.gasAdjustment)
-	txf = txf.WithChainID(fmt.Sprintf("%d", ctx.ChainID()))
+	txf = txf.WithChainID(k.cosmosChainId)
 	txf = txf.WithSignMode(signing.SignMode_SIGN_MODE_DIRECT)
+
+	addr, err := k.SenderAddress()
+	if err != nil {
+		return tx.Factory{}, err
+	}
+
+	// 获取账户信息
+	accRetriever := authtypes.AccountRetriever{}
+	acc, err := accRetriever.GetAccount(k.clientCtx, addr)
+	if err != nil {
+		return tx.Factory{}, err
+	}
+	txf = txf.WithAccountNumber(acc.GetAccountNumber()).WithSequence(acc.GetSequence())
 
 	return txf, nil
 }

@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	pkgcontext "intellix/pkg/context"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	dvstypes "intellix/pkg/pelldvs/types"
@@ -114,27 +113,28 @@ func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Con
 }
 
 func (d DvsPostProcessRequestServer) sendVoteFinalizedRequestPriceTx(ctx pkgcontext.Context, raw *types.ProcessRequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractDataOracle.IDataOracleTaskResponse) (*pricetypes.MsgVoteFinalizedRequestPrice, error) {
-	msg := &pricetypes.MsgVoteFinalizedRequestPrice{
-		TaskRaw: &pricetypes.TaskRaw{
-			TaskIndex:                 raw.Task.TaskIndex,
-			RequestId:                 raw.Task.RequestId,
-			FeeToken:                  raw.Task.FeeToken,
-			Payment:                   raw.Task.Payment,
-			RequestData:               raw.Task.RequestData,
-			CallbackAddress:           raw.Task.CallbackAddress,
-			CallbackFunctionId:        raw.Task.CallbackFunctionId,
-			TaskCreatedBlock:          raw.Task.TaskCreatedBlock,
-			QuorumNumbers:             raw.Task.QuorumNumbers,
-			QuorumThresholdPercentage: raw.Task.QuorumThresholdPercentage,
-		},
-		ValidatedData: validatedData,
-		PriceFeedResponse: &pricetypes.PriceFeedResponse{
-			ReferenceTaskIndex: priceData.ReferenceTaskIndex,
-			Price:              math.NewIntFromBigInt(priceData.Price),
-		},
+	addr, err := d.Server.SenderAddress()
+	if err != nil {
+		return nil, err
 	}
 
-	if err := d.Server.SignAndBroadcastTx(ctx, []sdk.Msg{msg}); err != nil {
+	msg := &pricetypes.MsgVoteFinalizedRequestPrice{
+		Sender:                    addr.String(),
+		TaskIndex:                 raw.Task.TaskIndex,
+		RequestId:                 raw.Task.RequestId,
+		FeeToken:                  raw.Task.FeeToken,
+		Payment:                   raw.Task.Payment,
+		RequestData:               raw.Task.RequestData,
+		CallbackAddress:           raw.Task.CallbackAddress,
+		CallbackFunctionId:        raw.Task.CallbackFunctionId,
+		TaskCreatedBlock:          raw.Task.TaskCreatedBlock,
+		QuorumNumbers:             raw.Task.QuorumNumbers,
+		QuorumThresholdPercentage: raw.Task.QuorumThresholdPercentage,
+		ReferenceTaskIndex:        priceData.ReferenceTaskIndex,
+		Price:                     math.NewIntFromBigInt(priceData.Price),
+	}
+
+	if err := d.Server.SignAndBroadcastTx(ctx, msg); err != nil {
 		return nil, err
 	}
 	return msg, nil

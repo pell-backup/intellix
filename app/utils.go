@@ -5,6 +5,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtxconfig "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -15,9 +16,9 @@ func NewClientContext(
 	appCodec codec.Codec,
 	interfaceRegistry codectypes.InterfaceRegistry,
 	txConfigOpts tx.ConfigOptions,
+	fromName string, cosmosNodeUrl string, chainId string,
+	kr keyring.Keyring,
 ) client.Context {
-	// TODO: using PellDVS client
-
 	clientCtx := client.Context{}.
 		WithCodec(appCodec).
 		WithInterfaceRegistry(interfaceRegistry).
@@ -37,5 +38,10 @@ func NewClientContext(
 	}
 	clientCtx = clientCtx.WithTxConfig(txConfig)
 
-	return clientCtx
+	clientCtx = clientCtx.WithFromName(fromName).WithKeyring(kr)
+	c, err := client.NewClientFromNode(cosmosNodeUrl)
+	if err != nil {
+		panic(err)
+	}
+	return clientCtx.WithClient(c).WithNodeURI(cosmosNodeUrl).WithChainID(chainId)
 }

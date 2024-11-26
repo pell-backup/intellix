@@ -4,11 +4,10 @@
 // - protoc             (unknown)
 // source: intellix/price/tx.proto
 
-package price
+package types
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -20,7 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_UpdateParams_FullMethodName = "/intellix.price.Msg/UpdateParams"
+	Msg_UpdateParams_FullMethodName              = "/intellix.price.Msg/UpdateParams"
+	Msg_VoteRequestPriceFeed_FullMethodName      = "/intellix.price.Msg/VoteRequestPriceFeed"
+	Msg_VoteFinalizedRequestPrice_FullMethodName = "/intellix.price.Msg/VoteFinalizedRequestPrice"
 )
 
 // MsgClient is the client API for Msg service.
@@ -30,6 +31,8 @@ type MsgClient interface {
 	// UpdateParams defines a (governance) operation for updating the module
 	// parameters. The authority defaults to the x/gov module account.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
+	VoteRequestPriceFeed(ctx context.Context, in *MsgVoteRequestPriceFeed, opts ...grpc.CallOption) (*MsgVoteRequestPriceFeedResponse, error)
+	VoteFinalizedRequestPrice(ctx context.Context, in *MsgVoteFinalizedRequestPrice, opts ...grpc.CallOption) (*MsgVoteFinalizedRequestPriceResponse, error)
 }
 
 type msgClient struct {
@@ -49,24 +52,48 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 	return out, nil
 }
 
+func (c *msgClient) VoteRequestPriceFeed(ctx context.Context, in *MsgVoteRequestPriceFeed, opts ...grpc.CallOption) (*MsgVoteRequestPriceFeedResponse, error) {
+	out := new(MsgVoteRequestPriceFeedResponse)
+	err := c.cc.Invoke(ctx, Msg_VoteRequestPriceFeed_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) VoteFinalizedRequestPrice(ctx context.Context, in *MsgVoteFinalizedRequestPrice, opts ...grpc.CallOption) (*MsgVoteFinalizedRequestPriceResponse, error) {
+	out := new(MsgVoteFinalizedRequestPriceResponse)
+	err := c.cc.Invoke(ctx, Msg_VoteFinalizedRequestPrice_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
-// All implementations must embed UnimplementedMsgServer
+// All implementations should embed UnimplementedMsgServer
 // for forward compatibility
 type MsgServer interface {
 	// UpdateParams defines a (governance) operation for updating the module
 	// parameters. The authority defaults to the x/gov module account.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
-	mustEmbedUnimplementedMsgServer()
+	VoteRequestPriceFeed(context.Context, *MsgVoteRequestPriceFeed) (*MsgVoteRequestPriceFeedResponse, error)
+	VoteFinalizedRequestPrice(context.Context, *MsgVoteFinalizedRequestPrice) (*MsgVoteFinalizedRequestPriceResponse, error)
 }
 
-// UnimplementedMsgServer must be embedded to have forward compatible implementations.
+// UnimplementedMsgServer should be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct {
 }
 
 func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
 }
-func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
+func (UnimplementedMsgServer) VoteRequestPriceFeed(context.Context, *MsgVoteRequestPriceFeed) (*MsgVoteRequestPriceFeedResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VoteRequestPriceFeed not implemented")
+}
+func (UnimplementedMsgServer) VoteFinalizedRequestPrice(context.Context, *MsgVoteFinalizedRequestPrice) (*MsgVoteFinalizedRequestPriceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VoteFinalizedRequestPrice not implemented")
+}
 
 // UnsafeMsgServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to MsgServer will
@@ -97,6 +124,42 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_VoteRequestPriceFeed_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgVoteRequestPriceFeed)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).VoteRequestPriceFeed(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_VoteRequestPriceFeed_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).VoteRequestPriceFeed(ctx, req.(*MsgVoteRequestPriceFeed))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_VoteFinalizedRequestPrice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgVoteFinalizedRequestPrice)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).VoteFinalizedRequestPrice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_VoteFinalizedRequestPrice_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).VoteFinalizedRequestPrice(ctx, req.(*MsgVoteFinalizedRequestPrice))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -107,6 +170,14 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateParams",
 			Handler:    _Msg_UpdateParams_Handler,
+		},
+		{
+			MethodName: "VoteRequestPriceFeed",
+			Handler:    _Msg_VoteRequestPriceFeed_Handler,
+		},
+		{
+			MethodName: "VoteFinalizedRequestPrice",
+			Handler:    _Msg_VoteFinalizedRequestPrice_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

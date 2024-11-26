@@ -6,7 +6,6 @@ import (
 	"cosmossdk.io/math"
 	"fmt"
 	cmttypes "github.com/cometbft/cometbft/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	pkgcontext "intellix/pkg/context"
 	"intellix/x/price/dvs/types"
 	pricetypes "intellix/x/price/types"
@@ -83,8 +82,13 @@ func (d *DvsProcessRequestServer) broadcastVoteRequestPriceFeed(ctx pkgcontext.C
 			Price:  math.LegacyNewDecFromBigInt(price),
 		})
 	}
+	addr, err := d.Server.SenderAddress()
+	if err != nil {
+		return err
+	}
 
 	msg := pricetypes.MsgVoteRequestPriceFeed{
+		Sender:      addr.String(),
 		TaskIndex:   task.Task.TaskIndex,
 		OperatorId:  d.Server.GetOperatorAddress(ctx),
 		RequestId:   task.Task.RequestId,
@@ -94,7 +98,7 @@ func (d *DvsProcessRequestServer) broadcastVoteRequestPriceFeed(ctx pkgcontext.C
 		Timestamp:   time.Now().Unix(),
 		BlockHeight: uint64(ctx.BlockHeight()),
 	}
-	if err := d.Server.SignAndBroadcastTx(ctx, []sdk.Msg{&msg}); err != nil {
+	if err := d.Server.SignAndBroadcastTx(ctx, &msg); err != nil {
 		d.Logger().Error("broadcastVoteRequestPriceFeed SignAndBroadcastTx error: " + err.Error())
 		return fmt.Errorf("failed to broadcast VoteRequestPriceFeed for data error: %w", err)
 	}
@@ -126,6 +130,7 @@ func (d *DvsProcessRequestServer) collectVoteRequestPriceFeedTxs(ctx pkgcontext.
 
 		// wait for next block
 		ctx = ctx.WithBlockHeight(block.Header.Height + 1)
+		time.Sleep(time.Millisecond * 10)
 	}
 
 	return priceFeedTxs, nil

@@ -26,7 +26,12 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 			RpcCommandOptions: []*autocliv1.RpcCommandOptions{
 				{
 					RpcMethod: "UpdateParams",
-					Skip:      true, // skipped because authority gated
+				},
+				{
+					RpcMethod: "VoteRequestPriceFeed",
+				},
+				{
+					RpcMethod: "VoteFinalizedRequestPrice",
 				},
 				// this line is used by ignite scaffolding # autocli/tx
 			},
