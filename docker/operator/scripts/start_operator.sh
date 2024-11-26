@@ -55,25 +55,7 @@ function gateway_healthcheck {
   set -e
 }
 
-## FIXME: remove this logic after fix. Operator should never use admin key.
-function setup_admin_key {
-  export ADMIN_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-  if ! pelldvs keys show admin --home "$PELLDVS_HOME" >/dev/null 2>&1; then
-    echo -ne '\n\n' | pelldvs keys import --key-type ecdsa --insecure admin $ADMIN_KEY --home $PELLDVS_HOME >/dev/null
-  fi
-
-  export ADMIN_ADDRESS=$(pelldvs keys show admin --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
-}
-
-function gen_cosmos_key {
-  # TODO: remote test keyring
-  intellixd keys add "$OPERATOR_KEY_NAME" --keyring-backend test --home "$PELLDVS_HOME"
-}
-
 function setup_operator_config {
-  setup_admin_key
-  gen_cosmos_key
-
   ## migrate to dvs logic after fix
   export OPERATOR_ADDRESS=$(pelldvs keys show $OPERATOR_KEY_NAME --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
   ## TODO: use operator key on config.toml and gateway should be on app.toml
@@ -90,7 +72,7 @@ EOF
 function start_operator {
   # intellixd --home "$PELLDVS_HOME"
 #  cat /root/.pelldvs/config/config.toml
-  PELLDVS_HOME=$PELLDVS_HOME  intellixd start-operator
+  PELLDVS_HOME=$PELLDVS_HOME intellixd start-operator
 }
 
 function start_operator_debug {

@@ -10,8 +10,8 @@ RUN mkdir -p /run/sshd && chmod 0755 /run/sshd
 ########## Setup env ##########
 WORKDIR /app
 
-RUN curl -L https://foundry.paradigm.xyz | bash
 ENV PATH="$PATH:/root/.foundry/bin"
+RUN curl -L https://foundry.paradigm.xyz | bash
 RUN foundryup
 
 ARG GITHUB_TOKEN
