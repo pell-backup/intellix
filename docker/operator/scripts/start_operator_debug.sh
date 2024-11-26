@@ -66,7 +66,7 @@ function setup_admin_key {
 }
 
 function gen_cosmos_key {
-  # TODO: remote test keyring
+  # TODO: should using operator key from abci
 #  intellixd keys add "$OPERATOR_KEY_NAME" --keyring-backend test --home "$PELLDVS_HOME"
 
 #  DEFAULT_KEY=${DEFAULT_KEY:-mykey}
