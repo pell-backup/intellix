@@ -87,7 +87,6 @@ services:
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
-      - COSMOS_NODE_URI=tcp://host.docker.internal:26657
     depends_on:
       gateway:
         condition: service_started

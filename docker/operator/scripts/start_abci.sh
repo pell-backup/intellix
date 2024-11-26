@@ -32,9 +32,12 @@ function init_genesis {
 
   echo "Generating genesis.json"
   intellixd keys add $DEFAULT_KEY --keyring-backend test
+  intellixd keys add $OPERATOR_KEY_NAME --keyring-backend test
   ACCOUNT_ADDRESS=$(intellixd keys show $DEFAULT_KEY -a --keyring-backend test)
+  OPERATOR_ADDRESS=$(intellixd keys show $OPERATOR_KEY_NAME -a --keyring-backend test)
   
   intellixd genesis add-genesis-account $ACCOUNT_ADDRESS 20000000000stake
+  intellixd genesis add-genesis-account $OPERATOR_ADDRESS 10000000000stake
   intellixd genesis gentx $DEFAULT_KEY 1000000stake \
     --chain-id $COSMOS_CHAIN_ID \
     --moniker $COSMOS_NODE_NAME \
