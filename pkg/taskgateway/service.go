@@ -2,14 +2,15 @@ package taskgateway
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"fmt"
-	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
-	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"math/big"
 	"net"
 	"net/rpc"
 	"os"
+
+	"cosmossdk.io/math"
+	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 
 	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/service"
@@ -163,6 +164,12 @@ func (tg *TaskGateway) wrapSubmitToChain(ctx context.Context, request *RPCVoteFi
 }
 
 func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinalizedRequestPrice) error {
+	// Validate BLS signature components
+	if err := validateBLSComponents(response.ValidatedData); err != nil {
+		tg.logger.Error("Invalid BLS signature components", "error", err)
+		return fmt.Errorf("invalid BLS components: %v", err)
+	}
+
 	feeTokenAddr, err := convertAddressToString(response.TaskRaw.FeeToken)
 	if err != nil {
 		tg.logger.Error("Error converting fee token address", "err", err)
@@ -201,6 +208,7 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		ReferenceTaskIndex: response.PriceFeedResponse.ReferenceTaskIndex,
 		Price:              priceInt.BigInt(),
 	}
+
 	sign := dataOracle.IBLSSignatureCheckerNonSignerStakesAndSignature{
 		NonSignerQuorumBitmapIndices: response.ValidatedData.NonSignerQuorumBitmapIndices,
 		NonSignerPubkeys:             convertNonSignersPubkeysG1(response.ValidatedData.NonSignersPubkeysG1),
@@ -217,12 +225,13 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		return err
 	}
 
-	tg.logger.Info("Submitting response to chain", "task", fmt.Sprintf("%+v", task),
-		"taskResp", fmt.Sprintf("%+v", taskResp), "signer", fmt.Sprintf("%+v", sign))
-
 	transaction, err := tg.contractDataOracle.ResponseToTask(authOpts, task, taskResp, sign)
 	if err != nil {
-		tg.logger.Error("Error assembling RequestPrice tx", "err", err)
+		tg.logger.Error("Error assembling RequestPrice tx",
+			"err", err,
+			"task", fmt.Sprintf("%+v", task),
+			"taskResp", fmt.Sprintf("%+v", taskResp),
+			"sign", fmt.Sprintf("%+v", sign))
 		return err
 	}
 

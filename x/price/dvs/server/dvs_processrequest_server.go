@@ -113,7 +113,7 @@ func (d *DvsProcessRequestServer) collectVoteRequestPriceFeedTxs(ctx pkgcontext.
 
 		// check N-N+M
 		if d.shouldStopCollecting(ctx, firstTxBlock, block.Header.Height) {
-			d.logger.Info("collectVoteRequestPriceFeed stop collecting", "block_height", block.Header.Height, "priceFeedTxs", fmt.Sprintf("%v", priceFeedTxs))
+			d.logger.Info("collectVoteRequestPriceFeed stop collecting", "block_height", block.Header.Height)
 			break
 		}
 
