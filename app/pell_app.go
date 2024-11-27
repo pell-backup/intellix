@@ -65,10 +65,13 @@ func (p PellAppConfig) Validate() error {
 func (p *PellApp) InterfaceRegistry() codectypes.InterfaceRegistry {
 	if p.interfaceRegistry == nil {
 		p.interfaceRegistry = codectypes.NewInterfaceRegistry()
-		std.RegisterInterfaces(p.interfaceRegistry)
-		sdktypes.RegisterInterfaces(p.interfaceRegistry)
 	}
 	return p.interfaceRegistry
+}
+
+func (p *PellApp) registerInterface() {
+	std.RegisterInterfaces(p.interfaceRegistry)
+	sdktypes.RegisterInterfaces(p.interfaceRegistry)
 }
 
 func (p *PellApp) AppCodec() codec.Codec {
@@ -98,14 +101,16 @@ func getOperatorName() string {
 }
 
 func NewPellApp(
+	interfaceRegistry codectypes.InterfaceRegistry,
 	logger log.Logger,
 	config *PellAppConfig,
 ) *PellApp {
 	var app = &PellApp{
-		logger: logger,
+		logger:            logger,
+		interfaceRegistry: interfaceRegistry,
 	}
 
-	app.interfaceRegistry = app.InterfaceRegistry()
+	app.registerInterface()
 	app.appCodec = app.AppCodec()
 	var err error
 

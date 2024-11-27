@@ -30,6 +30,7 @@ import (
 	"intellix/pkg/taskgateway"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/viper"
 
@@ -332,13 +333,15 @@ func pellAppCommand() *cobra.Command {
 				configFile = home + "/config/operator.config.json"
 			}
 
-			viper.SetConfigFile(configFile)
-			if err := viper.ReadInConfig(); err != nil {
+			vp := viper.New()
+
+			vp.SetConfigFile(configFile)
+			if err := vp.ReadInConfig(); err != nil {
 				panic(err)
 			}
 
 			var pellAppConfig = &app.PellAppConfig{}
-			err := viper.Unmarshal(pellAppConfig)
+			err := vp.Unmarshal(pellAppConfig)
 			if err != nil {
 				panic(err)
 			}
@@ -350,11 +353,11 @@ func pellAppCommand() *cobra.Command {
 			if pellAppConfig.DvsConfig == nil || pellAppConfig.DvsConfig.Pell == nil {
 				pellAppConfig.DvsConfig = dvsconfig.DefaultConfig()
 				if _, err := os.Stat(home + "/config/config.toml"); err == nil {
-					viper.SetConfigFile(home + "/config/config.toml")
-					if err := viper.ReadInConfig(); err != nil {
+					vp.SetConfigFile(home + "/config/config.toml")
+					if err := vp.ReadInConfig(); err != nil {
 						return err
 					}
-					if err := viper.Unmarshal(pellAppConfig.DvsConfig); err != nil {
+					if err := vp.Unmarshal(pellAppConfig.DvsConfig); err != nil {
 						return err
 					}
 				}
@@ -365,7 +368,14 @@ func pellAppCommand() *cobra.Command {
 				panic(err)
 			}
 
-			a := app.NewPellApp(logger.NewDVSLogAdapter(serverCtx.Logger), pellAppConfig)
+			dApp, err := newDefaultApp(getConfigHome(), serverCtx.Logger)
+			if err != nil {
+				panic(err)
+			}
+
+			a := app.NewPellApp(dApp.InterfaceRegistry(),
+				logger.NewDVSLogAdapter(serverCtx.Logger), pellAppConfig,
+			)
 			return a.Start()
 		},
 	}
@@ -379,4 +389,23 @@ func getConfigHome() string {
 		home, _ = clienthelpers.GetNodeHomeDirectory("." + Name)
 	}
 	return home
+}
+
+func openDB(rootDir string) (dbm.DB, error) {
+	dataDir := filepath.Join(rootDir, "data")
+	return dbm.NewDB("application", dbm.GoLevelDBBackend, dataDir)
+}
+
+func newDefaultApp(home string, log log.Logger) (*app.App, error) {
+	db, err := openDB(home)
+	if err != nil {
+		return nil, err
+	}
+	newVp := viper.New()
+	newVp.Set("pruning", "default")
+	newVp.Set("home", getConfigHome())
+	//newVp.Set("chain-id", pellAppConfig.CosmosChainId)
+	newVp.Set("chain-id", "intellix")
+	baseApp := newApp(log, db, nil, newVp)
+	return baseApp.(*app.App), nil
 }
