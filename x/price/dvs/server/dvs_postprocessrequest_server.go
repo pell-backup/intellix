@@ -145,13 +145,9 @@ func (d DvsPostProcessRequestServer) sendVoteFinalizedRequestPriceTx(ctx pkgcont
 
 func (d DvsPostProcessRequestServer) sendResponseToGateway(ctx pkgcontext.Context, raw *types.ProcessRequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractDataOracle.IDataOracleTaskResponse) error {
 
-	var nonSignerStakeIndices [][]uint32
-	for _, v := range validatedData.NonSignerStakeIndices {
-		var nonSignerStakeIndice []uint32
-		for _, b := range v.NonSignerStakeIndice {
-			nonSignerStakeIndice = append(nonSignerStakeIndice, b)
-		}
-		nonSignerStakeIndices = append(nonSignerStakeIndices, nonSignerStakeIndice)
+	nonSignerStakeIndices := make([][]uint32, len(validatedData.NonSignerStakeIndices))
+	for i, indices := range validatedData.NonSignerStakeIndices {
+		nonSignerStakeIndices[i] = indices.NonSignerStakeIndice
 	}
 
 	req := &taskgateway.RPCVoteFinalizedRequestPrice{

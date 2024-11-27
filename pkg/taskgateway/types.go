@@ -93,12 +93,12 @@ func convertQuorumApks(pb [][]byte) []dataOracle.BN254G1Point {
 	return list
 }
 
-func convertApkG2(pb []byte) *dataOracle.BN254G2Point {
+func convertApkG2(pb []byte) dataOracle.BN254G2Point {
 	if len(pb) < 128 {
-		return nil
+		return dataOracle.BN254G2Point{}
 	}
 
-	return &dataOracle.BN254G2Point{
+	return dataOracle.BN254G2Point{
 		X: [2]*big.Int{
 			new(big.Int).SetBytes(pb[:32]),
 			new(big.Int).SetBytes(pb[32:64]),
@@ -110,12 +110,12 @@ func convertApkG2(pb []byte) *dataOracle.BN254G2Point {
 	}
 }
 
-func convertSigma(pb []byte) *dataOracle.BN254G1Point {
+func convertSigma(pb []byte) dataOracle.BN254G1Point {
 	if len(pb) < 64 {
-		return nil
+		return dataOracle.BN254G1Point{}
 	}
 
-	return &dataOracle.BN254G1Point{
+	return dataOracle.BN254G1Point{
 		X: new(big.Int).SetBytes(pb[:32]),
 		Y: new(big.Int).SetBytes(pb[32:]),
 	}
@@ -193,26 +193,6 @@ func validateBLSComponents(data *RPCValidatedData) error {
 	// Validate indices
 	if len(data.TotalStakeIndices) == 0 {
 		return fmt.Errorf("no TotalStakeIndices provided")
-	}
-
-	// Validate NonSigner arrays
-	if len(data.NonSignerStakeIndices) > 0 {
-		// Check if any NonSignerStakeIndices array is nil
-		for i, indices := range data.NonSignerStakeIndices {
-			if indices == nil {
-				return fmt.Errorf("NonSignerStakeIndices[%d] is nil", i)
-			}
-		}
-
-		if len(data.NonSignerStakeIndices) != len(data.NonSignerQuorumBitmapIndices) {
-			return fmt.Errorf("NonSigner indices length mismatch: got %d stake indices but %d bitmap indices",
-				len(data.NonSignerStakeIndices), len(data.NonSignerQuorumBitmapIndices))
-		}
-
-		if len(data.NonSignersPubkeysG1) != len(data.NonSignerQuorumBitmapIndices) {
-			return fmt.Errorf("NonSigner pubkeys length mismatch: got %d pubkeys but %d bitmap indices",
-				len(data.NonSignersPubkeysG1), len(data.NonSignerQuorumBitmapIndices))
-		}
 	}
 
 	return nil
