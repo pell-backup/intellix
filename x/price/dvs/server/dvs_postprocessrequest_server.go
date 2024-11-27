@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	pkgcontext "intellix/pkg/context"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
@@ -87,7 +88,8 @@ func (d DvsPostProcessRequestServer) getDvsRequestValidatedData(ctx pkgcontext.C
 
 func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Context, in *types.ProcessRequestPriceFeedIn) (*types.PostProcessRequestPriceFeedOut, error) {
 	pkgCtx := pkgcontext.UnwrapContext(ctx)
-	d.logger.Info("Dvs PostProcessRequestPriceFeed called")
+	js, _ := json.Marshal(in)
+	d.logger.Info("DvsPostProcessRequestServer.PostProcessRequestPriceFeed called", "data", string(js))
 
 	validatedData, err := d.getDvsRequestValidatedData(pkgCtx)
 	if err != nil {
@@ -186,6 +188,8 @@ func (d DvsPostProcessRequestServer) sendResponseToGateway(ctx pkgcontext.Contex
 		},
 	}
 
-	d.logger.Info("sendResponseToGateway", "req", fmt.Sprintf("%v", req))
+	reqJs, _ := json.Marshal(req)
+	d.logger.Info("DvsPostProcessRequestServer.sendResponseToGateway", "req", string(reqJs))
+
 	return d.Server.taskGatewayClient.RespondToTask(req)
 }

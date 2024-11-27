@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	pkgcontext "intellix/pkg/context"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	dvstypes "intellix/pkg/pelldvs/types"
@@ -46,6 +47,9 @@ func (p *PellApp) PostRequest(ctx context.Context, req *avsitypes.RequestPostReq
 	pkgCtx := pkgcontext.NewContext(ctx, nil)
 	pkgCtx = pkgCtx.WithBlockHeight(req.DvsRequest.Height)
 	pkgCtx = pkgCtx.WithChainID(req.DvsRequest.ChainId)
+
+	reqJs, _ := json.Marshal(req)
+	p.logger.Debug("AVSI.PostRequest", "req", string(reqJs))
 
 	handlerSrc := dvsservermanager.GetPostProcessRequestHandlerSrc()
 	_, err := handlerSrc.InvokeRouterRawByData(pkgCtx, req.DvsRequest.Data, dvstypes.NewValidatedResponse(req.ValidatedResponse))

@@ -2,6 +2,7 @@ package taskgateway
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"net"
@@ -164,6 +165,9 @@ func (tg *TaskGateway) wrapSubmitToChain(ctx context.Context, request *RPCVoteFi
 }
 
 func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinalizedRequestPrice) error {
+	jsData, _ := json.Marshal(response)
+	tg.logger.Info("TaskGateway.submitToChain request", "data", string(jsData))
+
 	// Validate BLS signature components
 	if err := validateBLSComponents(response.ValidatedData); err != nil {
 		tg.logger.Error("Invalid BLS signature components", "error", err)
@@ -227,6 +231,18 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 
 	transaction, err := tg.contractDataOracle.ResponseToTask(authOpts, task, taskResp, sign)
 	if err != nil {
+		// Try to get the failed transaction receipt
+		if transaction != nil {
+			if receipt, receiptErr := tg.ethClient.TransactionReceipt(ctx, transaction.Hash()); receiptErr == nil {
+				tg.logger.Error("Transaction failed",
+					"err", err,
+					"txHash", transaction.Hash().Hex(),
+					"status", receipt.Status,
+					"gasUsed", receipt.GasUsed,
+					"blockNumber", receipt.BlockNumber,
+					"blockHash", receipt.BlockHash.Hex())
+			}
+		}
 		tg.logger.Error("Error assembling RequestPrice tx",
 			"err", err,
 			"task", fmt.Sprintf("%+v", task),
@@ -237,10 +253,17 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 
 	receipt, err := tg.sendTransaction(ctx, transaction)
 	if err != nil {
-		tg.logger.Error("Error sending transaction", "err", err)
+		tg.logger.Error("Error sending transaction", "err", err, "txHash", transaction.Hash().Hex())
 		return err
 	}
-	_ = receipt
+
+	tg.logger.Info("Transaction successful",
+		"txHash", transaction.Hash().Hex(),
+		"status", receipt.Status,
+		"gasUsed", receipt.GasUsed,
+		"blockNumber", receipt.BlockNumber,
+		"blockHash", receipt.BlockHash.Hex())
+
 	return nil
 }
 

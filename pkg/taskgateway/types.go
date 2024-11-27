@@ -194,15 +194,25 @@ func validateBLSComponents(data *RPCValidatedData) error {
 	if len(data.TotalStakeIndices) == 0 {
 		return fmt.Errorf("no TotalStakeIndices provided")
 	}
-	if len(data.NonSignerStakeIndices) != len(data.NonSignerQuorumBitmapIndices) {
-		return fmt.Errorf("NonSigner indices length mismatch: got %d stake indices but %d bitmap indices",
-			len(data.NonSignerStakeIndices), len(data.NonSignerQuorumBitmapIndices))
-	}
 
-	// Validate NonSignerPubkeys
-	if len(data.NonSignersPubkeysG1) != len(data.NonSignerQuorumBitmapIndices) {
-		return fmt.Errorf("NonSigner pubkeys length mismatch: got %d pubkeys but %d bitmap indices",
-			len(data.NonSignersPubkeysG1), len(data.NonSignerQuorumBitmapIndices))
+	// Validate NonSigner arrays
+	if len(data.NonSignerStakeIndices) > 0 {
+		// Check if any NonSignerStakeIndices array is nil
+		for i, indices := range data.NonSignerStakeIndices {
+			if indices == nil {
+				return fmt.Errorf("NonSignerStakeIndices[%d] is nil", i)
+			}
+		}
+
+		if len(data.NonSignerStakeIndices) != len(data.NonSignerQuorumBitmapIndices) {
+			return fmt.Errorf("NonSigner indices length mismatch: got %d stake indices but %d bitmap indices",
+				len(data.NonSignerStakeIndices), len(data.NonSignerQuorumBitmapIndices))
+		}
+
+		if len(data.NonSignersPubkeysG1) != len(data.NonSignerQuorumBitmapIndices) {
+			return fmt.Errorf("NonSigner pubkeys length mismatch: got %d pubkeys but %d bitmap indices",
+				len(data.NonSignersPubkeysG1), len(data.NonSignerQuorumBitmapIndices))
+		}
 	}
 
 	return nil
