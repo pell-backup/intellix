@@ -2,9 +2,10 @@ name: intellix
 
 services:
   hardhat:
-    image: intellixlabs-intellix-hardhat:latest
+    image: hardhat:${CONTRACT_VERSION:-v0.2.3}
     environment:
       - LOCALHOST_URL=http://eth:8545
+      - ETH_RPC_URL=http://eth:8545
     depends_on:
       eth:
         condition: service_started
@@ -87,6 +88,7 @@ services:
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
+      - GATEWAY_ADDR=${GATEWAY_ADDR:-gateway:8949}
     depends_on:
       gateway:
         condition: service_started
