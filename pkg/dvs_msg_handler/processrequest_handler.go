@@ -28,13 +28,13 @@ func (p *ProcessRequestHandler) RegisterService(sd *grpc.ServiceDesc, handler in
 	RegisterServiceRouter(p.Mgr, sd, handler)
 }
 
-func (p *ProcessRequestHandler) InvokeRouterByData(ctx pkgcontext.Context, data []byte) ([]byte, error) {
-	res, err := p.Mgr.HandleByData(ctx, data)
-	if err != nil {
-		return nil, err
-	}
-	return res.Data, nil
-}
+//func (p *ProcessRequestHandler) InvokeRouterByData(ctx pkgcontext.Context, data []byte) ([]byte, error) {
+//	res, err := p.Mgr.HandleByData(ctx, data)
+//	if err != nil {
+//		return nil, err
+//	}
+//	return res.Data, nil
+//}
 
 func (p *ProcessRequestHandler) InvokeRouterRawByData(ctx pkgcontext.Context, data []byte) (*result.Result, error) {
 	res, err := p.Mgr.HandleByData(ctx, data)

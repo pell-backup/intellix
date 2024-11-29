@@ -32,8 +32,8 @@ func (d DvsPostProcessRequestServer) decodePackedPriceFeedData(data []byte) (*co
 			Type: "uint32",
 		},
 		{
-			Name: "price",
-			Type: "uint256",
+			Name: "data",
+			Type: "bytes",
 		},
 	})
 	if err != nil {
@@ -57,16 +57,18 @@ func (d DvsPostProcessRequestServer) decodePackedPriceFeedData(data []byte) (*co
 	}
 
 	r, ok := values[0].(struct {
-		ReferenceTaskIndex uint32   `json:"referenceTaskIndex"`
-		Price              *big.Int `json:"price"`
+		ReferenceTaskIndex uint32 `json:"referenceTaskIndex"`
+		Data               []byte `json:"data"`
+		//Price              *big.Int `json:"price"`
 	})
+	d.logger.Debug("decodePackedPriceFeedData", "r", fmt.Sprintf("%+v", r))
 	if !ok {
 		return nil, fmt.Errorf("expected %T, got %T", &contractDataOracle.IDataOracleTaskResponse{}, values[0])
 	}
 
 	return &contractDataOracle.IDataOracleTaskResponse{
 		ReferenceTaskIndex: r.ReferenceTaskIndex,
-		Data:               r.Price.Bytes(),
+		Data:               r.Data,
 	}, nil
 }
 

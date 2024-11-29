@@ -55,6 +55,10 @@ EOF
 
 function start_dispatcher {
   # intellixd --home "$PELLDVS_HOME"
+#  go install github.com/go-delve/delve/cmd/dlv@latest
+#  dlv exec /usr/bin/intellixd \
+#    --listen=:2345 --headless=true --api-version=2 --accept-multiclient\
+#    -- start-task-dispatcher
   PELLDVS_HOME=$PELLDVS_HOME intellixd start-task-dispatcher
 }
 

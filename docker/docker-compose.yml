@@ -68,6 +68,7 @@ services:
     entrypoint: [ "bash", "/root/scripts/start_dispatcher.sh" ]
     ports:
       - "${HOST_PORT:-8091}:${CONTAINER_PORT:-8091}"
+#      - "2345:2345"
     volumes:
       - ./operator/scripts:/root/scripts
 

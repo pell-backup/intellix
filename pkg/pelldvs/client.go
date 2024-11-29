@@ -47,7 +47,7 @@ func (c *Client) RequestDVS(ctx context.Context, request *types.RequestProcessDV
 	result := ctypes.ResultDvsTask{}
 
 	_, err := c.pellDVSClient.Call(ctx, "request_dvs", map[string]interface{}{
-		"task":                        request.Request.Data,
+		"data":                        request.Request.Data,
 		"height":                      request.Request.Height,
 		"chainid":                     request.Request.ChainId,
 		"group_numbers":               request.Request.GroupNumbers,
