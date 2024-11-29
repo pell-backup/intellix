@@ -2,7 +2,7 @@ name: intellix
 
 services:
   hardhat:
-    image: hardhat:${CONTRACT_VERSION:-v0.2.3}
+    image: hardhat:${CONTRACT_VERSION:-v0.4.0}
     environment:
       - LOCALHOST_URL=http://eth:8545
       - ETH_RPC_URL=http://eth:8545
