@@ -16,46 +16,34 @@ import (
 	"sort"
 )
 
-type DvsProcessRequestServer struct {
-	Server
-}
-
-// NewDvsProcessRequestServer returns an implementation of the DvsProcessRequestServer interface
-// for the provided Server.
-func NewDvsProcessRequestServer(server Server) types.DvsProcessRequestServer {
-	return &DvsProcessRequestServer{
-		Server: server,
-	}
-}
-
-func (d *DvsProcessRequestServer) ProcessRequestPriceFeed(ctx context.Context, request *types.ProcessRequestPriceFeedIn) (*types.ProcessRequestPriceFeedOut, error) {
+func (server RequestServer) ProcessRequestPriceFeed(ctx context.Context, request *types.ProcessRequestPriceFeedIn) (*types.ProcessRequestPriceFeedOut, error) {
 	pkgContext := pkgcontext.UnwrapContext(ctx)
-	d.logger.Info("ProcessRequestPriceFeed", "PriceFeedParam", fmt.Sprintf("%+v", request.PriceFeed))
+	server.logger.Info("ProcessRequestPriceFeed", "PriceFeedParam", fmt.Sprintf("%+v", request.PriceFeed))
 
 	// fetch raw price from chain
-	rawPrices, err := fetchRawPrices(pkgContext, d.Logger(), request.PriceFeed.BaseSymbol, request.PriceFeed.QuoteSymbol)
+	rawPrices, err := fetchRawPrices(pkgContext, server.Logger(), request.PriceFeed.BaseSymbol, request.PriceFeed.QuoteSymbol)
 	if err != nil {
-		d.logger.Error("ProcessRequestPriceFeed fetchRawPrices error: " + err.Error())
+		server.logger.Error("ProcessRequestPriceFeed fetchRawPrices error: " + err.Error())
 		return nil, fmt.Errorf("failed to fetch raw prices: %w", err)
 	}
 
 	// sign data and broadcast VoteRequestPriceFeed
-	err = d.broadcastVoteRequestPriceFeed(pkgContext, request, request.GetPriceFeed(), rawPrices)
+	err = server.broadcastVoteRequestPriceFeed(pkgContext, request, request.GetPriceFeed(), rawPrices)
 	if err != nil {
 		return nil, fmt.Errorf("failed to broadcast VoteRequestPriceFeed: %w", err)
 	}
 
 	// listen and collect [N-N+M] block
-	priceFeedTxs, err := d.collectVoteRequestPriceFeedTxs(pkgContext, request.Task.RequestId)
+	priceFeedTxs, err := server.collectVoteRequestPriceFeedTxs(pkgContext, request.Task.RequestId)
 	if err != nil {
 		return nil, fmt.Errorf("failed to collect VoteRequestPriceFeed transactions: %w", err)
 	}
 
 	// aggregate [N-N+M] block prices
-	return d.aggregatePrices(pkgContext, request.Task.TaskIndex, request.Task.RequestId, priceFeedTxs)
+	return server.aggregatePrices(pkgContext, request.Task.TaskIndex, request.Task.RequestId, priceFeedTxs)
 }
 
-func (d *DvsProcessRequestServer) broadcastVoteRequestPriceFeed(ctx pkgcontext.Context, task *types.ProcessRequestPriceFeedIn, priceFeed *types.PriceFeedParam, rawPrices map[string]math.LegacyDec) error {
+func (d RequestServer) broadcastVoteRequestPriceFeed(ctx pkgcontext.Context, task *types.ProcessRequestPriceFeedIn, priceFeed *types.PriceFeedParam, rawPrices map[string]math.LegacyDec) error {
 	d.Logger().Info("broadcastVoteRequestPriceFeed",
 		"rawPrices", fmt.Sprintf("%+v", rawPrices),
 		"task", fmt.Sprintf("%+v", task),
@@ -93,7 +81,7 @@ func (d *DvsProcessRequestServer) broadcastVoteRequestPriceFeed(ctx pkgcontext.C
 	return nil
 }
 
-func (d *DvsProcessRequestServer) collectVoteRequestPriceFeedTxs(ctx pkgcontext.Context, requestID []byte) ([]pricetypes.MsgVoteRequestPriceFeed, error) {
+func (d RequestServer) collectVoteRequestPriceFeedTxs(ctx pkgcontext.Context, requestID []byte) ([]pricetypes.MsgVoteRequestPriceFeed, error) {
 	var priceFeedTxs []pricetypes.MsgVoteRequestPriceFeed
 	firstTxBlock := int64(0)
 
@@ -125,7 +113,7 @@ func (d *DvsProcessRequestServer) collectVoteRequestPriceFeedTxs(ctx pkgcontext.
 	return priceFeedTxs, nil
 }
 
-func (d *DvsProcessRequestServer) processBlockTxs(ctx context.Context, block *cmttypes.Block, requestID []byte) []pricetypes.MsgVoteRequestPriceFeed {
+func (d RequestServer) processBlockTxs(ctx context.Context, block *cmttypes.Block, requestID []byte) []pricetypes.MsgVoteRequestPriceFeed {
 	var priceFeedTxs []pricetypes.MsgVoteRequestPriceFeed
 	//d.logger.Info("Processing block", "height", block.Header.Height, "tx_count", len(block.Data.Txs))
 
@@ -149,7 +137,7 @@ func (d *DvsProcessRequestServer) processBlockTxs(ctx context.Context, block *cm
 	return priceFeedTxs
 }
 
-func (d *DvsProcessRequestServer) isVoteRequestPriceFeedTx(tx cmttypes.Tx) (*pricetypes.MsgVoteRequestPriceFeed, bool) {
+func (d RequestServer) isVoteRequestPriceFeedTx(tx cmttypes.Tx) (*pricetypes.MsgVoteRequestPriceFeed, bool) {
 	// check tx is VoteRequestPriceFeed
 	decoder := d.clientCtx.TxConfig.TxDecoder()
 	data, err := decoder(tx)
@@ -189,14 +177,14 @@ func (d *DvsProcessRequestServer) isVoteRequestPriceFeedTx(tx cmttypes.Tx) (*pri
 	return voteMsg, true
 }
 
-func (d *DvsProcessRequestServer) shouldStopCollecting(ctx pkgcontext.Context, firstTxBlock, currentBlock int64) bool {
+func (d RequestServer) shouldStopCollecting(ctx pkgcontext.Context, firstTxBlock, currentBlock int64) bool {
 	if firstTxBlock == 0 {
 		return false
 	}
 	return currentBlock >= firstTxBlock+d.waitBlockCount
 }
 
-func (d *DvsProcessRequestServer) aggregatePrices(ctx pkgcontext.Context, taskIndex uint32, requestID []byte, priceFeedTxs []pricetypes.MsgVoteRequestPriceFeed) (*types.ProcessRequestPriceFeedOut, error) {
+func (d RequestServer) aggregatePrices(ctx pkgcontext.Context, taskIndex uint32, requestID []byte, priceFeedTxs []pricetypes.MsgVoteRequestPriceFeed) (*types.ProcessRequestPriceFeedOut, error) {
 	operatorPrices := make(map[string][]math.LegacyDec)
 
 	// calc avg the prices of different data sources within each Operator
