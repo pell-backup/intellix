@@ -20,6 +20,9 @@ jobs:
       TAG: ${{ github.event.pull_request.head.sha || github.workflow_sha }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: false
+          ref: ${{ github.event.pull_request.head.sha || github.workflow_sha }}
       - uses: technote-space/get-diff-action@v6
         with:
           PATTERNS: |
