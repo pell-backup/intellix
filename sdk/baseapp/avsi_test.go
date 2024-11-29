@@ -1,4 +1,4 @@
-package app
+package baseapp
 
 const (
 	SimAppChainID = "intellix-simapp"

@@ -2,6 +2,7 @@ package pelldvs
 
 import (
 	"fmt"
+
 	aggRPC "github.com/0xPellNetwork/pelldvs/aggregator/rpc"
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
 	"github.com/0xPellNetwork/pelldvs/config"
