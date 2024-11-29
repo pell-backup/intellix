@@ -191,16 +191,16 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		return fmt.Errorf("error converting taskRaw payment")
 	}
 	task := dataOracle.IDataOracleTask{
-		TaskType:                  math.NewInt(response.TaskRaw.TaskType).BigInt(),
-		RequestId:                 [32]byte(response.TaskRaw.RequestID),
-		FeeToken:                  *feeTokenAddr,
-		Payment:                   paymentInt.BigInt(),
-		RequestData:               response.TaskRaw.RequestData,
-		CallbackAddress:           *cbAddr,
-		CallbackFunctionId:        [4]byte(response.TaskRaw.CallbackFunctionID),
-		TaskCreatedBlock:          response.TaskRaw.TaskCreatedBlock,
-		QuorumNumbers:             response.TaskRaw.QuorumNumbers,
-		QuorumThresholdPercentage: response.TaskRaw.QuorumThresholdPercentage,
+		TaskType:                 math.NewInt(response.TaskRaw.TaskType).BigInt(),
+		RequestId:                [32]byte(response.TaskRaw.RequestID),
+		FeeToken:                 *feeTokenAddr,
+		Payment:                  paymentInt.BigInt(),
+		RequestData:              response.TaskRaw.RequestData,
+		CallbackAddress:          *cbAddr,
+		CallbackFunctionId:       [4]byte(response.TaskRaw.CallbackFunctionID),
+		TaskCreatedBlock:         response.TaskRaw.TaskCreatedBlock,
+		GroupNumbers:             response.TaskRaw.QuorumNumbers,
+		GroupThresholdPercentage: response.TaskRaw.QuorumThresholdPercentage,
 	}
 	priceInt, ok := math.NewIntFromString(response.PriceFeedResponse.Price)
 
@@ -210,18 +210,18 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 	}
 	taskResp := dataOracle.IDataOracleTaskResponse{
 		ReferenceTaskIndex: response.PriceFeedResponse.ReferenceTaskIndex,
-		Price:              priceInt.BigInt(),
+		Data:               priceInt.BigInt().Bytes(),
 	}
 
-	sign := dataOracle.IBLSSignatureCheckerNonSignerStakesAndSignature{
-		NonSignerQuorumBitmapIndices: response.ValidatedData.NonSignerQuorumBitmapIndices,
-		NonSignerPubkeys:             convertNonSignersPubkeysG1(response.ValidatedData.NonSignersPubkeysG1),
-		QuorumApks:                   convertQuorumApks(response.ValidatedData.QuorumApksG1),
-		ApkG2:                        convertApkG2(response.ValidatedData.SignersApkG2),
-		Sigma:                        convertSigma(response.ValidatedData.SignersAggSigG1),
-		QuorumApkIndices:             response.ValidatedData.QuorumApkIndices,
-		TotalStakeIndices:            response.ValidatedData.TotalStakeIndices,
-		NonSignerStakeIndices:        response.ValidatedData.NonSignerStakeIndices,
+	sign := dataOracle.IBLSSignatureVerifierNonSignerStakesAndSignature{
+		NonSignerGroupBitmapIndices: response.ValidatedData.NonSignerQuorumBitmapIndices,
+		NonSignerPubkeys:            convertNonSignersPubkeysG1(response.ValidatedData.NonSignersPubkeysG1),
+		GroupApks:                   convertQuorumApks(response.ValidatedData.QuorumApksG1),
+		ApkG2:                       convertApkG2(response.ValidatedData.SignersApkG2),
+		Sigma:                       convertSigma(response.ValidatedData.SignersAggSigG1),
+		GroupApkIndices:             response.ValidatedData.QuorumApkIndices,
+		TotalStakeIndices:           response.ValidatedData.TotalStakeIndices,
+		NonSignerStakeIndices:       response.ValidatedData.NonSignerStakeIndices,
 	}
 
 	authOpts, err := tg.getAuthOpts(response.ChainID)

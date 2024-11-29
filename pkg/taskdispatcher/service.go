@@ -4,14 +4,15 @@ import "C"
 import (
 	"context"
 	"fmt"
-	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
-	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"intellix/pkg/dvs_msg_handler/tx"
 	"intellix/pkg/pelldvs"
 	pricetypes "intellix/x/price/dvs/types"
 	"sync"
+
+	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"cosmossdk.io/math"
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
@@ -134,18 +135,18 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractDataOra
 		return
 	}
 
-	quorumNumbers := make([]uint32, len(newTask.Task.QuorumNumbers))
-	for i, b := range newTask.Task.QuorumNumbers {
+	quorumNumbers := make([]uint32, len(newTask.Task.GroupNumbers))
+	for i, b := range newTask.Task.GroupNumbers {
 		quorumNumbers[i] = uint32(b)
 	}
 
-	err = td.pellDVSClient.RequestDVS(context.Background(), &avsitypes.RequestProcessRequest{
+	err = td.pellDVSClient.RequestDVS(context.Background(), &avsitypes.RequestProcessDVSRequest{
 		Request: &avsitypes.DVSRequest{
-			Data:                       taskData,
-			Height:                     int64(newTask.Raw.BlockNumber),
-			ChainId:                    int64(chainID),
-			QuorumNumbers:              quorumNumbers,
-			QuorumThresholdPercentages: []uint32{newTask.Task.QuorumThresholdPercentage},
+			Data:                      taskData,
+			Height:                    int64(newTask.Raw.BlockNumber),
+			ChainId:                   int64(chainID),
+			GroupNumbers:              quorumNumbers,
+			GroupThresholdPercentages: []uint32{newTask.Task.GroupThresholdPercentage},
 		},
 	})
 	if err != nil {
@@ -177,8 +178,8 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractDataOra
 				CallbackAddress:           task.CallbackAddress.Hex(),
 				CallbackFunctionId:        task.CallbackFunctionId[:],
 				TaskCreatedBlock:          task.TaskCreatedBlock,
-				QuorumNumbers:             task.QuorumNumbers,
-				QuorumThresholdPercentage: task.QuorumThresholdPercentage,
+				QuorumNumbers:             task.GroupNumbers,
+				QuorumThresholdPercentage: task.GroupThresholdPercentage,
 			},
 			PriceFeed: &pricetypes.PriceFeedParam{
 				BaseSymbol:  priceFeed.BaseSymbol,

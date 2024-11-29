@@ -6,7 +6,7 @@ OUTPUT?=$(BUILDDIR)/intellixd
 
 MODULE_NAME := github.com/IntelliXLabs/intellix
 HTTPS_GIT := https://$(MODULE_NAME).git
-CGO_ENABLED ?= 0
+CGO_ENABLED ?= 1
 
 # Process Docker environment varible TARGETPLATFORM
 # in order to build binary with correspondent ARCH

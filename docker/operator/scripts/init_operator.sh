@@ -1,10 +1,18 @@
+
+set -e
+
 logt() {
   echo "$(date '+%Y-%m-%d %H:%M:%S') $1"
 }
 
 function load_defaults {
+  export HARDHAT_PATH="/app/price-oracle-dvs"
+  export HARDHAT_CONTRACTS_PATH="$HARDHAT_PATH/lib/pell-middleware-contracts/lib/pell-contracts/deployments/localhost"
+  export HARDHAT_DVS_PATH="$HARDHAT_PATH/deployments/localhost"
   export OPERATOR_KEY_NAME=${OPERATOR_KEY_NAME:-operator}
   export AGGREGATOR_RPC_URL=${AGGREGATOR_RPC_URL:-dvs:26653}
+  export OPERATOR_NODE_NAME=${OPERATOR_NODE_NAME:-operator01}
+
 
   export PELLDVS_HOME=${PELLDVS_HOME:-/root/.pelldvs}
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
@@ -29,11 +37,10 @@ function init_pelldvs_config {
   REGISTRY_ROUTER_ADDRESS=$(ssh emulator "cat /root/RegistryRouterAddress.json" | jq -r .address)
 
   update-config rpc_url "$ETH_RPC_URL"
-  update-config registry_router_factory_address "$REGISTRY_ROUTER_FACTORY_ADDRESS"
-  update-config delegation_manager_address "$PELL_DELEGATION_MNAGER"
-  ## TODO: change to dvs_directory_address
-  update-config avs_directory_address "$PELL_DVS_DIRECTORY"
-  update-config registry_router_address "$REGISTRY_ROUTER_ADDRESS"
+  update-config pell_registry_router_factory_address "$REGISTRY_ROUTER_FACTORY_ADDRESS"
+  update-config pell_delegation_manager_address "$PELL_DELEGATION_MNAGER"
+  update-config pell_dvs_directory_address "$PELL_DVS_DIRECTORY"
+  update-config pell_registry_router_address "$REGISTRY_ROUTER_ADDRESS"
   update-config aggregator_rpc_url "$AGGREGATOR_RPC_URL"
 
   ## FIXME: operator_bls_private_key_store_path should be in the config template. 
@@ -47,6 +54,7 @@ function init_pelldvs_config {
   ## FIXME: why should we use chain.detail.json?
   scp dvs://$PELLDVS_HOME/config/chain.detail.json $PELLDVS_HOME/config/chain.detail.json
 }
+
 
 function setup_operator_key {
   if pelldvs keys show $OPERATOR_KEY_NAME --home "$PELLDVS_HOME" >/dev/null 2>&1; then
@@ -71,7 +79,7 @@ function register_operator {
   pelldvs client operator register-operator \
     --home $PELLDVS_HOME \
     --from $OPERATOR_KEY_NAME \
-    --metadata_uri $OPERATOR_METADATA_URI
+    --metadata-uri $OPERATOR_METADATA_URI
 
   show_operator_registered "$OPERATOR_ADDRESS"
 }
@@ -80,8 +88,8 @@ function register_operator_to_dvs {
   pelldvs client operator register-operator-to-dvs \
     --home $PELLDVS_HOME \
     --from $OPERATOR_KEY_NAME \
-    --quorums 0 \
-    --socket http://operator:26657
+    --groups 0 \
+    --socket http://$OPERATOR_NODE_NAME:26657
   show_dvs_operator_info $OPERATOR_ADDRESS
 }
 

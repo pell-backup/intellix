@@ -1,11 +1,12 @@
 package resulthandlers
 
 import (
+	"intellix/x/price/dvs/types"
+
 	contractDataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"golang.org/x/crypto/sha3"
-	"intellix/x/price/dvs/types"
 )
 
 type ProcessRequestPriceFeedResultHandler struct {
@@ -28,8 +29,8 @@ func (p *ProcessRequestPriceFeedResultHandler) getAbiEncodeData(msg proto.Messag
 			Type: "uint32",
 		},
 		{
-			Name: "price",
-			Type: "uint256",
+			Name: "data",
+			Type: "bytes",
 		},
 	})
 	if err != nil {
@@ -43,7 +44,7 @@ func (p *ProcessRequestPriceFeedResultHandler) getAbiEncodeData(msg proto.Messag
 
 	bytes, err := arguments.Pack(&contractDataOracle.IDataOracleTaskResponse{
 		ReferenceTaskIndex: r.TaskIndex,
-		Price:              r.Price.BigInt(),
+		Data:               r.Price.BigInt().Bytes(),
 	})
 	if err != nil {
 		return nil, err

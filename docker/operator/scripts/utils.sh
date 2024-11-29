@@ -1,7 +1,8 @@
 
 function load_defaults {
-  export HARDHAT_CONTRACTS_PATH="/app/price-oracle-dvs/lib/pell-middleware-contracts/lib/pell-contracts/deployments/localhost"
-  export HARDHAT_DVS_PATH="/app/price-oracle-dvs/deployments/localhost"
+  export HARDHAT_PATH=${HARDHAT_PATH:-"/app/price-oracle-dvs"}
+  export HARDHAT_CONTRACTS_PATH="$HARDHAT_PATH/lib/pell-middleware-contracts/lib/pell-contracts/deployments/localhost"
+  export HARDHAT_DVS_PATH="$HARDHAT_PATH/deployments/localhost"
 
   export PELLDVS_HOME=${PELLDVS_HOME:-/root/.pelldvs}
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
@@ -45,20 +46,20 @@ function show_operator_registered {
 
 function show_dvs_operator_info {
   local OPERATOR_ADDRESS=$1
-  local DVS_REGISTRY_COORDINATOR=$(ssh hardhat "cat $HARDHAT_DVS_PATH/RegistryCoordinator-Proxy.json" | jq -r .address)
+  local DVS_CENTRAL_SCHEDULER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/CentralScheduler-Proxy.json" | jq -r .address)
 
   ## Get operator info -> (operator_id, status), 
   ## status: 0 -> NEVER, 1 -> REGISTERED, 2 -> DEREGISTERED
-  cast call "$DVS_REGISTRY_COORDINATOR" "getOperator(address)((bytes32,uint8))" $OPERATOR_ADDRESS
+  cast call "$DVS_CENTRAL_SCHEDULER" "getOperator(address)((bytes32,uint8))" $OPERATOR_ADDRESS
 }
 
 function get_operator_list {
-  local QUORUM_NUMBER=${1:-0}
+  local GROUP_NUMBER=${1:-0}
   local BLOCK_NUMBER=${2:-$(cast block-number)}
   # RETRIEVER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorStateRetriever.json" | jq -r .address)
-  INDEX_REGISTRY_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/IndexRegistry-Proxy.json" | jq -r .address)
-  cast call "$INDEX_REGISTRY_ADDRESS" "getOperatorListAtBlockNumber(uint8,uint32)(bytes32[])" $QUORUM_NUMBER $BLOCK_NUMBER
-  cast call "$INDEX_REGISTRY_ADDRESS" "totalOperatorsForQuorum(uint8)(uint32)" $QUORUM_NUMBER
+  INDEX_REGISTRY_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorIndexManager-Proxy.json" | jq -r .address)
+  cast call "$INDEX_REGISTRY_ADDRESS" "getOperatorListAtBlockNumber(uint8,uint32)(bytes32[])" $GROUP_NUMBER $BLOCK_NUMBER
+  cast call "$INDEX_REGISTRY_ADDRESS" "totalOperatorsForGroup(uint8)(uint32)" $GROUP_NUMBER
 }
 
 load_defaults

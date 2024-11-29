@@ -23,7 +23,7 @@ func (p *PellApp) Query(ctx context.Context, query *avsitypes.RequestQuery) (*av
 	}, nil
 }
 
-func (p *PellApp) ProcessRequest(ctx context.Context, req *avsitypes.RequestProcessRequest) (*avsitypes.ResponseProcessRequest, error) {
+func (p *PellApp) ProcessDVSRequest(ctx context.Context, req *avsitypes.RequestProcessDVSRequest) (*avsitypes.ResponseProcessDVSRequest, error) {
 	// new SDK context
 	pkgCtx := pkgcontext.NewContext(ctx, nil)
 	pkgCtx = pkgCtx.WithBlockHeight(req.Request.Height)
@@ -36,27 +36,27 @@ func (p *PellApp) ProcessRequest(ctx context.Context, req *avsitypes.RequestProc
 		return nil, err
 	}
 
-	return &avsitypes.ResponseProcessRequest{
+	return &avsitypes.ResponseProcessDVSRequest{
 		Response:       res.CustomData,
 		ResponseDigest: res.CustomDigest,
 	}, err
 }
 
-func (p *PellApp) PostRequest(ctx context.Context, req *avsitypes.RequestPostRequest) (*avsitypes.ResponsePostRequest, error) {
+func (p *PellApp) ProcessDVSResponse(ctx context.Context, req *avsitypes.RequestProcessDVSResponse) (*avsitypes.ResponseProcessDVSResponse, error) {
 	// new SDK context
 	pkgCtx := pkgcontext.NewContext(ctx, nil)
 	pkgCtx = pkgCtx.WithBlockHeight(req.DvsRequest.Height)
 	pkgCtx = pkgCtx.WithChainID(req.DvsRequest.ChainId)
 
 	reqJs, _ := json.Marshal(req)
-	p.logger.Debug("AVSI.PostRequest", "req", string(reqJs))
+	p.logger.Debug("AVSI.ProcessDVSResponse", "req", string(reqJs))
 
 	handlerSrc := dvsservermanager.GetPostProcessRequestHandlerSrc()
-	_, err := handlerSrc.InvokeRouterRawByData(pkgCtx, req.DvsRequest.Data, dvstypes.NewValidatedResponse(req.ValidatedResponse))
+	_, err := handlerSrc.InvokeRouterRawByData(pkgCtx, req.DvsRequest.Data, dvstypes.NewValidatedResponse(req.DvsResponse))
 	if err != nil {
 		p.logger.Error("post request error", "err", err)
 		return nil, err
 	}
 
-	return &avsitypes.ResponsePostRequest{}, nil
+	return &avsitypes.ResponseProcessDVSResponse{}, nil
 }

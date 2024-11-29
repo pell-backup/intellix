@@ -53,12 +53,12 @@ function show_dvs_operator_info {
 }
 
 function get_operator_list {
-  local QUORUM_NUMBER=${1:-0}
+  local GROUP_NUMBER=${1:-0}
   local BLOCK_NUMBER=${2:-$(cast block-number)}
   # RETRIEVER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorStateRetriever.json" | jq -r .address)
   INDEX_REGISTRY_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/IndexRegistry-Proxy.json" | jq -r .address)
-  cast call "$INDEX_REGISTRY_ADDRESS" "getOperatorListAtBlockNumber(uint8,uint32)(bytes32[])" $QUORUM_NUMBER $BLOCK_NUMBER
-  cast call "$INDEX_REGISTRY_ADDRESS" "totalOperatorsForQuorum(uint8)(uint32)" $QUORUM_NUMBER
+  cast call "$INDEX_REGISTRY_ADDRESS" "getOperatorListAtBlockNumber(uint8,uint32)(bytes32[])" $GROUP_NUMBER $BLOCK_NUMBER
+  cast call "$INDEX_REGISTRY_ADDRESS" "totalOperatorsForGROUP(uint8)(uint32)" $GROUP_NUMBER
 }
 
 load_defaults

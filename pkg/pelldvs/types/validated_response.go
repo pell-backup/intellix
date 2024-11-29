@@ -4,7 +4,7 @@ import (
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
 )
 
-func NewValidatedResponse(validatedData *avsitypes.ValidatedResponse) *RequestPostRequestValidatedData {
+func NewValidatedResponse(validatedData *avsitypes.DVSResponse) *RequestPostRequestValidatedData {
 	var nonSignerStakeIndices []*NonSignerStakeIndice
 	for _, nonSignerStakeIndice := range validatedData.NonSignerStakeIndices {
 		nonSignerStakeIndices = append(nonSignerStakeIndices, &NonSignerStakeIndice{
@@ -17,11 +17,11 @@ func NewValidatedResponse(validatedData *avsitypes.ValidatedResponse) *RequestPo
 		Error:                        validatedData.Error,
 		Hash:                         validatedData.Hash,
 		NonSignersPubkeysG1:          validatedData.NonSignersPubkeysG1,
-		QuorumApksG1:                 validatedData.QuorumApksG1,
+		QuorumApksG1:                 validatedData.GroupApksG1,
 		SignersApkG2:                 validatedData.SignersApkG2,
 		SignersAggSigG1:              validatedData.SignersAggSigG1,
-		NonSignerQuorumBitmapIndices: validatedData.NonSignerQuorumBitmapIndices,
-		QuorumApkIndices:             validatedData.QuorumApkIndices,
+		NonSignerQuorumBitmapIndices: validatedData.NonSignerGroupBitmapIndices,
+		QuorumApkIndices:             validatedData.GroupApkIndices,
 		TotalStakeIndices:            validatedData.TotalStakeIndices,
 		NonSignerStakeIndices:        nonSignerStakeIndices,
 	}

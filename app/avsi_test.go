@@ -80,7 +80,7 @@ func TestProcessRequest(t *testing.T) {
 		t.Fatalf("error in mockDvsRequestData: %s", err.Error())
 	}
 
-	resp, err := a.ProcessRequest(ctx, &avsi.RequestProcessRequest{
+	resp, err := a.ProcessDVSRequest(ctx, &avsi.RequestProcessDVSRequest{
 		Request: types.DVSRequest{
 			Data:    data,
 			Height:  1,
@@ -101,7 +101,7 @@ func TestPostProcessRequest(t *testing.T) {
 		t.Fatalf("error in mockDvsRequestData: %s", err.Error())
 	}
 
-	processResp, err := a.ProcessRequest(ctx, &avsi.RequestProcessRequest{
+	processResp, err := a.ProcessDVSRequest(ctx, &avsi.RequestProcessDVSRequest{
 		Request: types.DVSRequest{
 			Data:    reqData,
 			Height:  1,
@@ -110,7 +110,7 @@ func TestPostProcessRequest(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	_, err = a.PostRequest(ctx, &avsi.RequestPostRequest{
+	_, err = a.ProcessDVSResponse(ctx, &avsi.RequestProcessDVSResponse{
 		Request: types.DVSRequest{
 			Data:    reqData,
 			Height:  1,

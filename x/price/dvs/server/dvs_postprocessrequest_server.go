@@ -66,7 +66,7 @@ func (d DvsPostProcessRequestServer) decodePackedPriceFeedData(data []byte) (*co
 
 	return &contractDataOracle.IDataOracleTaskResponse{
 		ReferenceTaskIndex: r.ReferenceTaskIndex,
-		Price:              r.Price,
+		Data:               r.Price.Bytes(),
 	}, nil
 }
 
@@ -134,7 +134,7 @@ func (d DvsPostProcessRequestServer) sendVoteFinalizedRequestPriceTx(ctx pkgcont
 		QuorumNumbers:             raw.Task.QuorumNumbers,
 		QuorumThresholdPercentage: raw.Task.QuorumThresholdPercentage,
 		ReferenceTaskIndex:        priceData.ReferenceTaskIndex,
-		Price:                     math.NewIntFromBigInt(priceData.Price),
+		Price:                     math.NewIntFromBigInt(new(big.Int).SetBytes(priceData.Data)),
 	}
 
 	if err := d.Server.SignAndBroadcastTx(ctx, msg); err != nil {
@@ -180,7 +180,7 @@ func (d DvsPostProcessRequestServer) sendResponseToGateway(ctx pkgcontext.Contex
 		},
 		PriceFeedResponse: &taskgateway.RPCPriceFeedResponse{
 			ReferenceTaskIndex: priceData.ReferenceTaskIndex,
-			Price:              priceData.Price.String(),
+			Price:              new(big.Int).SetBytes(priceData.Data).String(),
 		},
 	}
 

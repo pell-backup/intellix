@@ -35,6 +35,8 @@ services:
       hardhat:
         condition: service_started
     entrypoint: [ "bash", "/root/scripts/init_emulator.sh" ]
+    volumes:
+      - ./pelldvs/scripts:/root/scripts
     healthcheck:
       test: [ "CMD", "test", "-f", "/root/emulator_initialized" ]
       start_period: 50s

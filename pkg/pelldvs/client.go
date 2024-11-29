@@ -3,6 +3,7 @@ package pelldvs
 import (
 	"context"
 	"fmt"
+
 	"github.com/0xPellNetwork/pelldvs/avsi/types"
 	"github.com/0xPellNetwork/pelldvs/libs/log"
 	ctypes "github.com/0xPellNetwork/pelldvs/rpc/core/types"
@@ -39,18 +40,18 @@ func NewClient(
 }
 
 // TODO: use the RequesstDVS interface from pelldvs localclient directly. No need to define it here.
-func (c *Client) RequestDVS(ctx context.Context, request *types.RequestProcessRequest) error {
+func (c *Client) RequestDVS(ctx context.Context, request *types.RequestProcessDVSRequest) error {
 	if c.pellDVSClient == nil {
 		return fmt.Errorf("pelldvs client has not been initialized")
 	}
 	result := ctypes.ResultDvsTask{}
 
-	_, err := c.pellDVSClient.Call(ctx, "send_task", map[string]interface{}{
-		"task":                         request.Request.Data,
-		"height":                       request.Request.Height,
-		"chainid":                      request.Request.ChainId,
-		"quorum_numbers":               request.Request.QuorumNumbers,
-		"quorum_threshold_percentages": request.Request.QuorumThresholdPercentages,
+	_, err := c.pellDVSClient.Call(ctx, "request_dvs", map[string]interface{}{
+		"task":                        request.Request.Data,
+		"height":                      request.Request.Height,
+		"chainid":                     request.Request.ChainId,
+		"group_numbers":               request.Request.GroupNumbers,
+		"group_threshold_percentages": request.Request.GroupThresholdPercentages,
 	}, &result)
 	if err != nil {
 		c.logger.Error("Failed to send dvs task", "error", err)
