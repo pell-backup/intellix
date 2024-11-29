@@ -46,7 +46,7 @@ jobs:
       - name: sleep 60 seconds
         run: sleep 60
       - name: Test services
-        run: cd docker && docker compose run --rm test
+        run: cd docker && docker compose run --rm test /root/scripts/test.sh
       - name: Stop services
         run: make docker-down
         if: always()
