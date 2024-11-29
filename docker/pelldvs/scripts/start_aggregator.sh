@@ -19,24 +19,26 @@ function load_defaults {
 
 function init_aggregator {
   mkdir -p $PELLDVS_HOME/config
+  REGISTRY_ROUTER_ADDRESS=$(ssh emulator "cat /root/RegistryRouterAddress.json" | jq -r .address)
   cat <<EOF > $PELLDVS_HOME/config/aggregator.json
 {
     "aggregator_rpc_server": "$AGGREGATOR_RPC_LADDR",
     "operator_response_timeout": "10s",
+    "pell_registry_router_address": "$REGISTRY_ROUTER_ADDRESS",
     "chain_config_path": "$PELLDVS_HOME/config/chain.detail.json"
 }
 EOF
 
-  DVS_BLS_APK_REGISTRY=$(ssh hardhat "cat $HARDHAT_DVS_PATH/BLSApkRegistry-Proxy.json" | jq -r .address)
-  DVS_REGISTRY_COORDINATOR=$(ssh hardhat "cat $HARDHAT_DVS_PATH/RegistryCoordinator-Proxy.json" | jq -r .address)
-  DVS_OPERATOR_STATE_RETRIEVER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorStateRetriever.json" | jq -r .address)
+  DVS_OPERATOR_KEY_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorKeyManager-Proxy.json" | jq -r .address)
+  DVS_CENTRAL_SCHEDULER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/CentralScheduler-Proxy.json" | jq -r .address)
+  DVS_OPERATOR_INFO_PROVIDER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorInfoProvider.json" | jq -r .address)
   cat <<EOF > $PELLDVS_HOME/config/chain.detail.json
 {
   "1337": {
     "rpc_url": "$ETH_WS_URL",
-    "operator_state_retriever_address": "$DVS_OPERATOR_STATE_RETRIEVER",
-    "bls_apk_registry_address": "$DVS_BLS_APK_REGISTRY",
-    "registry_coordinator_address": "$DVS_REGISTRY_COORDINATOR"
+    "operator_info_provider_address": "$DVS_OPERATOR_INFO_PROVIDER",
+    "operator_key_manager_address": "$DVS_OPERATOR_KEY_MANAGER",
+    "central_scheduler_address": "$DVS_CENTRAL_SCHEDULER"
   }
 }
 EOF

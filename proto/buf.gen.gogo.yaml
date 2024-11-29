@@ -16,3 +16,20 @@ plugins:
     opt:
       - logtostderr=true
       # - allow_colon_final_segments=true
+  - name: go-grpc
+    out: .
+    opt:
+      - paths=source_relative
+      - require_unimplemented_servers=false
+      - Mcosmos/app/v1alpha1/module.proto=cosmossdk.io/api/cosmos/app/v1alpha1
+      - Mcosmos/base/v1beta1/coin.proto=github.com/cosmos/cosmos-sdk/types
+      - Mcosmos/msg/v1/msg.proto=cosmossdk.io/api/cosmos/msg/v1
+      - Mcosmos_proto/cosmos.proto=github.com/cosmos/cosmos-proto
+      - Mgogoproto/gogo.proto=github.com/gogo/protobuf/gogoproto
+      - Mgoogle/protobuf/any.proto=github.com/cosmos/cosmos-sdk/codec/types
+      - Mcosmos/orm/v1/orm.proto=cosmossdk.io/orm
+      - Mintellix/intellix/module/module.proto=intellix/x/intellix/types
+      - Mintellix/intellix/params.proto=intellix/x/intellix/types
+      - Mintellix/price/params.proto=intellix/x/price/types
+      - Mintellix/price/tx.proto=intellix/x/price/types
+      - Mintellix/price/module/module.proto=intellix/x/price/types

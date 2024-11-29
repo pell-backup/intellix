@@ -1,44 +1,56 @@
 package taskdispatcher
 
+import "C"
 import (
 	"context"
-	"cosmossdk.io/math"
 	"fmt"
-	avsi "github.com/0xPellNetwork/pelldvs/application"
-	"github.com/0xPellNetwork/pelldvs/avsi/types"
-	contractPriceOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/PriceOracle"
+	"intellix/pkg/dvs_msg_handler/tx"
+	"intellix/pkg/pelldvs"
+	pricetypes "intellix/x/price/dvs/types"
+	"sync"
+
+	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"cosmossdk.io/math"
+	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
+	contractDataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cometbft/cometbft/libs/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	dvsservermanager "intellix/pkg/dvs_msg_handler"
-	"intellix/pkg/pelldvs"
-	pricetypes "intellix/x/price/dvs/types"
-	"math/big"
-	"sync"
 )
 
 type TaskDispatcher struct {
 	service.BaseService
 
-	logger        log.Logger
+	logger        dvslog.Logger
 	pellDVSClient *pelldvs.Client
 	chains        map[uint64]*chainWatcher
 	mu            sync.Mutex
+	msgEncoder    tx.MsgEncoder
 }
 
 type chainWatcher struct {
 	chainID  uint64
-	contract *contractPriceOracle.ContractPriceOracle
+	contract *contractDataOracle.ContractDataOracle
 	client   *ethclient.Client
 }
 
-func NewTaskDispatcher(logger log.Logger, pellDVSClient *pelldvs.Client, configs []*ChainConfig) (*TaskDispatcher, error) {
+func newTaskProtoEncoder() tx.MsgEncoder {
+	cdc := codec.NewProtoCodec(codectypes.NewInterfaceRegistry())
+	return tx.NewDefaultDecoder(cdc)
+}
+
+func NewTaskDispatcher(logger dvslog.Logger, pellDVSClient *pelldvs.Client, configs []*ChainConfig) (*TaskDispatcher, error) {
 	td := &TaskDispatcher{
 		logger:        logger,
 		pellDVSClient: pellDVSClient,
 		chains:        make(map[uint64]*chainWatcher),
+		msgEncoder:    newTaskProtoEncoder(),
 	}
 
 	for _, config := range configs {
@@ -47,13 +59,14 @@ func NewTaskDispatcher(logger log.Logger, pellDVSClient *pelldvs.Client, configs
 		}
 	}
 
-	td.BaseService = *service.NewBaseService(logger, "TaskDispatcher", td)
+	td.BaseService = *service.NewBaseService(nil, "TaskDispatcher", td)
 	return td, nil
 }
 
 func (td *TaskDispatcher) AddChain(config *ChainConfig) error {
 	td.mu.Lock()
 	defer td.mu.Unlock()
+	td.logger.Info(fmt.Sprintf("listen chain, chainID: %d, url: %s, address: %s", config.ChainID, config.EthURL, config.ContractAddress))
 
 	if err := config.Validate(); err != nil {
 		return err
@@ -67,7 +80,7 @@ func (td *TaskDispatcher) AddChain(config *ChainConfig) error {
 		return fmt.Errorf("failed to connect to Ethereum client: %w", err)
 	}
 
-	contract, err := contractPriceOracle.NewContractPriceOracle(common.HexToAddress(config.ContractAddress), ethClient)
+	contract, err := contractDataOracle.NewContractDataOracle(common.HexToAddress(config.ContractAddress), ethClient)
 	if err != nil {
 		return fmt.Errorf("failed to instantiate contract: %w", err)
 	}
@@ -89,7 +102,8 @@ func (td *TaskDispatcher) Start() error {
 }
 
 func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
-	newTaskChan := make(chan *contractPriceOracle.ContractPriceOracleNewTaskCreated)
+	td.logger.Info("now listen for new tasks")
+	newTaskChan := make(chan *contractDataOracle.ContractDataOracleNewTaskCreated)
 	// TODO: add index by height
 	// TODO: add scan mode
 	sub, err := chain.contract.WatchNewTaskCreated(&bind.WatchOpts{}, newTaskChan, nil)
@@ -112,8 +126,8 @@ func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
 	}
 }
 
-func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractPriceOracle.ContractPriceOracleNewTaskCreated) {
-	td.logger.Info("New task created", "chainID", chainID, "TaskIndex", newTask.TaskIndex, "RequestId", newTask.Task.RequestId)
+func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractDataOracle.ContractDataOracleNewTaskCreated) {
+	td.logger.Info("New task created", "chainID", chainID, "TaskIndex", newTask.TaskIndex, "RequestId", newTask.Task.RequestId, "TaskType", newTask.Task.TaskType)
 
 	taskData, err := td.serializeTask(chainID, newTask)
 	if err != nil {
@@ -121,11 +135,18 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractPriceOr
 		return
 	}
 
-	err = td.pellDVSClient.RequestDVS(context.Background(), &avsi.RequestProcessRequest{
-		Request: types.DVSRequest{
-			Data:    taskData,
-			Height:  int64(newTask.Raw.BlockNumber),
-			ChainID: new(big.Int).SetUint64(chainID),
+	quorumNumbers := make([]uint32, len(newTask.Task.GroupNumbers))
+	for i, b := range newTask.Task.GroupNumbers {
+		quorumNumbers[i] = uint32(b)
+	}
+
+	err = td.pellDVSClient.RequestDVS(context.Background(), &avsitypes.RequestProcessDVSRequest{
+		Request: &avsitypes.DVSRequest{
+			Data:                      taskData,
+			Height:                    int64(newTask.Raw.BlockNumber),
+			ChainId:                   int64(chainID),
+			GroupNumbers:              quorumNumbers,
+			GroupThresholdPercentages: []uint32{newTask.Task.GroupThresholdPercentage},
 		},
 	})
 	if err != nil {
@@ -136,33 +157,41 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractPriceOr
 	td.logger.Info("Task sent to PellDVS successfully", "chainID", chainID, "TaskIndex", newTask.TaskIndex)
 }
 
-func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractPriceOracle.ContractPriceOracleNewTaskCreated) ([]byte, error) {
+func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractDataOracle.ContractDataOracleNewTaskCreated) ([]byte, error) {
 	priceFeed, err := ParsePriceFeed(newTask.Task.RequestData)
 	if err != nil {
 		td.logger.Error("Failed to parse price feed", "chainID", chainID, "error", err)
 		return nil, err
 	}
 	task := newTask.Task
-	taskRequest := &pricetypes.ProcessRequestPriceFeedIn{
-		Task: &pricetypes.TaskRequest{
-			TaskIndex:                 newTask.TaskIndex,
-			RequestId:                 task.RequestId[:],
-			FeeToken:                  task.FeeToken.Hex(),
-			Payment:                   math.NewIntFromBigInt(task.Payment),
-			RequestData:               task.RequestData,
-			CallbackAddress:           task.CallbackAddress.Hex(),
-			CallbackFunctionId:        task.CallbackFunctionId[:],
-			TaskCreatedBlock:          task.TaskCreatedBlock,
-			QuorumNumbers:             task.QuorumNumbers,
-			QuorumThresholdPercentage: task.QuorumThresholdPercentage,
-		},
-		PriceFeed: &pricetypes.PriceFeedParam{
-			BaseSymbol:  priceFeed.BaseSymbol,
-			QuoteSymbol: priceFeed.QuoteSymbol,
-		},
+	var taskRequest sdk.Msg
+
+	// TODO: add more task-types
+	if task.TaskType.Int64() == TaskTypePrice {
+		taskRequest = &pricetypes.ProcessRequestPriceFeedIn{
+			Task: &pricetypes.TaskRequest{
+				TaskIndex:                 newTask.TaskIndex,
+				RequestId:                 task.RequestId[:],
+				FeeToken:                  task.FeeToken.Hex(),
+				Payment:                   math.NewIntFromBigInt(task.Payment),
+				RequestData:               task.RequestData,
+				CallbackAddress:           task.CallbackAddress.Hex(),
+				CallbackFunctionId:        task.CallbackFunctionId[:],
+				TaskCreatedBlock:          task.TaskCreatedBlock,
+				QuorumNumbers:             task.GroupNumbers,
+				QuorumThresholdPercentage: task.GroupThresholdPercentage,
+			},
+			PriceFeed: &pricetypes.PriceFeedParam{
+				BaseSymbol:  priceFeed.BaseSymbol,
+				QuoteSymbol: priceFeed.QuoteSymbol,
+			},
+		}
+	}
+	if taskRequest == nil {
+		return nil, fmt.Errorf("invalid task request")
 	}
 
-	return dvsservermanager.EncodeMsgs(taskRequest)
+	return td.msgEncoder.EncodeMsgs(taskRequest)
 }
 
 func (td *TaskDispatcher) OnStart() error {

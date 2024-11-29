@@ -6,7 +6,7 @@ OUTPUT?=$(BUILDDIR)/intellixd
 
 MODULE_NAME := github.com/IntelliXLabs/intellix
 HTTPS_GIT := https://$(MODULE_NAME).git
-CGO_ENABLED ?= 0
+CGO_ENABLED ?= 1
 
 # Process Docker environment varible TARGETPLATFORM
 # in order to build binary with correspondent ARCH
@@ -81,7 +81,11 @@ include tests.mk
 
 #? build: Build Intellixd
 build:
-	CGO_ENABLED=$(CGO_ENABLED) go build $(BUILD_FLAGS) -tags '$(BUILD_TAGS)' -o $(OUTPUT) ./cmd/intellixd/
+	go build -mod=readonly -ldflags "-s -w" -o $(OUTPUT) ./cmd/intellixd/
+.PHONY: build
+
+build-debug:
+	go build -o $(OUTPUT) ./cmd/intellixd/
 .PHONY: build
 
 #? install: Install Intellixd to GOBIN

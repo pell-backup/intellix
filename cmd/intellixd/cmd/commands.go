@@ -2,16 +2,12 @@ package cmd
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	pkglogger "intellix/pkg/logger"
-	"intellix/pkg/pelldvs"
-	"intellix/pkg/taskdispatcher"
-	"intellix/pkg/taskgateway"
-	"io"
-
+	clienthelpers "cosmossdk.io/client/v2/helpers"
 	"cosmossdk.io/log"
 	confixcmd "cosmossdk.io/tools/confix/cmd"
+	"errors"
+	"fmt"
+	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/debug"
@@ -27,6 +23,15 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 	"github.com/spf13/cobra"
+	"intellix/pkg/logger"
+	pkglogger "intellix/pkg/logger"
+	"intellix/pkg/pelldvs"
+	"intellix/pkg/taskdispatcher"
+	"intellix/pkg/taskgateway"
+	"io"
+	"os"
+	"path/filepath"
+
 	"github.com/spf13/viper"
 
 	"intellix/app"
@@ -34,6 +39,7 @@ import (
 
 var (
 	configFile string
+	Name       = "intellix"
 )
 
 func initRootCmd(
@@ -61,6 +67,7 @@ func initRootCmd(
 		keys.Commands(),
 		taskDispatcherCommand(),
 		taskGatewayCommand(),
+		pellAppCommand(),
 	)
 }
 
@@ -137,7 +144,7 @@ func newApp(
 ) servertypes.Application {
 	baseappOptions := server.DefaultBaseappOptions(appOpts)
 
-	app, err := app.New(
+	a, err := app.New(
 		logger, db, traceStore, true,
 		appOpts,
 		baseappOptions...,
@@ -145,9 +152,7 @@ func newApp(
 	if err != nil {
 		panic(err)
 	}
-
-	_ = newPellApp(app.Logger())
-	return app
+	return a
 }
 
 // appExport creates a new app (optionally at a given height) and exports state.
@@ -201,71 +206,50 @@ func appExport(
 	return bApp.ExportAppStateAndValidators(forZeroHeight, jailAllowedAddrs, modulesToExport)
 }
 
-func newPellApp(
-	logger log.Logger,
-) *app.PellApp {
-	if configFile == "" {
-		panic("PellApp config file not set")
-	}
-
-	viper.SetConfigFile(configFile)
-	if err := viper.ReadInConfig(); err != nil {
-		panic(err)
-	}
-	var pellAppConfig = &app.PellAppConfig{}
-	err := viper.UnmarshalKey("pell_app", pellAppConfig)
-	if err != nil {
-		panic(err)
-	}
-
-	return app.NewPellApp(logger, pellAppConfig)
-}
-
 // TODO: put start logic into "start" command with flag
 // taskDispatcherCommand builds task-dispatcher command
 func taskDispatcherCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "task-dispatcher",
+		Use:   "start-task-dispatcher",
 		Short: "Start the TaskDispatcher service",
 		Long: "Start the TaskDispatcher service, Example:\n" +
-			"intellixd task-dispatcher --config=config.yml",
+			"intellixd start-task-dispatcher --config=config.yml",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			clientCtx, err := client.GetClientTxContext(cmd)
-			if err != nil {
-				return err
-			}
-
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			config := serverCtx.Config
 
-			// read config file
-			if configFile != "" {
-				viper.SetConfigFile(configFile)
-				if err := viper.ReadInConfig(); err != nil {
-					return err
-				}
-				if err := viper.Unmarshal(config); err != nil {
-					return err
-				}
-			} else {
-				return errors.New("config file not set")
+			home := getConfigHome()
+			if configFile == "" {
+				configFile = home + "/config/dispatcher.config.json"
 			}
 
-			var chainConfigs []*taskdispatcher.ChainConfig
-			err = viper.UnmarshalKey("task_dispatcher", &chainConfigs)
-			if err != nil {
+			viper.SetConfigFile(configFile)
+			if err := viper.ReadInConfig(); err != nil {
+				return err
+			}
+			if err := viper.Unmarshal(config); err != nil {
 				return err
 			}
 
+			var conf = &taskdispatcher.Config{}
+			err := viper.Unmarshal(conf)
+			if err != nil {
+				return err
+			}
+			if err := conf.Validate(); err != nil {
+				return err
+			}
+
+			// start task dispatcher
+			dvsLogger := pkglogger.NewDVSLogAdapter(serverCtx.Logger)
+
 			// new pell-dvs client
-			pellDVSClient, err := pelldvs.NewClient(clientCtx)
+			pellDVSClient, err := pelldvs.NewClient(dvsLogger.With("module", "client"), conf.DvsAddress)
 			if err != nil {
 				return fmt.Errorf("failed to create PellDVS client: %w", err)
 			}
 
-			// start task dispatcher
-			cmtLogger := pkglogger.NewCometBFTLogAdapter(serverCtx.Logger)
-			td, err := taskdispatcher.NewTaskDispatcher(cmtLogger, pellDVSClient, chainConfigs)
+			td, err := taskdispatcher.NewTaskDispatcher(dvsLogger.With("module", "task-dispacther"), pellDVSClient, conf.Chains)
 			if err != nil {
 				return fmt.Errorf("failed to create TaskDispatcher: %w", err)
 			}
@@ -290,38 +274,34 @@ func taskDispatcherCommand() *cobra.Command {
 
 func taskGatewayCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "task-gateway",
+		Use:   "start-task-gateway",
 		Short: "Start the TaskGateway service",
 		Long: "Start the TaskGateway service, Example:\n" +
-			"intellixd task-gateway --config=config.yml",
+			"intellixd start-task-gateway --config=config.yml",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serverCtx := server.GetServerContextFromCmd(cmd)
-			// read config file
-			if configFile != "" {
-				viper.SetConfigFile(configFile)
-				if err := viper.ReadInConfig(); err != nil {
-					return err
-				}
-			} else {
-				return errors.New("config file not set")
+
+			home := getConfigHome()
+			if configFile == "" {
+				configFile = home + "/config/gateway.config.json"
+			}
+			viper.SetConfigFile(configFile)
+			if err := viper.ReadInConfig(); err != nil {
+				return err
 			}
 
-			senderAddress := viper.GetString("task_gateway.sender_address")
-			ethEndpoint := viper.GetString("task_gateway.eth_endpoint")
-			bftNetworkRemote := viper.GetString("task_gateway.bft_network_remote")
-			contractAddress := viper.GetString("task_gateway.contract_address")
-
-			if senderAddress == "" || ethEndpoint == "" || bftNetworkRemote == "" || contractAddress == "" {
-				return errors.New("task_gateway config is not set")
+			conf := &taskgateway.TaskGatewayCfg{}
+			err := viper.Unmarshal(conf)
+			if err != nil {
+				return err
+			}
+			err = conf.Validate()
+			if err != nil {
+				return err
 			}
 
-			cmtLogger := pkglogger.NewCometBFTLogAdapter(serverCtx.Logger)
-			taskGateway, err := taskgateway.NewTaskGateway(cmtLogger, context.Background(), &taskgateway.TaskGatewayCfg{
-				SenderAddress:    senderAddress,
-				EthEndpoint:      ethEndpoint,
-				BftNetworkRemote: bftNetworkRemote,
-				ContractAddress:  contractAddress,
-			})
+			dvsLogger := pkglogger.NewDVSLogAdapter(serverCtx.Logger)
+			taskGateway, err := taskgateway.NewTaskGateway(dvsLogger, context.Background(), conf)
 			if err != nil {
 				return fmt.Errorf("failed to create TaskGateway: %w", err)
 			}
@@ -335,6 +315,97 @@ func taskGatewayCommand() *cobra.Command {
 			return nil
 		},
 	}
-
+	cmd.Flags().StringVar(&configFile, "config", "", "config file")
 	return cmd
+}
+
+func pellAppCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "start-operator",
+		Short: "Start the PellApp Operator service",
+		Long: "Start the PellApp Operator service, Example:\n" +
+			"intellixd start-operator --config=config.yml",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			serverCtx := server.GetServerContextFromCmd(cmd)
+			home := getConfigHome()
+
+			if configFile == "" {
+				configFile = home + "/config/operator.config.json"
+			}
+
+			vp := viper.New()
+
+			vp.SetConfigFile(configFile)
+			if err := vp.ReadInConfig(); err != nil {
+				panic(err)
+			}
+
+			var pellAppConfig = &app.PellAppConfig{}
+			err := vp.Unmarshal(pellAppConfig)
+			if err != nil {
+				panic(err)
+			}
+			if pellAppConfig.RootDir == "" {
+				pellAppConfig.RootDir = home
+			}
+
+			// read pellConfig
+			if pellAppConfig.DvsConfig == nil || pellAppConfig.DvsConfig.Pell == nil {
+				pellAppConfig.DvsConfig = dvsconfig.DefaultConfig()
+				if _, err := os.Stat(home + "/config/config.toml"); err == nil {
+					vp.SetConfigFile(home + "/config/config.toml")
+					if err := vp.ReadInConfig(); err != nil {
+						return err
+					}
+					if err := vp.Unmarshal(pellAppConfig.DvsConfig); err != nil {
+						return err
+					}
+				}
+			}
+
+			err = pellAppConfig.Validate()
+			if err != nil {
+				panic(err)
+			}
+
+			dApp, err := newDefaultApp(getConfigHome(), serverCtx.Logger)
+			if err != nil {
+				panic(err)
+			}
+
+			a := app.NewPellApp(dApp.InterfaceRegistry(),
+				logger.NewDVSLogAdapter(serverCtx.Logger), pellAppConfig,
+			)
+			return a.Start()
+		},
+	}
+	cmd.Flags().StringVar(&configFile, "config", "", "config file")
+	return cmd
+}
+
+func getConfigHome() string {
+	home := os.Getenv("PELLDVS_HOME")
+	if home == "" {
+		home, _ = clienthelpers.GetNodeHomeDirectory("." + Name)
+	}
+	return home
+}
+
+func openDB(rootDir string) (dbm.DB, error) {
+	dataDir := filepath.Join(rootDir, "data")
+	return dbm.NewDB("application", dbm.GoLevelDBBackend, dataDir)
+}
+
+func newDefaultApp(home string, log log.Logger) (*app.App, error) {
+	db, err := openDB(home)
+	if err != nil {
+		return nil, err
+	}
+	newVp := viper.New()
+	newVp.Set("pruning", "default")
+	newVp.Set("home", getConfigHome())
+	//newVp.Set("chain-id", pellAppConfig.CosmosChainId)
+	newVp.Set("chain-id", "intellix")
+	baseApp := newApp(log, db, nil, newVp)
+	return baseApp.(*app.App), nil
 }

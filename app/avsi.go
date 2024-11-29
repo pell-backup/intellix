@@ -2,44 +2,61 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	pkgcontext "intellix/pkg/context"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	dvstypes "intellix/pkg/pelldvs/types"
 
-	avsi "github.com/0xPellNetwork/pelldvs/application"
+	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
 )
 
-func (app *App) ProcessRequest(ctx context.Context, req *avsi.RequestProcessRequest) (*avsi.ResponseProcessRequest, error) {
+func (p *PellApp) Info(ctx context.Context, info *avsitypes.RequestInfo) (*avsitypes.ResponseInfo, error) {
+	return &avsitypes.ResponseInfo{
+		Version:         "1.0.0",
+		LastBlockHeight: 0,
+	}, nil
+}
+
+func (p *PellApp) Query(ctx context.Context, query *avsitypes.RequestQuery) (*avsitypes.ResponseQuery, error) {
+	return &avsitypes.ResponseQuery{
+		Code: avsitypes.CodeTypeOK,
+	}, nil
+}
+
+func (p *PellApp) ProcessDVSRequest(ctx context.Context, req *avsitypes.RequestProcessDVSRequest) (*avsitypes.ResponseProcessDVSRequest, error) {
 	// new SDK context
 	pkgCtx := pkgcontext.NewContext(ctx, nil)
 	pkgCtx = pkgCtx.WithBlockHeight(req.Request.Height)
-	pkgCtx = pkgCtx.WithChainID(req.Request.ChainID.String())
+	pkgCtx = pkgCtx.WithChainID(req.Request.ChainId)
 
 	handlerSrc := dvsservermanager.GetProcessRequestHandlerSrc()
 	res, err := handlerSrc.InvokeRouterRawByData(pkgCtx, req.Request.Data)
 	if err != nil {
+		p.logger.Error("process request error", "err", err)
 		return nil, err
 	}
 
-	return &avsi.ResponseProcessRequest{
-		Reponse:        res.CustomData,
+	return &avsitypes.ResponseProcessDVSRequest{
+		Response:       res.CustomData,
 		ResponseDigest: res.CustomDigest,
 	}, err
 }
 
-func (app *App) PostRequest(ctx context.Context, req *avsi.RequestPostRequest) (*avsi.ResponsePostRequest, error) {
+func (p *PellApp) ProcessDVSResponse(ctx context.Context, req *avsitypes.RequestProcessDVSResponse) (*avsitypes.ResponseProcessDVSResponse, error) {
 	// new SDK context
 	pkgCtx := pkgcontext.NewContext(ctx, nil)
-	pkgCtx = pkgCtx.WithBlockHeight(req.Request.Height)
-	pkgCtx = pkgCtx.WithChainID(req.Request.ChainID.String())
+	pkgCtx = pkgCtx.WithBlockHeight(req.DvsRequest.Height)
+	pkgCtx = pkgCtx.WithChainID(req.DvsRequest.ChainId)
+
+	reqJs, _ := json.Marshal(req)
+	p.logger.Debug("AVSI.ProcessDVSResponse", "req", string(reqJs))
 
 	handlerSrc := dvsservermanager.GetPostProcessRequestHandlerSrc()
-	res, err := handlerSrc.InvokeRouterRawByData(pkgCtx, req.Request.Data, dvstypes.NewValidatedResponse(&req.Response))
+	_, err := handlerSrc.InvokeRouterRawByData(pkgCtx, req.DvsRequest.Data, dvstypes.NewValidatedResponse(req.DvsResponse))
 	if err != nil {
+		p.logger.Error("post request error", "err", err)
 		return nil, err
 	}
 
-	return &avsi.ResponsePostRequest{
-		Receipt: res.CustomData,
-	}, nil
+	return &avsitypes.ResponseProcessDVSResponse{}, nil
 }

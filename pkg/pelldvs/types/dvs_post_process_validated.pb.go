@@ -26,190 +26,25 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type G1Point struct {
-	X []byte `protobuf:"bytes,1,opt,name=x,proto3" json:"x,omitempty"`
-	Y []byte `protobuf:"bytes,2,opt,name=y,proto3" json:"y,omitempty"`
-}
-
-func (m *G1Point) Reset()         { *m = G1Point{} }
-func (m *G1Point) String() string { return proto.CompactTextString(m) }
-func (*G1Point) ProtoMessage()    {}
-func (*G1Point) Descriptor() ([]byte, []int) {
-	return fileDescriptor_239760bf9b09d83f, []int{0}
-}
-func (m *G1Point) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *G1Point) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_G1Point.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *G1Point) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_G1Point.Merge(m, src)
-}
-func (m *G1Point) XXX_Size() int {
-	return m.Size()
-}
-func (m *G1Point) XXX_DiscardUnknown() {
-	xxx_messageInfo_G1Point.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_G1Point proto.InternalMessageInfo
-
-func (m *G1Point) GetX() []byte {
-	if m != nil {
-		return m.X
-	}
-	return nil
-}
-
-func (m *G1Point) GetY() []byte {
-	if m != nil {
-		return m.Y
-	}
-	return nil
-}
-
-type G2Point struct {
-	XReal []byte `protobuf:"bytes,1,opt,name=x_real,json=xReal,proto3" json:"x_real,omitempty"`
-	XImag []byte `protobuf:"bytes,2,opt,name=x_imag,json=xImag,proto3" json:"x_imag,omitempty"`
-	YReal []byte `protobuf:"bytes,3,opt,name=y_real,json=yReal,proto3" json:"y_real,omitempty"`
-	YImag []byte `protobuf:"bytes,4,opt,name=y_imag,json=yImag,proto3" json:"y_imag,omitempty"`
-}
-
-func (m *G2Point) Reset()         { *m = G2Point{} }
-func (m *G2Point) String() string { return proto.CompactTextString(m) }
-func (*G2Point) ProtoMessage()    {}
-func (*G2Point) Descriptor() ([]byte, []int) {
-	return fileDescriptor_239760bf9b09d83f, []int{1}
-}
-func (m *G2Point) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *G2Point) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_G2Point.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *G2Point) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_G2Point.Merge(m, src)
-}
-func (m *G2Point) XXX_Size() int {
-	return m.Size()
-}
-func (m *G2Point) XXX_DiscardUnknown() {
-	xxx_messageInfo_G2Point.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_G2Point proto.InternalMessageInfo
-
-func (m *G2Point) GetXReal() []byte {
-	if m != nil {
-		return m.XReal
-	}
-	return nil
-}
-
-func (m *G2Point) GetXImag() []byte {
-	if m != nil {
-		return m.XImag
-	}
-	return nil
-}
-
-func (m *G2Point) GetYReal() []byte {
-	if m != nil {
-		return m.YReal
-	}
-	return nil
-}
-
-func (m *G2Point) GetYImag() []byte {
-	if m != nil {
-		return m.YImag
-	}
-	return nil
-}
-
-// UInt32List [][]uint32
-type UInt32List struct {
-	Values []uint32 `protobuf:"varint,1,rep,packed,name=values,proto3" json:"values,omitempty"`
-}
-
-func (m *UInt32List) Reset()         { *m = UInt32List{} }
-func (m *UInt32List) String() string { return proto.CompactTextString(m) }
-func (*UInt32List) ProtoMessage()    {}
-func (*UInt32List) Descriptor() ([]byte, []int) {
-	return fileDescriptor_239760bf9b09d83f, []int{2}
-}
-func (m *UInt32List) XXX_Unmarshal(b []byte) error {
-	return m.Unmarshal(b)
-}
-func (m *UInt32List) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	if deterministic {
-		return xxx_messageInfo_UInt32List.Marshal(b, m, deterministic)
-	} else {
-		b = b[:cap(b)]
-		n, err := m.MarshalToSizedBuffer(b)
-		if err != nil {
-			return nil, err
-		}
-		return b[:n], nil
-	}
-}
-func (m *UInt32List) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_UInt32List.Merge(m, src)
-}
-func (m *UInt32List) XXX_Size() int {
-	return m.Size()
-}
-func (m *UInt32List) XXX_DiscardUnknown() {
-	xxx_messageInfo_UInt32List.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_UInt32List proto.InternalMessageInfo
-
-func (m *UInt32List) GetValues() []uint32 {
-	if m != nil {
-		return m.Values
-	}
-	return nil
-}
-
 type RequestPostRequestValidatedData struct {
-	Data                         []byte        `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	Error                        string        `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
-	Hash                         []byte        `protobuf:"bytes,3,opt,name=hash,proto3" json:"hash,omitempty"`
-	NonSignersPubkeysG1          []*G1Point    `protobuf:"bytes,4,rep,name=non_signers_pubkeys_g1,json=nonSignersPubkeysG1,proto3" json:"non_signers_pubkeys_g1,omitempty"`
-	QuorumApksG1                 []*G1Point    `protobuf:"bytes,5,rep,name=quorum_apks_g1,json=quorumApksG1,proto3" json:"quorum_apks_g1,omitempty"`
-	SignersApkG2                 *G2Point      `protobuf:"bytes,6,opt,name=signers_apk_g2,json=signersApkG2,proto3" json:"signers_apk_g2,omitempty"`
-	SignersAggSigG1              *G1Point      `protobuf:"bytes,7,opt,name=signers_agg_sig_g1,json=signersAggSigG1,proto3" json:"signers_agg_sig_g1,omitempty"`
-	NonSignerQuorumBitmapIndices []uint32      `protobuf:"varint,8,rep,packed,name=non_signer_quorum_bitmap_indices,json=nonSignerQuorumBitmapIndices,proto3" json:"non_signer_quorum_bitmap_indices,omitempty"`
-	QuorumApkIndices             []uint32      `protobuf:"varint,9,rep,packed,name=quorum_apk_indices,json=quorumApkIndices,proto3" json:"quorum_apk_indices,omitempty"`
-	TotalStakeIndices            []uint32      `protobuf:"varint,10,rep,packed,name=total_stake_indices,json=totalStakeIndices,proto3" json:"total_stake_indices,omitempty"`
-	NonSignerStakeIndices        []*UInt32List `protobuf:"bytes,11,rep,name=non_signer_stake_indices,json=nonSignerStakeIndices,proto3" json:"non_signer_stake_indices,omitempty"`
+	Data                         []byte                  `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
+	Error                        string                  `protobuf:"bytes,2,opt,name=error,proto3" json:"error,omitempty"`
+	Hash                         []byte                  `protobuf:"bytes,3,opt,name=hash,proto3" json:"hash,omitempty"`
+	NonSignersPubkeysG1          [][]byte                `protobuf:"bytes,4,rep,name=non_signers_pubkeys_g1,json=nonSignersPubkeysG1,proto3" json:"non_signers_pubkeys_g1,omitempty"`
+	QuorumApksG1                 [][]byte                `protobuf:"bytes,5,rep,name=quorum_apks_g1,json=quorumApksG1,proto3" json:"quorum_apks_g1,omitempty"`
+	SignersApkG2                 []byte                  `protobuf:"bytes,6,opt,name=signers_apk_g2,json=signersApkG2,proto3" json:"signers_apk_g2,omitempty"`
+	SignersAggSigG1              []byte                  `protobuf:"bytes,7,opt,name=signers_agg_sig_g1,json=signersAggSigG1,proto3" json:"signers_agg_sig_g1,omitempty"`
+	NonSignerQuorumBitmapIndices []uint32                `protobuf:"varint,8,rep,packed,name=non_signer_quorum_bitmap_indices,json=nonSignerQuorumBitmapIndices,proto3" json:"non_signer_quorum_bitmap_indices,omitempty"`
+	QuorumApkIndices             []uint32                `protobuf:"varint,9,rep,packed,name=quorum_apk_indices,json=quorumApkIndices,proto3" json:"quorum_apk_indices,omitempty"`
+	TotalStakeIndices            []uint32                `protobuf:"varint,10,rep,packed,name=total_stake_indices,json=totalStakeIndices,proto3" json:"total_stake_indices,omitempty"`
+	NonSignerStakeIndices        []*NonSignerStakeIndice `protobuf:"bytes,11,rep,name=non_signer_stake_indices,json=nonSignerStakeIndices,proto3" json:"non_signer_stake_indices,omitempty"`
 }
 
 func (m *RequestPostRequestValidatedData) Reset()         { *m = RequestPostRequestValidatedData{} }
 func (m *RequestPostRequestValidatedData) String() string { return proto.CompactTextString(m) }
 func (*RequestPostRequestValidatedData) ProtoMessage()    {}
 func (*RequestPostRequestValidatedData) Descriptor() ([]byte, []int) {
-	return fileDescriptor_239760bf9b09d83f, []int{3}
+	return fileDescriptor_239760bf9b09d83f, []int{0}
 }
 func (m *RequestPostRequestValidatedData) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -259,28 +94,28 @@ func (m *RequestPostRequestValidatedData) GetHash() []byte {
 	return nil
 }
 
-func (m *RequestPostRequestValidatedData) GetNonSignersPubkeysG1() []*G1Point {
+func (m *RequestPostRequestValidatedData) GetNonSignersPubkeysG1() [][]byte {
 	if m != nil {
 		return m.NonSignersPubkeysG1
 	}
 	return nil
 }
 
-func (m *RequestPostRequestValidatedData) GetQuorumApksG1() []*G1Point {
+func (m *RequestPostRequestValidatedData) GetQuorumApksG1() [][]byte {
 	if m != nil {
 		return m.QuorumApksG1
 	}
 	return nil
 }
 
-func (m *RequestPostRequestValidatedData) GetSignersApkG2() *G2Point {
+func (m *RequestPostRequestValidatedData) GetSignersApkG2() []byte {
 	if m != nil {
 		return m.SignersApkG2
 	}
 	return nil
 }
 
-func (m *RequestPostRequestValidatedData) GetSignersAggSigG1() *G1Point {
+func (m *RequestPostRequestValidatedData) GetSignersAggSigG1() []byte {
 	if m != nil {
 		return m.SignersAggSigG1
 	}
@@ -308,18 +143,60 @@ func (m *RequestPostRequestValidatedData) GetTotalStakeIndices() []uint32 {
 	return nil
 }
 
-func (m *RequestPostRequestValidatedData) GetNonSignerStakeIndices() []*UInt32List {
+func (m *RequestPostRequestValidatedData) GetNonSignerStakeIndices() []*NonSignerStakeIndice {
 	if m != nil {
 		return m.NonSignerStakeIndices
 	}
 	return nil
 }
 
+type NonSignerStakeIndice struct {
+	NonSignerStakeIndice []uint32 `protobuf:"varint,1,rep,packed,name=non_signer_stake_indice,json=nonSignerStakeIndice,proto3" json:"non_signer_stake_indice,omitempty"`
+}
+
+func (m *NonSignerStakeIndice) Reset()         { *m = NonSignerStakeIndice{} }
+func (m *NonSignerStakeIndice) String() string { return proto.CompactTextString(m) }
+func (*NonSignerStakeIndice) ProtoMessage()    {}
+func (*NonSignerStakeIndice) Descriptor() ([]byte, []int) {
+	return fileDescriptor_239760bf9b09d83f, []int{1}
+}
+func (m *NonSignerStakeIndice) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *NonSignerStakeIndice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_NonSignerStakeIndice.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *NonSignerStakeIndice) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_NonSignerStakeIndice.Merge(m, src)
+}
+func (m *NonSignerStakeIndice) XXX_Size() int {
+	return m.Size()
+}
+func (m *NonSignerStakeIndice) XXX_DiscardUnknown() {
+	xxx_messageInfo_NonSignerStakeIndice.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_NonSignerStakeIndice proto.InternalMessageInfo
+
+func (m *NonSignerStakeIndice) GetNonSignerStakeIndice() []uint32 {
+	if m != nil {
+		return m.NonSignerStakeIndice
+	}
+	return nil
+}
+
 func init() {
-	proto.RegisterType((*G1Point)(nil), "intellix.pelldvs.G1Point")
-	proto.RegisterType((*G2Point)(nil), "intellix.pelldvs.G2Point")
-	proto.RegisterType((*UInt32List)(nil), "intellix.pelldvs.UInt32List")
 	proto.RegisterType((*RequestPostRequestValidatedData)(nil), "intellix.pelldvs.RequestPostRequestValidatedData")
+	proto.RegisterType((*NonSignerStakeIndice)(nil), "intellix.pelldvs.NonSignerStakeIndice")
 }
 
 func init() {
@@ -327,174 +204,40 @@ func init() {
 }
 
 var fileDescriptor_239760bf9b09d83f = []byte{
-	// 607 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x54, 0x4f, 0x4f, 0xd4, 0x4e,
-	0x18, 0xa6, 0x3f, 0xd8, 0xe5, 0xc7, 0x80, 0x0a, 0xc3, 0x1f, 0x0b, 0x21, 0x75, 0xb3, 0x6a, 0x42,
-	0x8c, 0xb6, 0x69, 0xf1, 0xe4, 0xc5, 0x80, 0x86, 0x0d, 0x89, 0x1a, 0x2c, 0xc1, 0x83, 0x97, 0xc9,
-	0x2c, 0x9d, 0x0c, 0x93, 0xfe, 0x99, 0xd2, 0x99, 0x6d, 0xda, 0xaf, 0xe0, 0xc9, 0x8f, 0xe2, 0xc1,
-	0x9b, 0x5f, 0xc0, 0x78, 0xe2, 0xe8, 0xd1, 0xc0, 0xc1, 0xaf, 0x61, 0x3a, 0x33, 0xed, 0xa2, 0x86,
-	0x78, 0xd9, 0x7d, 0xff, 0x3c, 0xcf, 0x93, 0xe7, 0x7d, 0xdb, 0xb7, 0xc0, 0x67, 0x99, 0x24, 0x49,
-	0xc2, 0x2a, 0x2f, 0x27, 0x49, 0x12, 0x95, 0xc2, 0x8b, 0x4a, 0x81, 0x72, 0x2e, 0x24, 0xca, 0x0b,
-	0x7e, 0x4a, 0x84, 0x40, 0x25, 0x4e, 0x58, 0x84, 0x25, 0x89, 0xdc, 0xbc, 0xe0, 0x92, 0xc3, 0xe5,
-	0x96, 0xe2, 0x1a, 0xca, 0xd6, 0x1a, 0xe5, 0x94, 0xab, 0xa6, 0xd7, 0x44, 0x1a, 0xb7, 0x75, 0xf7,
-	0x94, 0x8b, 0x94, 0x0b, 0x2f, 0x15, 0xd4, 0x2b, 0xfd, 0xe6, 0xcf, 0x34, 0x36, 0x75, 0x03, 0x69,
-	0x86, 0x4e, 0x4c, 0x6b, 0x05, 0xa7, 0x2c, 0xe3, 0x9e, 0xfa, 0xd5, 0xa5, 0xe1, 0x43, 0x30, 0x3f,
-	0xf2, 0x8f, 0x38, 0xcb, 0x24, 0x5c, 0x02, 0x56, 0x65, 0x5b, 0x03, 0x6b, 0x67, 0x29, 0xb4, 0xaa,
-	0x26, 0xab, 0xed, 0xff, 0x74, 0x56, 0x0f, 0x09, 0x98, 0x1f, 0x05, 0x1a, 0xb6, 0x0e, 0xfa, 0x15,
-	0x2a, 0x08, 0x4e, 0x0c, 0xb6, 0x57, 0x85, 0x04, 0x27, 0xba, 0xcc, 0x52, 0x4c, 0x0d, 0xa9, 0x57,
-	0x1d, 0xa6, 0x98, 0x36, 0xe5, 0x5a, 0xa3, 0x67, 0x75, 0xb9, 0x6e, 0xd1, 0xb5, 0x46, 0xcf, 0x99,
-	0x72, 0x83, 0x1e, 0x3e, 0x00, 0xe0, 0xe4, 0x30, 0x93, 0xbb, 0xc1, 0x2b, 0x26, 0x24, 0xdc, 0x00,
-	0xfd, 0x12, 0x27, 0x13, 0x22, 0x6c, 0x6b, 0x30, 0xbb, 0x73, 0x2b, 0x34, 0xd9, 0xf0, 0x4b, 0x0f,
-	0xdc, 0x0b, 0xc9, 0xf9, 0x84, 0x08, 0x79, 0xc4, 0x85, 0x34, 0xe1, 0xbb, 0x76, 0x91, 0x2f, 0xb1,
-	0xc4, 0x10, 0x82, 0xb9, 0x08, 0x4b, 0x6c, 0x3c, 0xaa, 0x18, 0xae, 0x81, 0x1e, 0x29, 0x0a, 0x5e,
-	0x28, 0x87, 0x0b, 0xa1, 0x4e, 0x1a, 0xe4, 0x19, 0x16, 0x67, 0xc6, 0x9f, 0x8a, 0xe1, 0x1b, 0xb0,
-	0x91, 0xf1, 0x0c, 0x09, 0x46, 0x33, 0x52, 0x08, 0x94, 0x4f, 0xc6, 0x31, 0xa9, 0x05, 0xa2, 0xbe,
-	0x3d, 0x37, 0x98, 0xdd, 0x59, 0x0c, 0x36, 0xdd, 0x3f, 0x9f, 0x92, 0x6b, 0xb6, 0x18, 0xae, 0x66,
-	0x3c, 0x3b, 0xd6, 0xbc, 0x23, 0x4d, 0x1b, 0xf9, 0xf0, 0x39, 0xb8, 0x7d, 0x3e, 0xe1, 0xc5, 0x24,
-	0x45, 0x38, 0x8f, 0x95, 0x4e, 0xef, 0x5f, 0x3a, 0x4b, 0x9a, 0xb0, 0x97, 0xc7, 0x46, 0xa0, 0x35,
-	0x83, 0xf3, 0x18, 0xd1, 0xc0, 0xee, 0x0f, 0xac, 0x1b, 0x04, 0x02, 0x23, 0x60, 0x08, 0x7b, 0x79,
-	0x3c, 0x0a, 0xe0, 0x01, 0x80, 0x9d, 0x00, 0xa5, 0xcd, 0x64, 0x8d, 0x8b, 0xf9, 0x1b, 0x45, 0x8c,
-	0x8b, 0x3b, 0xad, 0x08, 0xa5, 0xc7, 0x8c, 0x8e, 0x7c, 0x78, 0x00, 0x06, 0xd3, 0xcd, 0x20, 0x33,
-	0xd4, 0x98, 0xc9, 0x14, 0xe7, 0x88, 0x65, 0x11, 0x3b, 0x25, 0xc2, 0xfe, 0x5f, 0x3d, 0xad, 0xed,
-	0x6e, 0x11, 0x6f, 0x15, 0x6a, 0x5f, 0x81, 0x0e, 0x35, 0x06, 0x3e, 0x06, 0x70, 0xba, 0x91, 0x8e,
-	0xb9, 0xa0, 0x98, 0xcb, 0xdd, 0xe8, 0x2d, 0xda, 0x05, 0xab, 0x92, 0x4b, 0x9c, 0x20, 0x21, 0x71,
-	0x4c, 0x3a, 0x38, 0x50, 0xf0, 0x15, 0xd5, 0x3a, 0x6e, 0x3a, 0x2d, 0xfe, 0x04, 0xd8, 0xd7, 0x5c,
-	0xfe, 0x4e, 0x5a, 0x54, 0x9b, 0xdf, 0xfe, 0x7b, 0xe6, 0xe9, 0x9b, 0x17, 0xae, 0x77, 0xde, 0xaf,
-	0xcb, 0x3e, 0x7b, 0xf1, 0xed, 0xf3, 0x13, 0x73, 0x77, 0xee, 0x18, 0x0b, 0xe2, 0x96, 0xfe, 0x98,
-	0x48, 0xec, 0xbb, 0xaf, 0x05, 0xfd, 0xf0, 0xf3, 0xd3, 0xa3, 0xfb, 0xdd, 0xb9, 0x37, 0xa7, 0xae,
-	0xce, 0xbc, 0xd0, 0x2f, 0xe7, 0xf4, 0xcc, 0xf7, 0x9f, 0x7e, 0xbd, 0x74, 0xac, 0x8b, 0x4b, 0xc7,
-	0xfa, 0x71, 0xe9, 0x58, 0x1f, 0xaf, 0x9c, 0x99, 0x8b, 0x2b, 0x67, 0xe6, 0xfb, 0x95, 0x33, 0xf3,
-	0x7e, 0x6b, 0xfa, 0xb5, 0x88, 0x69, 0xf7, 0xc5, 0x90, 0x75, 0x4e, 0xc4, 0xb8, 0xaf, 0xce, 0x75,
-	0xf7, 0x57, 0x00, 0x00, 0x00, 0xff, 0xff, 0x1b, 0x89, 0x18, 0x9a, 0x52, 0x04, 0x00, 0x00,
-}
-
-func (m *G1Point) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *G1Point) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *G1Point) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Y) > 0 {
-		i -= len(m.Y)
-		copy(dAtA[i:], m.Y)
-		i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(len(m.Y)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.X) > 0 {
-		i -= len(m.X)
-		copy(dAtA[i:], m.X)
-		i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(len(m.X)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *G2Point) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *G2Point) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *G2Point) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.YImag) > 0 {
-		i -= len(m.YImag)
-		copy(dAtA[i:], m.YImag)
-		i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(len(m.YImag)))
-		i--
-		dAtA[i] = 0x22
-	}
-	if len(m.YReal) > 0 {
-		i -= len(m.YReal)
-		copy(dAtA[i:], m.YReal)
-		i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(len(m.YReal)))
-		i--
-		dAtA[i] = 0x1a
-	}
-	if len(m.XImag) > 0 {
-		i -= len(m.XImag)
-		copy(dAtA[i:], m.XImag)
-		i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(len(m.XImag)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if len(m.XReal) > 0 {
-		i -= len(m.XReal)
-		copy(dAtA[i:], m.XReal)
-		i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(len(m.XReal)))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
-}
-
-func (m *UInt32List) Marshal() (dAtA []byte, err error) {
-	size := m.Size()
-	dAtA = make([]byte, size)
-	n, err := m.MarshalToSizedBuffer(dAtA[:size])
-	if err != nil {
-		return nil, err
-	}
-	return dAtA[:n], nil
-}
-
-func (m *UInt32List) MarshalTo(dAtA []byte) (int, error) {
-	size := m.Size()
-	return m.MarshalToSizedBuffer(dAtA[:size])
-}
-
-func (m *UInt32List) MarshalToSizedBuffer(dAtA []byte) (int, error) {
-	i := len(dAtA)
-	_ = i
-	var l int
-	_ = l
-	if len(m.Values) > 0 {
-		dAtA2 := make([]byte, len(m.Values)*10)
-		var j1 int
-		for _, num := range m.Values {
-			for num >= 1<<7 {
-				dAtA2[j1] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j1++
-			}
-			dAtA2[j1] = uint8(num)
-			j1++
-		}
-		i -= j1
-		copy(dAtA[i:], dAtA2[:j1])
-		i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(j1))
-		i--
-		dAtA[i] = 0xa
-	}
-	return len(dAtA) - i, nil
+	// 519 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x93, 0x4f, 0x6f, 0xd3, 0x30,
+	0x18, 0xc6, 0x17, 0xda, 0x0d, 0xe6, 0x15, 0xd8, 0xbc, 0xc2, 0x42, 0x85, 0x42, 0x34, 0x10, 0xaa,
+	0xf8, 0x93, 0x28, 0x1d, 0x5c, 0xb8, 0x6d, 0x20, 0x2a, 0x0e, 0x43, 0x23, 0x95, 0x38, 0x70, 0xb1,
+	0xdc, 0xc6, 0xf2, 0xa2, 0xa4, 0xb1, 0x97, 0xd7, 0x8d, 0xd8, 0x57, 0xe0, 0xc4, 0x47, 0xe1, 0xc0,
+	0x87, 0x40, 0x9c, 0x76, 0x84, 0x1b, 0x6a, 0x0f, 0x7c, 0x0d, 0x14, 0x3b, 0x49, 0x07, 0x2a, 0x97,
+	0xe4, 0xf5, 0xfb, 0xfc, 0x5e, 0xfb, 0xb1, 0xf4, 0x18, 0x05, 0x71, 0xa6, 0x58, 0x9a, 0xc6, 0x1f,
+	0x7d, 0xc9, 0xd2, 0x34, 0x2a, 0xc0, 0x8f, 0x0a, 0x20, 0x52, 0x80, 0x22, 0x32, 0x17, 0x13, 0x06,
+	0x40, 0x0a, 0x9a, 0xc6, 0x11, 0x55, 0x2c, 0xf2, 0x64, 0x2e, 0x94, 0xc0, 0xdb, 0xf5, 0x88, 0x57,
+	0x8d, 0xf4, 0xba, 0x5c, 0x70, 0xa1, 0x45, 0xbf, 0xac, 0x0c, 0xd7, 0xdb, 0x9b, 0x08, 0x98, 0x0a,
+	0xf0, 0xa7, 0xc0, 0xfd, 0x22, 0x28, 0x7f, 0x95, 0x70, 0xc7, 0x08, 0xc4, 0x4c, 0x98, 0x45, 0x25,
+	0xed, 0xd0, 0x69, 0x9c, 0x09, 0x5f, 0x7f, 0x4d, 0x6b, 0xff, 0x67, 0x1b, 0xdd, 0x0b, 0xd9, 0xd9,
+	0x8c, 0x81, 0x3a, 0x11, 0xa0, 0xaa, 0xf2, 0x7d, 0x6d, 0xea, 0x15, 0x55, 0x14, 0x63, 0xd4, 0x8e,
+	0xa8, 0xa2, 0xb6, 0xe5, 0x5a, 0xfd, 0x4e, 0xa8, 0x6b, 0xdc, 0x45, 0xeb, 0x2c, 0xcf, 0x45, 0x6e,
+	0x5f, 0x71, 0xad, 0xfe, 0x66, 0x68, 0x16, 0x25, 0x79, 0x4a, 0xe1, 0xd4, 0x6e, 0x19, 0xb2, 0xac,
+	0xf1, 0x01, 0xba, 0x9d, 0x89, 0x8c, 0x40, 0xcc, 0x33, 0x96, 0x03, 0x91, 0xb3, 0x71, 0xc2, 0xce,
+	0x81, 0xf0, 0xc0, 0x6e, 0xbb, 0xad, 0x7e, 0x27, 0xdc, 0xcd, 0x44, 0x36, 0x32, 0xe2, 0x89, 0xd1,
+	0x86, 0x01, 0x7e, 0x80, 0x6e, 0x9c, 0xcd, 0x44, 0x3e, 0x9b, 0x12, 0x2a, 0x13, 0x0d, 0xaf, 0x6b,
+	0xb8, 0x63, 0xba, 0x87, 0x32, 0xa9, 0xa8, 0x7a, 0x5b, 0x2a, 0x13, 0xc2, 0x07, 0xf6, 0x86, 0x3e,
+	0xb8, 0x53, 0x75, 0x0f, 0x65, 0x32, 0x1c, 0xe0, 0xc7, 0x08, 0x37, 0x14, 0xe7, 0xa5, 0x91, 0x72,
+	0xbf, 0xab, 0x9a, 0xbc, 0x59, 0x93, 0x9c, 0x8f, 0x62, 0x3e, 0x0c, 0xf0, 0x6b, 0xe4, 0x2e, 0xdd,
+	0x92, 0xca, 0xc3, 0x38, 0x56, 0x53, 0x2a, 0x49, 0x9c, 0x45, 0xf1, 0x84, 0x81, 0x7d, 0xcd, 0x6d,
+	0xf5, 0xaf, 0x87, 0x77, 0x1b, 0xdf, 0xef, 0x34, 0x75, 0xa4, 0xa1, 0x37, 0x86, 0xc1, 0x4f, 0x10,
+	0x5e, 0x5e, 0xa0, 0x99, 0xdc, 0xd4, 0x93, 0xdb, 0xcd, 0x25, 0x6a, 0xda, 0x43, 0xbb, 0x4a, 0x28,
+	0x9a, 0x12, 0x50, 0x34, 0x61, 0x0d, 0x8e, 0x34, 0xbe, 0xa3, 0xa5, 0x51, 0xa9, 0xd4, 0x3c, 0x41,
+	0xf6, 0x25, 0x97, 0x7f, 0x0f, 0x6d, 0xb9, 0xad, 0xfe, 0xd6, 0xe0, 0xa1, 0xf7, 0x6f, 0x8e, 0xbc,
+	0xb7, 0xb5, 0xdf, 0x4b, 0x5b, 0x85, 0xb7, 0xb2, 0x15, 0x5d, 0x78, 0xf1, 0xf2, 0xfb, 0xd7, 0xa7,
+	0x55, 0xc2, 0xbc, 0x31, 0x05, 0xe6, 0x15, 0xc1, 0x98, 0x29, 0x1a, 0x78, 0xc7, 0xc0, 0x3f, 0xfd,
+	0xfe, 0xf2, 0xe8, 0x7e, 0x13, 0xec, 0x32, 0xd4, 0x3a, 0xd0, 0xb9, 0x89, 0xce, 0x32, 0xd0, 0xfb,
+	0xc7, 0xa8, 0xbb, 0xea, 0x4c, 0xfc, 0x1c, 0xed, 0xfd, 0xc7, 0xbd, 0x6d, 0xe9, 0x1b, 0x77, 0x57,
+	0x99, 0x3a, 0x7a, 0xf6, 0x6d, 0xee, 0x58, 0x17, 0x73, 0xc7, 0xfa, 0x35, 0x77, 0xac, 0xcf, 0x0b,
+	0x67, 0xed, 0x62, 0xe1, 0xac, 0xfd, 0x58, 0x38, 0x6b, 0x1f, 0x7a, 0xcb, 0x67, 0x96, 0xf0, 0xe6,
+	0xa9, 0xa9, 0x73, 0xc9, 0x60, 0xbc, 0xa1, 0x73, 0x7e, 0xf0, 0x27, 0x00, 0x00, 0xff, 0xff, 0x31,
+	0x2d, 0x65, 0x8b, 0x8b, 0x03, 0x00, 0x00,
 }
 
 func (m *RequestPostRequestValidatedData) Marshal() (dAtA []byte, err error) {
@@ -532,9 +275,27 @@ func (m *RequestPostRequestValidatedData) MarshalToSizedBuffer(dAtA []byte) (int
 		}
 	}
 	if len(m.TotalStakeIndices) > 0 {
-		dAtA4 := make([]byte, len(m.TotalStakeIndices)*10)
-		var j3 int
+		dAtA2 := make([]byte, len(m.TotalStakeIndices)*10)
+		var j1 int
 		for _, num := range m.TotalStakeIndices {
+			for num >= 1<<7 {
+				dAtA2[j1] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j1++
+			}
+			dAtA2[j1] = uint8(num)
+			j1++
+		}
+		i -= j1
+		copy(dAtA[i:], dAtA2[:j1])
+		i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(j1))
+		i--
+		dAtA[i] = 0x52
+	}
+	if len(m.QuorumApkIndices) > 0 {
+		dAtA4 := make([]byte, len(m.QuorumApkIndices)*10)
+		var j3 int
+		for _, num := range m.QuorumApkIndices {
 			for num >= 1<<7 {
 				dAtA4[j3] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -547,12 +308,12 @@ func (m *RequestPostRequestValidatedData) MarshalToSizedBuffer(dAtA []byte) (int
 		copy(dAtA[i:], dAtA4[:j3])
 		i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(j3))
 		i--
-		dAtA[i] = 0x52
+		dAtA[i] = 0x4a
 	}
-	if len(m.QuorumApkIndices) > 0 {
-		dAtA6 := make([]byte, len(m.QuorumApkIndices)*10)
+	if len(m.NonSignerQuorumBitmapIndices) > 0 {
+		dAtA6 := make([]byte, len(m.NonSignerQuorumBitmapIndices)*10)
 		var j5 int
-		for _, num := range m.QuorumApkIndices {
+		for _, num := range m.NonSignerQuorumBitmapIndices {
 			for num >= 1<<7 {
 				dAtA6[j5] = uint8(uint64(num)&0x7f | 0x80)
 				num >>= 7
@@ -565,74 +326,36 @@ func (m *RequestPostRequestValidatedData) MarshalToSizedBuffer(dAtA []byte) (int
 		copy(dAtA[i:], dAtA6[:j5])
 		i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(j5))
 		i--
-		dAtA[i] = 0x4a
-	}
-	if len(m.NonSignerQuorumBitmapIndices) > 0 {
-		dAtA8 := make([]byte, len(m.NonSignerQuorumBitmapIndices)*10)
-		var j7 int
-		for _, num := range m.NonSignerQuorumBitmapIndices {
-			for num >= 1<<7 {
-				dAtA8[j7] = uint8(uint64(num)&0x7f | 0x80)
-				num >>= 7
-				j7++
-			}
-			dAtA8[j7] = uint8(num)
-			j7++
-		}
-		i -= j7
-		copy(dAtA[i:], dAtA8[:j7])
-		i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(j7))
-		i--
 		dAtA[i] = 0x42
 	}
-	if m.SignersAggSigG1 != nil {
-		{
-			size, err := m.SignersAggSigG1.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(size))
-		}
+	if len(m.SignersAggSigG1) > 0 {
+		i -= len(m.SignersAggSigG1)
+		copy(dAtA[i:], m.SignersAggSigG1)
+		i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(len(m.SignersAggSigG1)))
 		i--
 		dAtA[i] = 0x3a
 	}
-	if m.SignersApkG2 != nil {
-		{
-			size, err := m.SignersApkG2.MarshalToSizedBuffer(dAtA[:i])
-			if err != nil {
-				return 0, err
-			}
-			i -= size
-			i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(size))
-		}
+	if len(m.SignersApkG2) > 0 {
+		i -= len(m.SignersApkG2)
+		copy(dAtA[i:], m.SignersApkG2)
+		i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(len(m.SignersApkG2)))
 		i--
 		dAtA[i] = 0x32
 	}
 	if len(m.QuorumApksG1) > 0 {
 		for iNdEx := len(m.QuorumApksG1) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.QuorumApksG1[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(size))
-			}
+			i -= len(m.QuorumApksG1[iNdEx])
+			copy(dAtA[i:], m.QuorumApksG1[iNdEx])
+			i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(len(m.QuorumApksG1[iNdEx])))
 			i--
 			dAtA[i] = 0x2a
 		}
 	}
 	if len(m.NonSignersPubkeysG1) > 0 {
 		for iNdEx := len(m.NonSignersPubkeysG1) - 1; iNdEx >= 0; iNdEx-- {
-			{
-				size, err := m.NonSignersPubkeysG1[iNdEx].MarshalToSizedBuffer(dAtA[:i])
-				if err != nil {
-					return 0, err
-				}
-				i -= size
-				i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(size))
-			}
+			i -= len(m.NonSignersPubkeysG1[iNdEx])
+			copy(dAtA[i:], m.NonSignersPubkeysG1[iNdEx])
+			i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(len(m.NonSignersPubkeysG1[iNdEx])))
 			i--
 			dAtA[i] = 0x22
 		}
@@ -661,6 +384,47 @@ func (m *RequestPostRequestValidatedData) MarshalToSizedBuffer(dAtA []byte) (int
 	return len(dAtA) - i, nil
 }
 
+func (m *NonSignerStakeIndice) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *NonSignerStakeIndice) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *NonSignerStakeIndice) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.NonSignerStakeIndice) > 0 {
+		dAtA8 := make([]byte, len(m.NonSignerStakeIndice)*10)
+		var j7 int
+		for _, num := range m.NonSignerStakeIndice {
+			for num >= 1<<7 {
+				dAtA8[j7] = uint8(uint64(num)&0x7f | 0x80)
+				num >>= 7
+				j7++
+			}
+			dAtA8[j7] = uint8(num)
+			j7++
+		}
+		i -= j7
+		copy(dAtA[i:], dAtA8[:j7])
+		i = encodeVarintDvsPostProcessValidated(dAtA, i, uint64(j7))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintDvsPostProcessValidated(dAtA []byte, offset int, v uint64) int {
 	offset -= sovDvsPostProcessValidated(v)
 	base := offset
@@ -672,64 +436,6 @@ func encodeVarintDvsPostProcessValidated(dAtA []byte, offset int, v uint64) int 
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *G1Point) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.X)
-	if l > 0 {
-		n += 1 + l + sovDvsPostProcessValidated(uint64(l))
-	}
-	l = len(m.Y)
-	if l > 0 {
-		n += 1 + l + sovDvsPostProcessValidated(uint64(l))
-	}
-	return n
-}
-
-func (m *G2Point) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	l = len(m.XReal)
-	if l > 0 {
-		n += 1 + l + sovDvsPostProcessValidated(uint64(l))
-	}
-	l = len(m.XImag)
-	if l > 0 {
-		n += 1 + l + sovDvsPostProcessValidated(uint64(l))
-	}
-	l = len(m.YReal)
-	if l > 0 {
-		n += 1 + l + sovDvsPostProcessValidated(uint64(l))
-	}
-	l = len(m.YImag)
-	if l > 0 {
-		n += 1 + l + sovDvsPostProcessValidated(uint64(l))
-	}
-	return n
-}
-
-func (m *UInt32List) Size() (n int) {
-	if m == nil {
-		return 0
-	}
-	var l int
-	_ = l
-	if len(m.Values) > 0 {
-		l = 0
-		for _, e := range m.Values {
-			l += sovDvsPostProcessValidated(uint64(e))
-		}
-		n += 1 + sovDvsPostProcessValidated(uint64(l)) + l
-	}
-	return n
-}
-
 func (m *RequestPostRequestValidatedData) Size() (n int) {
 	if m == nil {
 		return 0
@@ -749,23 +455,23 @@ func (m *RequestPostRequestValidatedData) Size() (n int) {
 		n += 1 + l + sovDvsPostProcessValidated(uint64(l))
 	}
 	if len(m.NonSignersPubkeysG1) > 0 {
-		for _, e := range m.NonSignersPubkeysG1 {
-			l = e.Size()
+		for _, b := range m.NonSignersPubkeysG1 {
+			l = len(b)
 			n += 1 + l + sovDvsPostProcessValidated(uint64(l))
 		}
 	}
 	if len(m.QuorumApksG1) > 0 {
-		for _, e := range m.QuorumApksG1 {
-			l = e.Size()
+		for _, b := range m.QuorumApksG1 {
+			l = len(b)
 			n += 1 + l + sovDvsPostProcessValidated(uint64(l))
 		}
 	}
-	if m.SignersApkG2 != nil {
-		l = m.SignersApkG2.Size()
+	l = len(m.SignersApkG2)
+	if l > 0 {
 		n += 1 + l + sovDvsPostProcessValidated(uint64(l))
 	}
-	if m.SignersAggSigG1 != nil {
-		l = m.SignersAggSigG1.Size()
+	l = len(m.SignersAggSigG1)
+	if l > 0 {
 		n += 1 + l + sovDvsPostProcessValidated(uint64(l))
 	}
 	if len(m.NonSignerQuorumBitmapIndices) > 0 {
@@ -798,441 +504,27 @@ func (m *RequestPostRequestValidatedData) Size() (n int) {
 	return n
 }
 
+func (m *NonSignerStakeIndice) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.NonSignerStakeIndice) > 0 {
+		l = 0
+		for _, e := range m.NonSignerStakeIndice {
+			l += sovDvsPostProcessValidated(uint64(e))
+		}
+		n += 1 + sovDvsPostProcessValidated(uint64(l)) + l
+	}
+	return n
+}
+
 func sovDvsPostProcessValidated(x uint64) (n int) {
 	return (math_bits.Len64(x|1) + 6) / 7
 }
 func sozDvsPostProcessValidated(x uint64) (n int) {
 	return sovDvsPostProcessValidated(uint64((x << 1) ^ uint64((int64(x) >> 63))))
-}
-func (m *G1Point) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowDvsPostProcessValidated
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: G1Point: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: G1Point: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field X", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcessValidated
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.X = append(m.X[:0], dAtA[iNdEx:postIndex]...)
-			if m.X == nil {
-				m.X = []byte{}
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Y", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcessValidated
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.Y = append(m.Y[:0], dAtA[iNdEx:postIndex]...)
-			if m.Y == nil {
-				m.Y = []byte{}
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipDvsPostProcessValidated(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *G2Point) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowDvsPostProcessValidated
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: G2Point: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: G2Point: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field XReal", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcessValidated
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XReal = append(m.XReal[:0], dAtA[iNdEx:postIndex]...)
-			if m.XReal == nil {
-				m.XReal = []byte{}
-			}
-			iNdEx = postIndex
-		case 2:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field XImag", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcessValidated
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.XImag = append(m.XImag[:0], dAtA[iNdEx:postIndex]...)
-			if m.XImag == nil {
-				m.XImag = []byte{}
-			}
-			iNdEx = postIndex
-		case 3:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field YReal", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcessValidated
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.YReal = append(m.YReal[:0], dAtA[iNdEx:postIndex]...)
-			if m.YReal == nil {
-				m.YReal = []byte{}
-			}
-			iNdEx = postIndex
-		case 4:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field YImag", wireType)
-			}
-			var byteLen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowDvsPostProcessValidated
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				byteLen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if byteLen < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			postIndex := iNdEx + byteLen
-			if postIndex < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			m.YImag = append(m.YImag[:0], dAtA[iNdEx:postIndex]...)
-			if m.YImag == nil {
-				m.YImag = []byte{}
-			}
-			iNdEx = postIndex
-		default:
-			iNdEx = preIndex
-			skippy, err := skipDvsPostProcessValidated(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
-}
-func (m *UInt32List) Unmarshal(dAtA []byte) error {
-	l := len(dAtA)
-	iNdEx := 0
-	for iNdEx < l {
-		preIndex := iNdEx
-		var wire uint64
-		for shift := uint(0); ; shift += 7 {
-			if shift >= 64 {
-				return ErrIntOverflowDvsPostProcessValidated
-			}
-			if iNdEx >= l {
-				return io.ErrUnexpectedEOF
-			}
-			b := dAtA[iNdEx]
-			iNdEx++
-			wire |= uint64(b&0x7F) << shift
-			if b < 0x80 {
-				break
-			}
-		}
-		fieldNum := int32(wire >> 3)
-		wireType := int(wire & 0x7)
-		if wireType == 4 {
-			return fmt.Errorf("proto: UInt32List: wiretype end group for non-group")
-		}
-		if fieldNum <= 0 {
-			return fmt.Errorf("proto: UInt32List: illegal tag %d (wire type %d)", fieldNum, wire)
-		}
-		switch fieldNum {
-		case 1:
-			if wireType == 0 {
-				var v uint32
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowDvsPostProcessValidated
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					v |= uint32(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				m.Values = append(m.Values, v)
-			} else if wireType == 2 {
-				var packedLen int
-				for shift := uint(0); ; shift += 7 {
-					if shift >= 64 {
-						return ErrIntOverflowDvsPostProcessValidated
-					}
-					if iNdEx >= l {
-						return io.ErrUnexpectedEOF
-					}
-					b := dAtA[iNdEx]
-					iNdEx++
-					packedLen |= int(b&0x7F) << shift
-					if b < 0x80 {
-						break
-					}
-				}
-				if packedLen < 0 {
-					return ErrInvalidLengthDvsPostProcessValidated
-				}
-				postIndex := iNdEx + packedLen
-				if postIndex < 0 {
-					return ErrInvalidLengthDvsPostProcessValidated
-				}
-				if postIndex > l {
-					return io.ErrUnexpectedEOF
-				}
-				var elementCount int
-				var count int
-				for _, integer := range dAtA[iNdEx:postIndex] {
-					if integer < 128 {
-						count++
-					}
-				}
-				elementCount = count
-				if elementCount != 0 && len(m.Values) == 0 {
-					m.Values = make([]uint32, 0, elementCount)
-				}
-				for iNdEx < postIndex {
-					var v uint32
-					for shift := uint(0); ; shift += 7 {
-						if shift >= 64 {
-							return ErrIntOverflowDvsPostProcessValidated
-						}
-						if iNdEx >= l {
-							return io.ErrUnexpectedEOF
-						}
-						b := dAtA[iNdEx]
-						iNdEx++
-						v |= uint32(b&0x7F) << shift
-						if b < 0x80 {
-							break
-						}
-					}
-					m.Values = append(m.Values, v)
-				}
-			} else {
-				return fmt.Errorf("proto: wrong wireType = %d for field Values", wireType)
-			}
-		default:
-			iNdEx = preIndex
-			skippy, err := skipDvsPostProcessValidated(dAtA[iNdEx:])
-			if err != nil {
-				return err
-			}
-			if (skippy < 0) || (iNdEx+skippy) < 0 {
-				return ErrInvalidLengthDvsPostProcessValidated
-			}
-			if (iNdEx + skippy) > l {
-				return io.ErrUnexpectedEOF
-			}
-			iNdEx += skippy
-		}
-	}
-
-	if iNdEx > l {
-		return io.ErrUnexpectedEOF
-	}
-	return nil
 }
 func (m *RequestPostRequestValidatedData) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
@@ -1367,7 +659,7 @@ func (m *RequestPostRequestValidatedData) Unmarshal(dAtA []byte) error {
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field NonSignersPubkeysG1", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowDvsPostProcessValidated
@@ -1377,31 +669,29 @@ func (m *RequestPostRequestValidatedData) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthDvsPostProcessValidated
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthDvsPostProcessValidated
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.NonSignersPubkeysG1 = append(m.NonSignersPubkeysG1, &G1Point{})
-			if err := m.NonSignersPubkeysG1[len(m.NonSignersPubkeysG1)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
+			m.NonSignersPubkeysG1 = append(m.NonSignersPubkeysG1, make([]byte, postIndex-iNdEx))
+			copy(m.NonSignersPubkeysG1[len(m.NonSignersPubkeysG1)-1], dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 5:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field QuorumApksG1", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowDvsPostProcessValidated
@@ -1411,31 +701,29 @@ func (m *RequestPostRequestValidatedData) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthDvsPostProcessValidated
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthDvsPostProcessValidated
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.QuorumApksG1 = append(m.QuorumApksG1, &G1Point{})
-			if err := m.QuorumApksG1[len(m.QuorumApksG1)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
+			m.QuorumApksG1 = append(m.QuorumApksG1, make([]byte, postIndex-iNdEx))
+			copy(m.QuorumApksG1[len(m.QuorumApksG1)-1], dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 6:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SignersApkG2", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowDvsPostProcessValidated
@@ -1445,33 +733,31 @@ func (m *RequestPostRequestValidatedData) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthDvsPostProcessValidated
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthDvsPostProcessValidated
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			m.SignersApkG2 = append(m.SignersApkG2[:0], dAtA[iNdEx:postIndex]...)
 			if m.SignersApkG2 == nil {
-				m.SignersApkG2 = &G2Point{}
-			}
-			if err := m.SignersApkG2.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+				m.SignersApkG2 = []byte{}
 			}
 			iNdEx = postIndex
 		case 7:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field SignersAggSigG1", wireType)
 			}
-			var msglen int
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowDvsPostProcessValidated
@@ -1481,26 +767,24 @@ func (m *RequestPostRequestValidatedData) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				msglen |= int(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
-			if msglen < 0 {
+			if byteLen < 0 {
 				return ErrInvalidLengthDvsPostProcessValidated
 			}
-			postIndex := iNdEx + msglen
+			postIndex := iNdEx + byteLen
 			if postIndex < 0 {
 				return ErrInvalidLengthDvsPostProcessValidated
 			}
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
+			m.SignersAggSigG1 = append(m.SignersAggSigG1[:0], dAtA[iNdEx:postIndex]...)
 			if m.SignersAggSigG1 == nil {
-				m.SignersAggSigG1 = &G1Point{}
-			}
-			if err := m.SignersAggSigG1.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
+				m.SignersAggSigG1 = []byte{}
 			}
 			iNdEx = postIndex
 		case 8:
@@ -1760,11 +1044,137 @@ func (m *RequestPostRequestValidatedData) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			m.NonSignerStakeIndices = append(m.NonSignerStakeIndices, &UInt32List{})
+			m.NonSignerStakeIndices = append(m.NonSignerStakeIndices, &NonSignerStakeIndice{})
 			if err := m.NonSignerStakeIndices[len(m.NonSignerStakeIndices)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipDvsPostProcessValidated(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthDvsPostProcessValidated
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *NonSignerStakeIndice) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowDvsPostProcessValidated
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: NonSignerStakeIndice: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: NonSignerStakeIndice: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType == 0 {
+				var v uint32
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowDvsPostProcessValidated
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					v |= uint32(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				m.NonSignerStakeIndice = append(m.NonSignerStakeIndice, v)
+			} else if wireType == 2 {
+				var packedLen int
+				for shift := uint(0); ; shift += 7 {
+					if shift >= 64 {
+						return ErrIntOverflowDvsPostProcessValidated
+					}
+					if iNdEx >= l {
+						return io.ErrUnexpectedEOF
+					}
+					b := dAtA[iNdEx]
+					iNdEx++
+					packedLen |= int(b&0x7F) << shift
+					if b < 0x80 {
+						break
+					}
+				}
+				if packedLen < 0 {
+					return ErrInvalidLengthDvsPostProcessValidated
+				}
+				postIndex := iNdEx + packedLen
+				if postIndex < 0 {
+					return ErrInvalidLengthDvsPostProcessValidated
+				}
+				if postIndex > l {
+					return io.ErrUnexpectedEOF
+				}
+				var elementCount int
+				var count int
+				for _, integer := range dAtA[iNdEx:postIndex] {
+					if integer < 128 {
+						count++
+					}
+				}
+				elementCount = count
+				if elementCount != 0 && len(m.NonSignerStakeIndice) == 0 {
+					m.NonSignerStakeIndice = make([]uint32, 0, elementCount)
+				}
+				for iNdEx < postIndex {
+					var v uint32
+					for shift := uint(0); ; shift += 7 {
+						if shift >= 64 {
+							return ErrIntOverflowDvsPostProcessValidated
+						}
+						if iNdEx >= l {
+							return io.ErrUnexpectedEOF
+						}
+						b := dAtA[iNdEx]
+						iNdEx++
+						v |= uint32(b&0x7F) << shift
+						if b < 0x80 {
+							break
+						}
+					}
+					m.NonSignerStakeIndice = append(m.NonSignerStakeIndice, v)
+				}
+			} else {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonSignerStakeIndice", wireType)
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipDvsPostProcessValidated(dAtA[iNdEx:])

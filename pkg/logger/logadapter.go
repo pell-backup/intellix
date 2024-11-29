@@ -2,29 +2,29 @@ package logger
 
 import (
 	sdklog "cosmossdk.io/log"
-	cmtlog "github.com/cometbft/cometbft/libs/log"
+	"github.com/0xPellNetwork/pelldvs/libs/log"
 )
 
-type CometBFTLogAdapter struct {
+type DVSLogAdapter struct {
 	sdkLogger sdklog.Logger
 }
 
-func NewCometBFTLogAdapter(sdkLogger sdklog.Logger) cmtlog.Logger {
-	return &CometBFTLogAdapter{sdkLogger: sdkLogger}
+func NewDVSLogAdapter(sdkLogger sdklog.Logger) log.Logger {
+	return &DVSLogAdapter{sdkLogger: sdkLogger}
 }
 
-func (a *CometBFTLogAdapter) Debug(msg string, keyVals ...interface{}) {
+func (a *DVSLogAdapter) Debug(msg string, keyVals ...interface{}) {
 	a.sdkLogger.Debug(msg, keyVals...)
 }
 
-func (a *CometBFTLogAdapter) Info(msg string, keyVals ...interface{}) {
+func (a *DVSLogAdapter) Info(msg string, keyVals ...interface{}) {
 	a.sdkLogger.Info(msg, keyVals...)
 }
 
-func (a *CometBFTLogAdapter) Error(msg string, keyVals ...interface{}) {
+func (a *DVSLogAdapter) Error(msg string, keyVals ...interface{}) {
 	a.sdkLogger.Error(msg, keyVals...)
 }
 
-func (a *CometBFTLogAdapter) With(keyVals ...interface{}) cmtlog.Logger {
-	return &CometBFTLogAdapter{sdkLogger: a.sdkLogger.With(keyVals...)}
+func (a *DVSLogAdapter) With(keyVals ...interface{}) log.Logger {
+	return &DVSLogAdapter{sdkLogger: a.sdkLogger.With(keyVals...)}
 }

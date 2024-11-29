@@ -16,7 +16,7 @@ const (
 type Context struct {
 	baseCtx context.Context
 
-	chainID string
+	chainID int64
 	header  cmtproto.Header
 }
 
@@ -80,7 +80,7 @@ func (c Context) BlockHeader() cmtproto.Header {
 	return *msg
 }
 
-func (c Context) ChainID() string {
+func (c Context) ChainID() int64 {
 	return c.chainID
 }
 
@@ -98,7 +98,7 @@ func (c Context) WithBlockHeader(header cmtproto.Header) Context {
 }
 
 // WithChainID returns a Context with an updated chain identifier.
-func (c Context) WithChainID(chainID string) Context {
+func (c Context) WithChainID(chainID int64) Context {
 	c.chainID = chainID
 	return c
 }

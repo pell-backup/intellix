@@ -53,10 +53,7 @@ import (
 	ibcexported "github.com/cosmos/ibc-go/v8/modules/core/exported"
 	"google.golang.org/protobuf/types/known/durationpb"
 
-	intellixmodulev1 "intellix/api/intellix/intellix/module"
 	pricemodulev1 "intellix/api/intellix/price/module"
-	_ "intellix/x/intellix/module" // import for side-effects
-	intellixmoduletypes "intellix/x/intellix/types"
 	_ "intellix/x/price/dvs"    // import for side-effects
 	_ "intellix/x/price/module" // import for side-effects
 	pricemoduletypes "intellix/x/price/types"
@@ -97,7 +94,6 @@ var (
 		consensustypes.ModuleName,
 		circuittypes.ModuleName,
 		// chain modules
-		intellixmoduletypes.ModuleName,
 		pricemoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	}
@@ -123,7 +119,6 @@ var (
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		// chain modules
-		intellixmoduletypes.ModuleName,
 		pricemoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	}
@@ -143,7 +138,6 @@ var (
 		icatypes.ModuleName,
 		ibcfeetypes.ModuleName,
 		// chain modules
-		intellixmoduletypes.ModuleName,
 		pricemoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 	}
@@ -299,10 +293,6 @@ var (
 			{
 				Name:   circuittypes.ModuleName,
 				Config: appconfig.WrapAny(&circuitmodulev1.Module{}),
-			},
-			{
-				Name:   intellixmoduletypes.ModuleName,
-				Config: appconfig.WrapAny(&intellixmodulev1.Module{}),
 			},
 			{
 				Name:   pricemoduletypes.ModuleName,

@@ -2,19 +2,19 @@ package server
 
 import (
 	"context"
-	"cosmossdk.io/log"
+	"cosmossdk.io/math"
 	"encoding/json"
 	"fmt"
-	"math"
-	"math/big"
 	"net/http"
 	"strconv"
 	"sync"
+
+	"github.com/0xPellNetwork/pelldvs/libs/log"
 )
 
 type PriceInfo struct {
 	DataSource string
-	Price      float64
+	Price      math.LegacyDec
 }
 
 const (
@@ -22,7 +22,7 @@ const (
 	dataSourceBinance  = "binance"
 )
 
-func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSymbol string) (map[string]*big.Int, error) {
+func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSymbol string) (map[string]math.LegacyDec, error) {
 	var wg sync.WaitGroup
 
 	// TODO: configurable
@@ -39,9 +39,9 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 
 	close(priceChan)
 
-	var prices = map[string]*big.Int{}
+	var prices = map[string]math.LegacyDec{}
 	for price := range priceChan {
-		prices[price.DataSource] = big.NewInt(int64(math.Round(price.Price * 100000000)))
+		prices[price.DataSource] = price.Price
 	}
 
 	if len(prices) == 0 {
@@ -59,27 +59,25 @@ type CoinbaseFetchPriceService struct {
 	logger log.Logger
 }
 
-func (s *CoinbaseFetchPriceService) fetchCoinPrice(baseSymbol, quote string, wg *sync.WaitGroup, priceChan chan<- *PriceInfo) {
+func (s *CoinbaseFetchPriceService) fetchCoinPrice(base, quote string, wg *sync.WaitGroup, priceChan chan<- *PriceInfo) {
 	defer wg.Done()
-	url := fmt.Sprintf("https://api.coinbase.com/v2/prices/%s-%s/spot", baseSymbol, quote)
+
+	var url = fmt.Sprintf("https://api.coinbase.com/v2/prices/%s-%s/spot", base, quote)
 	resp, err := http.Get(url)
 	if err != nil {
-		s.logger.Error("Error fetching data from Coinbase:", err.Error())
+		s.logger.Error("Error fetching price from Coinbase", "error", err)
 		return
 	}
 	defer resp.Body.Close()
 
-	type CoinbaseResponse struct {
+	var coinbaseResp struct {
 		Data struct {
-			Base     string `json:"base"`
-			Currency string `json:"currency"`
-			Amount   string `json:"amount"`
+			Amount string `json:"amount"`
 		} `json:"data"`
 	}
 
-	var coinbaseResp CoinbaseResponse
 	if err := json.NewDecoder(resp.Body).Decode(&coinbaseResp); err != nil {
-		s.logger.Error("Error decoding JSON response from Coinbase:", err.Error())
+		s.logger.Error("Error decoding Coinbase response", "error", err)
 		return
 	}
 
@@ -88,39 +86,52 @@ func (s *CoinbaseFetchPriceService) fetchCoinPrice(baseSymbol, quote string, wg 
 		s.logger.Error("Error parsing price from Coinbase failed")
 		return
 	}
+	s.logger.Info("Fetched price from Coinbase", "base", base, "quote", quote, "price", price)
 
-	priceChan <- &PriceInfo{DataSource: dataSourceCoinbase, Price: price}
+	dec, err := math.LegacyNewDecFromStr(coinbaseResp.Data.Amount)
+	if err != nil {
+		s.logger.Error("Error converting price to Dec", "error", err)
+		return
+	}
+	priceChan <- &PriceInfo{DataSource: dataSourceCoinbase, Price: dec}
 }
 
 type BinanceFetchPriceService struct {
 	logger log.Logger
 }
 
-func (s *BinanceFetchPriceService) fetchCoinPrice(baseSymbol, quote string, wg *sync.WaitGroup, priceChan chan<- *PriceInfo) {
+func (s *BinanceFetchPriceService) fetchCoinPrice(base, quote string, wg *sync.WaitGroup, priceChan chan<- *PriceInfo) {
 	defer wg.Done()
-	url := fmt.Sprintf("https://api.binance.com/api/v3/ticker/price?symbol=%s%s", baseSymbol, quote)
+
+	var url = fmt.Sprintf("https://api.binance.com/api/v3/ticker/price?symbol=%s%s", base, quote)
 	resp, err := http.Get(url)
 	if err != nil {
-		s.logger.Error("Error fetching data from Binance:", err.Error())
+		s.logger.Error("Error fetching price from Binance", "error", err)
 		return
 	}
 	defer resp.Body.Close()
 
-	type BinanceResponse struct {
+	var binanceResp struct {
 		Price string `json:"price"`
 	}
 
-	var binanceResp BinanceResponse
 	if err := json.NewDecoder(resp.Body).Decode(&binanceResp); err != nil {
-		s.logger.Error("Error decoding JSON response from Binance:", err.Error())
+		s.logger.Error("Error decoding Binance response", "error", err)
 		return
 	}
 
 	price, err := strconv.ParseFloat(binanceResp.Price, 64)
 	if err != nil {
-		fmt.Println("Error parsing price from Binance:", err)
+		s.logger.Error("Error parsing price from Binance failed")
 		return
 	}
 
-	priceChan <- &PriceInfo{DataSource: dataSourceBinance, Price: price}
+	s.logger.Info("Fetched price from Binance", "base", base, "quote", quote, "price", price)
+
+	dec, err := math.LegacyNewDecFromStr(binanceResp.Price)
+	if err != nil {
+		s.logger.Error("Error converting price to Dec", "error", err)
+		return
+	}
+	priceChan <- &PriceInfo{DataSource: dataSourceBinance, Price: dec}
 }

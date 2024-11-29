@@ -9,7 +9,9 @@ services:
         - HTTP_PROXY=$HTTP_PROXY
         - HTTPS_PROXY=$HTTPS_PROXY
         - GITHUB_TOKEN=$GITHUB_TOKEN
-        - CONTRACT_VERSION=v0.2.2
+        - CONTRACT_VERSION=${CONTRACT_VERSION:-v0.4.0}
+      tags:
+        - hardhat:${CONTRACT_VERSION:-v0.4.0}
 
   pelldvs:
     build:
@@ -19,7 +21,7 @@ services:
         - HTTP_PROXY=$HTTP_PROXY
         - HTTPS_PROXY=$HTTPS_PROXY
         - GITHUB_TOKEN=$GITHUB_TOKEN
-        - PELLDVS_VERSION=v0.0.7
+        - PELLDVS_VERSION=${PELLDVS_VERSION:-v0.1.2}
 
   operator:
     build:
@@ -29,4 +31,4 @@ services:
         - HTTP_PROXY=$HTTP_PROXY
         - HTTPS_PROXY=$HTTPS_PROXY
         - GITHUB_TOKEN=$GITHUB_TOKEN
-        - PELLDVS_VERSION=v0.0.7
+        - PELLDVS_VERSION=${PELLDVS_VERSION:-v0.1.2}

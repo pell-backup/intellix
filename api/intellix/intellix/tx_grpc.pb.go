@@ -8,7 +8,6 @@ package intellix
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -50,23 +49,21 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 }
 
 // MsgServer is the server API for Msg service.
-// All implementations must embed UnimplementedMsgServer
+// All implementations should embed UnimplementedMsgServer
 // for forward compatibility
 type MsgServer interface {
 	// UpdateParams defines a (governance) operation for updating the module
 	// parameters. The authority defaults to the x/gov module account.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
-	mustEmbedUnimplementedMsgServer()
 }
 
-// UnimplementedMsgServer must be embedded to have forward compatible implementations.
+// UnimplementedMsgServer should be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct {
 }
 
 func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
 }
-func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
 // UnsafeMsgServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to MsgServer will

@@ -53,4 +53,4 @@ assert_eq "$RESULT" "0"
 
 # cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "allTaskResponses(uint32)" $((TASK_NUMBER - 1))
 # RETRIEVER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorStateRetriever.json" | jq -r .address)
-# cast call "$RETRIEVER_ADDRESS" "GetQuorumsDVSStateAtBlock(uint32)" $TASK_ID --private-key "$ADMIN_KEY"
+# cast call "$RETRIEVER_ADDRESS" "GetGROUPsDVSStateAtBlock(uint32)" $TASK_ID --private-key "$ADMIN_KEY"

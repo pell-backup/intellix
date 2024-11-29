@@ -12,7 +12,6 @@ function load_defaults {
   export HARDHAT_DVS_PATH="/app/price-oracle-dvs/deployments/localhost"
 
   export PELLDVS_HOME=${PELLDVS_HOME:-/root/.pelldvs}
-  export INTELLIX_HOME=${INTELLIX_HOME:-/root/.intellix}
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
   export GATEWAY_ADDR=${GATEWAY_ADDR:-gateway:8949}
@@ -56,13 +55,35 @@ function gateway_healthcheck {
   set -e
 }
 
+## FIXME: remove this logic after fix. Operator should never use admin key.
+function setup_admin_key {
+  export ADMIN_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+  if ! pelldvs keys show admin --home "$PELLDVS_HOME" >/dev/null 2>&1; then
+    echo -ne '\n\n' | pelldvs keys import --key-type ecdsa --insecure admin $ADMIN_KEY --home $PELLDVS_HOME >/dev/null
+  fi
+
+  export ADMIN_ADDRESS=$(pelldvs keys show admin --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
+}
+
 function gen_cosmos_key {
-  # TODO: generate new key and use admin to faceut
+  # TODO: should using operator key from abci
+#  intellixd keys add "$OPERATOR_KEY_NAME" --keyring-backend test --home "$PELLDVS_HOME"
+
+#  DEFAULT_KEY=${DEFAULT_KEY:-mykey}
+#  ACCOUNT_ADDRESS=$(ssh abci "intellixd keys show $DEFAULT_KEY -a --keyring-backend test")
+#
+#  ssh abci "intellixd keys add $OPERATOR_KEY_NAME --keyring-backend test"
+#  COSMOS_OPERATOR_ADDRESS=$(ssh abci "intellixd keys show $OPERATOR_KEY_NAME -a --keyring-backend test")
+#  ssh abci "intellixd tx bank send $ACCOUNT_ADDRESS $COSMOS_OPERATOR_ADDRESS 10000000stake --chain-id $COSMOS_CHAIN_ID --keyring-backend test --fees 2000stake -y"
+
   mkdir -p "$PELLDVS_HOME/keyring-test/"
   scp abci:/root/.intellix/keyring-test/* "$PELLDVS_HOME/keyring-test/"
 }
 
 function setup_operator_config {
+  setup_admin_key
+  gen_cosmos_key
+
   ## migrate to dvs logic after fix
   export OPERATOR_ADDRESS=$(pelldvs keys show $OPERATOR_KEY_NAME --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
   ## TODO: use operator key on config.toml and gateway should be on app.toml
@@ -77,14 +98,19 @@ EOF
 }
 
 function start_operator {
-  intellixd start-operator
+  # intellixd --home "$PELLDVS_HOME"
+#  cat /root/.pelldvs/config/config.toml
+  PELLDVS_HOME=$PELLDVS_HOME  intellixd start-operator
 }
 
 function start_operator_debug {
+  # intellixd --home "$PELLDVS_HOME"
+#  cat /root/.pelldvs/config/config.toml
   go install github.com/go-delve/delve/cmd/dlv@latest
   dlv exec /usr/bin/intellixd \
     --listen=:2345 --headless=true --api-version=2 --accept-multiclient\
-    -- start-operator
+    -- start-operator --home "$PELLDVS_HOME"
+#    intellixd
 }
 
 ## start sshd
@@ -102,8 +128,6 @@ logt "Check if Gateway is ready"
 if [ ! -f /root/operator_initialized ]; then
   logt "Init operator"
   source "$(dirname "$0")/init_operator.sh"
-  gen_cosmos_key
-
   touch /root/operator_initialized
 fi
 
@@ -112,4 +136,3 @@ setup_operator_config
 
 logt "Starting operator..."
 start_operator
-#start_operator_debug

@@ -48,22 +48,22 @@ function setup_admin_key {
   export ADMIN_ADDRESS=$(pelldvs keys show admin --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
 }
 
-function create_quorum {
+function create_group {
   STBTC_STRATEGY_ADDRESS=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/stBTC-Strategy-Proxy.json" | jq -r .address)
   PBTC_STRATEGY_ADDRESS=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/pBTC-Strategy-Proxy.json" | jq -r .address)
-  cat > ./quorum-0-config.json <<EOF
+  cat > ./group-0-config.json <<EOF
 {
   "minimum_stake": 0,
-  "strategy_params": [
+  "pool_params": [
     {
       "chain_id": 1337,
       "multiplier": 1,
-      "strategy": "$STBTC_STRATEGY_ADDRESS"
+      "pool": "$STBTC_STRATEGY_ADDRESS"
     },
     {
       "chain_id": 1337,
       "multiplier": 1,
-      "strategy": "$PBTC_STRATEGY_ADDRESS"
+      "pool": "$PBTC_STRATEGY_ADDRESS"
     }
   ],
   "operator_set_params": {
@@ -74,19 +74,19 @@ function create_quorum {
 }
 EOF
 
-  pelldvs client dvs create-quorum \
+  pelldvs client dvs create-group \
     --home $PELLDVS_HOME \
     --from admin \
-    --quorum_config ./quorum-0-config.json
+    --config ./group-0-config.json
 }
 
-function show_quorum {
-  QUORUM_COUNT=$(cast call "$REGISTRY_ROUTER_ADDRESS" "quorumCount()" --rpc-url "$ETH_RPC_URL")
-  logt "Quorum Count From Registry Router in Pell EVM: $QUORUM_COUNT"
+function show_group {
+  GROUP_COUNT=$(cast call "$REGISTRY_ROUTER_ADDRESS" "groupCount()" --rpc-url "$ETH_RPC_URL")
+  logt "Group Count From Registry Router in Pell EVM: $GROUP_COUNT"
 
-  DVS_REGISTRY_COORDINATOR=$(ssh hardhat "cat $HARDHAT_DVS_PATH/RegistryCoordinator-Proxy.json" | jq -r .address)
-  QUORUM_COUNT=$(cast call "$DVS_REGISTRY_COORDINATOR" "quorumCount()" --rpc-url "$ETH_RPC_URL")
-  logt "Quorum Count From Registry Coordinator in Service EVM: $QUORUM_COUNT"
+  DVS_CENTRAL_SCHEDULER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/CentralScheduler-Proxy.json" | jq -r .address)
+  GROUP_COUNT=$(cast call "$DVS_CENTRAL_SCHEDULER" "groupCount()" --rpc-url "$ETH_RPC_URL")
+  logt "Group Count From Registry Coordinator in Service EVM: $GROUP_COUNT"
 }
 
 logt "Load Default Values for ENV Vars if not set."
@@ -98,6 +98,6 @@ update_pelldvs_config
 logt "Setup Admin Key"
 setup_admin_key
 
-logt "Create Quorum"
-create_quorum
-show_quorum
+logt "Create Group"
+create_group
+show_group

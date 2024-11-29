@@ -6,6 +6,26 @@ import (
 	cbor "github.com/fxamacker/cbor/v2"
 )
 
+type Config struct {
+	Chains     []*ChainConfig `mapstructure:"chains"`
+	DvsAddress string         `mapstructure:"dvs_address"`
+}
+
+func (c Config) Validate() error {
+	if len(c.Chains) == 0 {
+		return fmt.Errorf("no chain specified")
+	}
+	if c.DvsAddress == "" {
+		return fmt.Errorf("dvs address is required")
+	}
+	for _, chain := range c.Chains {
+		if err := chain.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 type ChainConfig struct {
 	ChainID         uint64 `mapstructure:"chain_id"`
 	EthURL          string `mapstructure:"eth_url"`
@@ -49,3 +69,7 @@ func ParsePriceFeed(data []byte) (*PriceFeedParam, error) {
 
 	return &PriceFeedParam{baseSymbol, quoteSymbol}, nil
 }
+
+const (
+	TaskTypePrice int64 = 1
+)

@@ -10,25 +10,29 @@ RUN mkdir -p /run/sshd && chmod 0755 /run/sshd
 ########## Setup env ##########
 WORKDIR /app
 
-RUN curl -L https://foundry.paradigm.xyz | bash
 ENV PATH="$PATH:/root/.foundry/bin"
+RUN curl -L https://foundry.paradigm.xyz | bash
 RUN foundryup
 
 ARG GITHUB_TOKEN
+ARG CONTRACT_VERSION
 RUN if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN is not set" && exit 1; fi
 RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
 RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
-RUN git clone https://github.com/IntelliXLabs/price-oracle-dvs.git -b v0.2.2 ./price-oracle-dvs
+RUN git clone https://github.com/IntelliXLabs/price-oracle-dvs.git -b $CONTRACT_VERSION ./price-oracle-dvs
 
 
 ########## Install contracts ##########
 WORKDIR /app/price-oracle-dvs
 
 # install deps
-RUN forge install && yarn install --frozen-lockfile
-RUN cd lib/pell-middleware-contracts && yarn install --frozen-lockfile
+RUN --mount=type=cache,target="/usr/local/share/.cache/yarn/v6" \
+    forge install --shallow && yarn install --frozen-lockfile
+RUN --mount=type=cache,target="/usr/local/share/.cache/yarn/v6" \
+    cd lib/pell-middleware-contracts && yarn install --frozen-lockfile
 # install 0.6.6 compiler through hardhat compile as Uniswap v2 contracts are compiled with 0.6.6
-RUN cd lib/pell-middleware-contracts/lib/pell-contracts && yarn install --frozen-lockfile && npx hardhat compile
+RUN --mount=type=cache,target="/usr/local/share/.cache/yarn/v6" \
+    cd lib/pell-middleware-contracts/lib/pell-contracts && yarn install --frozen-lockfile && npx hardhat compile
 RUN export ACCOUNT_SECRETKEY=0x0000000000000000000000000000000000000000000000000000000000000000 &&\
     forge compile && npx hardhat compile
 
