@@ -1,4 +1,4 @@
-package app
+package avsi
 
 const (
 	SimAppChainID = "intellix-simapp"

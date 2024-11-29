@@ -1,27 +1,39 @@
-package app
+package pellapp
 
 import (
-	"fmt"
+	"os"
+
+	"github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/std"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
+	sdktypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	grpc1 "github.com/cosmos/gogoproto/grpc"
+
+	baseapp "intellix/avsi"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	"intellix/pkg/pelldvs"
 	"intellix/x/price/dvs"
 	dvsserver "intellix/x/price/dvs/server"
 	dvstypes "intellix/x/price/dvs/types"
-	"os"
 
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
-	"github.com/0xPellNetwork/pelldvs/libs/log"
-	"github.com/cosmos/cosmos-sdk/codec"
-	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	"github.com/cosmos/cosmos-sdk/x/auth/tx"
-	sdktypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	grpc1 "github.com/cosmos/gogoproto/grpc"
 )
 
-type PellApp struct {
-	logger            log.Logger
+const (
+	Name = "intellix"
+)
+
+var (
+	// DefaultNodeHome default home directories for the application daemon
+	DefaultNodeHome string
+)
+
+type App struct {
+	*baseapp.BaseApp
+
 	appCodec          codec.Codec
 	interfaceRegistry codectypes.InterfaceRegistry
 
@@ -30,61 +42,33 @@ type PellApp struct {
 	DvsServer                dvsserver.Server
 	ProcessRequestServer     grpc1.Server
 	PostProcessRequestServer grpc1.Server
+
+	logger log.Logger
 }
 
-type PellAppConfig struct {
-	DvsConfig *dvsconfig.Config `mapstructure:"-"`
-
-	RootDir       string `mapstructure:"root_dir"`
-	GatewayAddr   string `mapstructure:"gateway_addr"`
-	OperatorAddr  string `mapstructure:"operator_address"`
-	CosmosNodeUri string `mapstructure:"cosmos_node_uri"`
-	CosmosChainId string `mapstructure:"cosmos_chain_id"`
-
-	WaitBlockCount int64   `mapstructure:"wait_block_count"`
-	GasPrices      string  `mapstructure:"gas_prices"`
-	GasAdjustment  float64 `mapstructure:"gas_adjustment"`
+func (app *App) InterfaceRegistry() codectypes.InterfaceRegistry {
+	if app.interfaceRegistry == nil {
+		app.interfaceRegistry = codectypes.NewInterfaceRegistry()
+	}
+	return app.interfaceRegistry
 }
 
-func (p PellAppConfig) Validate() error {
-	if p.OperatorAddr == "" {
-		return fmt.Errorf("no operator address provided")
-	}
-	if p.DvsConfig == nil || p.DvsConfig.ValidateBasic() != nil {
-		return fmt.Errorf("invalid pell config")
-	}
-	if p.GatewayAddr == "" {
-		return fmt.Errorf("no gateway address provided")
-	}
-	if p.CosmosNodeUri == "" {
-		return fmt.Errorf("no cosmos node uri provided")
-	}
-	return nil
+func (app *App) registerInterface() {
+	std.RegisterInterfaces(app.interfaceRegistry)
+	sdktypes.RegisterInterfaces(app.interfaceRegistry)
 }
 
-func (p *PellApp) InterfaceRegistry() codectypes.InterfaceRegistry {
-	if p.interfaceRegistry == nil {
-		p.interfaceRegistry = codectypes.NewInterfaceRegistry()
+func (app *App) AppCodec() codec.Codec {
+	if app.appCodec == nil {
+		app.appCodec = codec.NewProtoCodec(app.interfaceRegistry)
 	}
-	return p.interfaceRegistry
+	return app.appCodec
 }
 
-func (p *PellApp) registerInterface() {
-	std.RegisterInterfaces(p.interfaceRegistry)
-	sdktypes.RegisterInterfaces(p.interfaceRegistry)
-}
-
-func (p *PellApp) AppCodec() codec.Codec {
-	if p.appCodec == nil {
-		p.appCodec = codec.NewProtoCodec(p.interfaceRegistry)
-	}
-	return p.appCodec
-}
-
-func (p *PellApp) Start() error {
-	p.logger.Info("PellApp Start")
-	if err := p.dvsNode.Start(); err != nil {
-		p.logger.Error("DvsNode Start Failed", "error", err.Error())
+func (app *App) Start() error {
+	app.logger.Info("App Start")
+	if err := app.dvsNode.Start(); err != nil {
+		app.logger.Error("DvsNode Start Failed", "error", err.Error())
 		return err
 	}
 	c := make(chan interface{})
@@ -100,14 +84,16 @@ func getOperatorName() string {
 	return name
 }
 
-func NewPellApp(
+func NewApp(
 	interfaceRegistry codectypes.InterfaceRegistry,
 	logger log.Logger,
-	config *PellAppConfig,
-) *PellApp {
-	var app = &PellApp{
-		logger:            logger,
+	config *AppConfig,
+) *App {
+	var app = &App{
+		// TODO: use depinject
+		BaseApp:           baseapp.NewBaseApp(logger),
 		interfaceRegistry: interfaceRegistry,
+		logger:            logger,
 	}
 
 	app.registerInterface()
