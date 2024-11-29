@@ -19,7 +19,7 @@ docker-down:
 	@cd docker && docker compose down -v
 
 docker-test:
-	@cd docker && docker compose run --rm test
+	@cd docker && docker compose run --rm test /root/scripts/test.sh
 
 docker-contracts-logs-eth:
 	@cd docker && docker compose logs -f eth
