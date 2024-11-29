@@ -2,7 +2,6 @@ package keeper_test
 
 import (
 	"context"
-	dvstypes "intellix/pkg/pelldvs/types"
 	"testing"
 	"time"
 
@@ -47,16 +46,19 @@ func TestMsgServer_VoteRequestPriceFeed(t *testing.T) {
 func TestMsgServer_VoteFinalizedRequestPrice(t *testing.T) {
 	_, ms, ctx := setupMsgServer(t)
 	_, err := ms.VoteFinalizedRequestPrice(ctx, &types.MsgVoteFinalizedRequestPrice{
-		TaskRaw: &types.TaskRaw{
-			TaskIndex: 1,
-		},
-		ValidatedData: &dvstypes.RequestPostRequestValidatedData{
-			Data: []byte("data"),
-		},
-		PriceFeedResponse: &types.PriceFeedResponse{
-			ReferenceTaskIndex: 1,
-			Price:              math.NewInt(100000000),
-		},
+		TaskIndex:                 1,
+		RequestId:                 []byte("request_id"),
+		FeeToken:                  "",
+		Payment:                   math.Int{},
+		RequestData:               nil,
+		CallbackAddress:           "",
+		CallbackFunctionId:        nil,
+		TaskCreatedBlock:          0,
+		QuorumNumbers:             nil,
+		QuorumThresholdPercentage: 0,
+		ReferenceTaskIndex:        0,
+		Price:                     math.Int{},
+		Sender:                    "",
 	})
 	require.NoError(t, err)
 }
