@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
@@ -12,7 +13,8 @@ const (
 )
 
 var (
-	amino    = codec.NewLegacyAmino()
+	amino = codec.NewLegacyAmino()
+	//nolint:staticcheck
 	AminoCdc = codec.NewAminoCodec(amino)
 )
 
@@ -38,6 +40,7 @@ func (m MsgVoteFinalizedRequestPrice) GetSigners() []sdk.AccAddress {
 
 // GetSignBytes returns raw JSON bytes to be signed by the signers (sdk.Msg interface).
 func (m MsgVoteFinalizedRequestPrice) GetSignBytes() []byte {
+	//nolint:staticcheck
 	return sdk.MustSortJSON(AminoCdc.MustMarshalJSON(&m))
 }
 
@@ -62,5 +65,6 @@ func (m MsgVoteRequestPriceFeed) GetSigners() []sdk.AccAddress {
 
 // GetSignBytes returns raw JSON bytes to be signed by the signers (sdk.Msg interface).
 func (m MsgVoteRequestPriceFeed) GetSignBytes() []byte {
+	//nolint:staticcheck
 	return sdk.MustSortJSON(AminoCdc.MustMarshalJSON(&m))
 }
