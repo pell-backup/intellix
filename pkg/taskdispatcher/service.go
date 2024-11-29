@@ -158,6 +158,11 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractDataOra
 }
 
 func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractDataOracle.ContractDataOracleNewTaskCreated) ([]byte, error) {
+	td.logger.Info("serializeTask",
+		"chainID", chainID,
+		"taskIndex", newTask.TaskIndex,
+		"task", fmt.Sprintf("%+v", newTask.Task),
+	)
 	priceFeed, err := ParsePriceFeed(newTask.Task.RequestData)
 	if err != nil {
 		td.logger.Error("Failed to parse price feed", "chainID", chainID, "error", err)

@@ -15,9 +15,9 @@ import (
 
 	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/service"
+	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 
 	"sync"
@@ -40,6 +40,18 @@ type TaskGateway struct {
 	contractDataOracle *dataOracle.ContractDataOracle
 	taskMap            sync.Map
 	nonceMap           sync.Map
+}
+
+// TODO: put it in a common location
+func packUint256(value *big.Int) ([]byte, error) {
+	uint256Type, err := abi.NewType("uint256", "", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	arguments := abi.Arguments{{Type: uint256Type}}
+
+	return arguments.Pack(value)
 }
 
 func NewTaskGateway(logger dvslog.Logger, ctx context.Context, cfg *TaskGatewayCfg) (*TaskGateway, error) {
@@ -190,10 +202,12 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		tg.logger.Error("Error converting taskRaw payment", "payment", response.TaskRaw.Payment)
 		return fmt.Errorf("error converting taskRaw payment")
 	}
+	// TODO: add advance decode
 	task := dataOracle.IDataOracleTask{
 		TaskType:                 math.NewInt(response.TaskRaw.TaskType).BigInt(),
 		RequestId:                [32]byte(response.TaskRaw.RequestID),
 		FeeToken:                 *feeTokenAddr,
+		AdvanceDecode:            false,
 		Payment:                  paymentInt.BigInt(),
 		RequestData:              response.TaskRaw.RequestData,
 		CallbackAddress:          *cbAddr,
@@ -208,9 +222,14 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		tg.logger.Error("Error converting taskRaw price", "price", response.PriceFeedResponse.Price)
 		return fmt.Errorf("error converting priceFeedResponse price")
 	}
+	packedPrice, err := packUint256(priceInt.BigInt())
+	if err != nil {
+		tg.logger.Error("Error packing price", "error", err)
+		return err
+	}
 	taskResp := dataOracle.IDataOracleTaskResponse{
 		ReferenceTaskIndex: response.PriceFeedResponse.ReferenceTaskIndex,
-		Data:               priceInt.BigInt().Bytes(),
+		Data:               packedPrice,
 	}
 
 	sign := dataOracle.IBLSSignatureVerifierNonSignerStakesAndSignature{
@@ -232,17 +251,6 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 	transaction, err := tg.contractDataOracle.ResponseToTask(authOpts, task, taskResp, sign)
 	if err != nil {
 		// Try to get the failed transaction receipt
-		if transaction != nil {
-			if receipt, receiptErr := tg.ethClient.TransactionReceipt(ctx, transaction.Hash()); receiptErr == nil {
-				tg.logger.Error("Transaction failed",
-					"err", err,
-					"txHash", transaction.Hash().Hex(),
-					"status", receipt.Status,
-					"gasUsed", receipt.GasUsed,
-					"blockNumber", receipt.BlockNumber,
-					"blockHash", receipt.BlockHash.Hex())
-			}
-		}
 		tg.logger.Error("Error assembling RequestPrice tx",
 			"err", err,
 			"task", fmt.Sprintf("%+v", task),
@@ -251,28 +259,16 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		return err
 	}
 
-	receipt, err := tg.sendTransaction(ctx, transaction)
-	if err != nil {
-		tg.logger.Error("Error sending transaction", "err", err, "txHash", transaction.Hash().Hex())
-		return err
+	if transaction != nil {
+		if receipt, receiptErr := tg.ethClient.TransactionReceipt(ctx, transaction.Hash()); receiptErr == nil {
+			tg.logger.Error("Transaction Status",
+				"txHash", transaction.Hash().Hex(),
+				"status", receipt.Status,
+				"gasUsed", receipt.GasUsed,
+				"blockNumber", receipt.BlockNumber,
+				"blockHash", receipt.BlockHash.Hex())
+		}
 	}
-
-	tg.logger.Info("Transaction successful",
-		"txHash", transaction.Hash().Hex(),
-		"status", receipt.Status,
-		"gasUsed", receipt.GasUsed,
-		"blockNumber", receipt.BlockNumber,
-		"blockHash", receipt.BlockHash.Hex())
 
 	return nil
-}
-
-func (tg *TaskGateway) sendTransaction(ctx context.Context, transaction *ethtypes.Transaction) (*ethtypes.Receipt, error) {
-	// send transaction to chain and get log
-	err := tg.ethClient.SendTransaction(ctx, transaction)
-	if err != nil {
-		return nil, err
-	}
-
-	return tg.ethClient.TransactionReceipt(ctx, transaction.Hash())
 }

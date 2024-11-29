@@ -21,7 +21,7 @@ function load_defaults {
   export AGGREGATOR_RPC_SERVER=${AGGREGATOR_RPC_SERVER:-dvs:26653}
   export COSMOS_KEYRING_BACKEND=${COSMOS_KEYRING_BACKEND:-test}
   export COSMOS_CHAIN_ID=${COSMOS_CHAIN_ID:-intellix}
-  export COSMOS_NODE_URI=${COSMOS_NODE_URI:-tcp://abci:26657}
+  export COSMOS_NODE_URI=${COSMOS_NODE_URI:-http://abci:26657}
 }
 
 function dvs_healthcheck {

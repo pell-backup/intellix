@@ -68,7 +68,6 @@ services:
     entrypoint: [ "bash", "/root/scripts/start_dispatcher.sh" ]
     ports:
       - "${HOST_PORT:-8091}:${CONTAINER_PORT:-8091}"
-#      - "2345:2345"
     volumes:
       - ./operator/scripts:/root/scripts
 
@@ -81,8 +80,6 @@ services:
       gateway:
         condition: service_started
     entrypoint: [ "bash", "/root/scripts/start_abci.sh" ]
-    # ports:
-    #   - "26657:26657"
     volumes:
       - ./operator/scripts:/root/scripts
 
@@ -95,9 +92,9 @@ services:
     depends_on:
       gateway:
         condition: service_started
+      abci:
+        condition: service_started
     entrypoint: [ "bash", "/root/scripts/start_operator.sh" ]
-    ports:
-      - "2345:2345"
     volumes:
       - ./operator/scripts:/root/scripts
 
@@ -117,13 +114,14 @@ services:
 
   test:
     image: intellixlabs-intellix-operator:latest
+    tty: true
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
-      - TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-10}
+      - TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-20}
     depends_on:
       operator:
         condition: service_started
-    entrypoint: [ "bash", "/root/scripts/test.sh" ]
+    entrypoint: [ "bash" ]
     volumes:
       - ./operator/scripts:/root/scripts
