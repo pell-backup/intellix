@@ -18,7 +18,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 
 	"sync"
@@ -272,14 +271,4 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 	}
 
 	return nil
-}
-
-func (tg *TaskGateway) sendTransaction(ctx context.Context, transaction *ethtypes.Transaction) (*ethtypes.Receipt, error) {
-	// send transaction to chain and get log
-	err := tg.ethClient.SendTransaction(ctx, transaction)
-	if err != nil {
-		return nil, err
-	}
-
-	return tg.ethClient.TransactionReceipt(ctx, transaction.Hash())
 }

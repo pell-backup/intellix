@@ -92,9 +92,9 @@ services:
     depends_on:
       gateway:
         condition: service_started
+      abci:
+        condition: service_started
     entrypoint: [ "bash", "/root/scripts/start_operator.sh" ]
-    ports:
-      - "2345:2345"
     volumes:
       - ./operator/scripts:/root/scripts
 
@@ -114,9 +114,11 @@ services:
 
   test:
     image: intellixlabs-intellix-operator:latest
+    tty: true
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
+      - TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-20}
     depends_on:
       operator:
         condition: service_started

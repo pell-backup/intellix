@@ -8,6 +8,21 @@ function load_defaults {
   export PELLDVS_HOME=${PELLDVS_HOME:-/root/.pelldvs}
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
+  export COSMOS_NODE_URI=${COSMOS_NODE_URI:-http://abci:26657}
+}
+
+function abci_healthcheck {
+  set +e
+  while true; do
+    curl -s $COSMOS_NODE_URI >/dev/null
+    if [ $? -eq 0 ]; then
+      echo "Cosmos ABCI is ready, proceeding to the next step..."
+      break
+    fi
+    echo "Cosmos ABCI is not ready, retrying in 2 second..."
+    sleep 2
+  done
+  set -e
 }
 
 function operator_healthcheck {
@@ -36,6 +51,7 @@ function assert_gt {
 
 load_defaults
 operator_healthcheck
+abci_healthcheck
 
 ADMIN_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/PriceOraclePayInNativeConsumer.json" | jq -r .address)
