@@ -120,6 +120,6 @@ services:
     depends_on:
       operator:
         condition: service_started
-    entrypoint: [ "bash", "/root/scripts/test.sh" ]
+    entrypoint: [ "bash" ]
     volumes:
       - ./operator/scripts:/root/scripts
