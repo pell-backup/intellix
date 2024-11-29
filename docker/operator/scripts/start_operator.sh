@@ -111,5 +111,5 @@ logt "Setup operator config"
 setup_operator_config
 
 logt "Starting operator..."
-#start_operator
-start_operator_debug
+start_operator
+#start_operator_debug
