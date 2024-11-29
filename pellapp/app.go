@@ -12,9 +12,9 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 
-	baseapp "intellix/avsi"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	"intellix/pkg/pelldvs"
+	"intellix/sdk/baseapp"
 	"intellix/x/price/dvs"
 	dvsserver "intellix/x/price/dvs/server"
 	dvstypes "intellix/x/price/dvs/types"

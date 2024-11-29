@@ -1,4 +1,4 @@
-package avsi
+package baseapp
 
 import (
 	"context"
