@@ -2,6 +2,7 @@ package resulthandlers
 
 import (
 	"intellix/x/price/dvs/types"
+	"math/big"
 
 	contractDataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cosmos/gogoproto/proto"
@@ -14,6 +15,18 @@ type ProcessRequestPriceFeedResultHandler struct {
 
 func NewProcessRequestPriceFeedResultHandler() *ProcessRequestPriceFeedResultHandler {
 	return &ProcessRequestPriceFeedResultHandler{}
+}
+
+// TODO: put it in a common location
+func packUint256(value *big.Int) ([]byte, error) {
+	uint256Type, err := abi.NewType("uint256", "", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	arguments := abi.Arguments{{Type: uint256Type}}
+
+	return arguments.Pack(value)
 }
 
 func (p *ProcessRequestPriceFeedResultHandler) getAbiEncodeData(msg proto.Message) ([]byte, error) {
@@ -42,9 +55,14 @@ func (p *ProcessRequestPriceFeedResultHandler) getAbiEncodeData(msg proto.Messag
 		},
 	}
 
+	packedPrice, err := packUint256(r.Price.BigInt())
+	if err != nil {
+		return nil, err
+	}
+
 	bytes, err := arguments.Pack(&contractDataOracle.IDataOracleTaskResponse{
 		ReferenceTaskIndex: r.TaskIndex,
-		Data:               r.Price.BigInt().Bytes(),
+		Data:               packedPrice,
 	})
 	if err != nil {
 		return nil, err

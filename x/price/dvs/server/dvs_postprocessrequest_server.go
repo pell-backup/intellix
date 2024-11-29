@@ -59,7 +59,6 @@ func (d DvsPostProcessRequestServer) decodePackedPriceFeedData(data []byte) (*co
 	r, ok := values[0].(struct {
 		ReferenceTaskIndex uint32 `json:"referenceTaskIndex"`
 		Data               []byte `json:"data"`
-		//Price              *big.Int `json:"price"`
 	})
 	d.logger.Debug("decodePackedPriceFeedData", "r", fmt.Sprintf("%+v", r))
 	if !ok {

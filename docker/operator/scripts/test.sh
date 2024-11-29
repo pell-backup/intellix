@@ -26,12 +26,12 @@ function operator_healthcheck {
   set -e
 }
 
-function assert_eq {
-  if [ "$1" != "$2" ]; then
-    echo "[FAIL] Expected $1 to be equal to $2"
+function assert_gt {
+  if [ "$1" -le "$2" ]; then
+    echo "[FAIL] Expected $1 to be greater than $2"
     exit 1
   fi
-  echo "[PASS] Expected $1 to be equal to $2"
+  echo "[PASS] Expected $1 to be greater than $2"
 }
 
 load_defaults
@@ -44,12 +44,11 @@ PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH
 cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "BTC" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
 ## wait for the task to be processed
-export TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-8}
-export TIMEOUT_FOR_TASK_PROCESS=$TIMEOUT_FOR_TASK_PROCESS
+export TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-20}
 echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
 sleep ${TIMEOUT_FOR_TASK_PROCESS}
 RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
-assert_eq "$RESULT" "0"
+assert_gt "$RESULT" "0"
 
 # cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "allTaskResponses(uint32)" $((TASK_NUMBER - 1))
 # RETRIEVER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorStateRetriever.json" | jq -r .address)
