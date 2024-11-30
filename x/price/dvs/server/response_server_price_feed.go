@@ -17,15 +17,111 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 )
 
-type DvsPostProcessRequestServer struct {
-	Server
+func (d ResponseServer) PostProcessRequestPriceFeed(ctx context.Context, in *types.ProcessRequestPriceFeedIn) (*types.PostProcessRequestPriceFeedOut, error) {
+	pkgCtx := pkgcontext.UnwrapContext(ctx)
+	js, _ := json.Marshal(in)
+	d.logger.Info("DvsPostProcessRequestServer.PostProcessRequestPriceFeed called", "data", string(js))
+
+	validatedData, err := d.getDvsRequestValidatedData(pkgCtx)
+	if err != nil {
+		return nil, err
+	}
+	taskResp, err := d.decodePackedPriceFeedData(validatedData.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	// send VoteFinalizedRequestPrice Tx
+	_, err = d.sendVoteFinalizedRequestPriceTx(pkgCtx, in, validatedData, taskResp)
+	if err != nil {
+		return nil, err
+	}
+
+	// send gateway
+	err = d.sendResponseToGateway(pkgCtx, in, validatedData, taskResp)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.PostProcessRequestPriceFeedOut{}, nil
 }
 
-func NewDvsPostProcessRequestServer(server Server) types.DvsPostProcessRequestServer {
-	return &DvsPostProcessRequestServer{Server: server}
+func (d ResponseServer) sendVoteFinalizedRequestPriceTx(ctx pkgcontext.Context, raw *types.ProcessRequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractDataOracle.IDataOracleTaskResponse) (*pricetypes.MsgVoteFinalizedRequestPrice, error) {
+	addr, err := d.Server.SenderAddress()
+	if err != nil {
+		return nil, err
+	}
+
+	msg := &pricetypes.MsgVoteFinalizedRequestPrice{
+		Sender:                    addr.String(),
+		TaskIndex:                 raw.Task.TaskIndex,
+		RequestId:                 raw.Task.RequestId,
+		FeeToken:                  raw.Task.FeeToken,
+		Payment:                   raw.Task.Payment,
+		RequestData:               raw.Task.RequestData,
+		CallbackAddress:           raw.Task.CallbackAddress,
+		CallbackFunctionId:        raw.Task.CallbackFunctionId,
+		TaskCreatedBlock:          raw.Task.TaskCreatedBlock,
+		QuorumNumbers:             raw.Task.QuorumNumbers,
+		QuorumThresholdPercentage: raw.Task.QuorumThresholdPercentage,
+		ReferenceTaskIndex:        priceData.ReferenceTaskIndex,
+		Price:                     math.NewIntFromBigInt(new(big.Int).SetBytes(priceData.Data)),
+	}
+
+	if err := d.Server.SignAndBroadcastTx(ctx, msg); err != nil {
+		return nil, err
+	}
+	return msg, nil
 }
 
-func (d DvsPostProcessRequestServer) decodePackedPriceFeedData(data []byte) (*contractDataOracle.IDataOracleTaskResponse, error) {
+func (d ResponseServer) sendResponseToGateway(ctx pkgcontext.Context, raw *types.ProcessRequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractDataOracle.IDataOracleTaskResponse) error {
+
+	nonSignerStakeIndices := make([][]uint32, len(validatedData.NonSignerStakeIndices))
+	for i, indices := range validatedData.NonSignerStakeIndices {
+		nonSignerStakeIndices[i] = indices.NonSignerStakeIndice
+	}
+
+	req := &taskgateway.RPCVoteFinalizedRequestPrice{
+		ChainID: ctx.ChainID(),
+		TaskRaw: &taskgateway.RPCTaskRaw{
+			TaskType:                  types.TaskTypePriceFeed,
+			TaskIndex:                 raw.Task.TaskIndex,
+			RequestID:                 raw.Task.RequestId,
+			FeeToken:                  raw.Task.FeeToken,
+			Payment:                   raw.Task.Payment.String(),
+			RequestData:               raw.Task.RequestData,
+			CallbackAddress:           raw.Task.CallbackAddress,
+			CallbackFunctionID:        raw.Task.CallbackFunctionId,
+			TaskCreatedBlock:          raw.Task.TaskCreatedBlock,
+			QuorumNumbers:             raw.Task.QuorumNumbers,
+			QuorumThresholdPercentage: raw.Task.QuorumThresholdPercentage,
+		},
+		ValidatedData: &taskgateway.RPCValidatedData{
+			Data:                         validatedData.Data,
+			Error:                        validatedData.Error,
+			Hash:                         validatedData.Hash,
+			NonSignersPubkeysG1:          validatedData.NonSignersPubkeysG1,
+			QuorumApksG1:                 validatedData.QuorumApksG1,
+			SignersApkG2:                 validatedData.SignersApkG2,
+			SignersAggSigG1:              validatedData.SignersAggSigG1,
+			NonSignerQuorumBitmapIndices: validatedData.NonSignerQuorumBitmapIndices,
+			QuorumApkIndices:             validatedData.QuorumApkIndices,
+			TotalStakeIndices:            validatedData.TotalStakeIndices,
+			NonSignerStakeIndices:        nonSignerStakeIndices,
+		},
+		PriceFeedResponse: &taskgateway.RPCPriceFeedResponse{
+			ReferenceTaskIndex: priceData.ReferenceTaskIndex,
+			Price:              new(big.Int).SetBytes(priceData.Data).String(),
+		},
+	}
+
+	reqJs, _ := json.Marshal(req)
+	d.logger.Info("DvsPostProcessRequestServer.sendResponseToGateway", "req", string(reqJs))
+
+	return d.Server.taskGatewayClient.RespondToTask(req)
+}
+
+func (d ResponseServer) decodePackedPriceFeedData(data []byte) (*contractDataOracle.IDataOracleTaskResponse, error) {
 	taskResponseType, err := abi.NewType("tuple", "", []abi.ArgumentMarshaling{
 		{
 			Name: "referenceTaskIndex",
@@ -71,7 +167,7 @@ func (d DvsPostProcessRequestServer) decodePackedPriceFeedData(data []byte) (*co
 	}, nil
 }
 
-func (d DvsPostProcessRequestServer) getDvsRequestValidatedData(ctx pkgcontext.Context) (*dvstypes.RequestPostRequestValidatedData, error) {
+func (d ResponseServer) getDvsRequestValidatedData(ctx pkgcontext.Context) (*dvstypes.RequestPostRequestValidatedData, error) {
 	reqData, ok := ctx.DvsPostResponseData()
 	if !ok {
 		return nil, fmt.Errorf("not DvsRequestData found")
@@ -85,108 +181,4 @@ func (d DvsPostProcessRequestServer) getDvsRequestValidatedData(ctx pkgcontext.C
 		return nil, fmt.Errorf("expected %T, got %T", &dvstypes.RequestPostRequestValidatedData{}, validatedData)
 	}
 	return validatedData, nil
-}
-
-func (d DvsPostProcessRequestServer) PostProcessRequestPriceFeed(ctx context.Context, in *types.ProcessRequestPriceFeedIn) (*types.PostProcessRequestPriceFeedOut, error) {
-	pkgCtx := pkgcontext.UnwrapContext(ctx)
-	js, _ := json.Marshal(in)
-	d.logger.Info("DvsPostProcessRequestServer.PostProcessRequestPriceFeed called", "data", string(js))
-
-	validatedData, err := d.getDvsRequestValidatedData(pkgCtx)
-	if err != nil {
-		return nil, err
-	}
-	taskResp, err := d.decodePackedPriceFeedData(validatedData.Data)
-	if err != nil {
-		return nil, err
-	}
-
-	// send VoteFinalizedRequestPrice Tx
-	_, err = d.sendVoteFinalizedRequestPriceTx(pkgCtx, in, validatedData, taskResp)
-	if err != nil {
-		return nil, err
-	}
-
-	// send gateway
-	err = d.sendResponseToGateway(pkgCtx, in, validatedData, taskResp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &types.PostProcessRequestPriceFeedOut{}, nil
-}
-
-func (d DvsPostProcessRequestServer) sendVoteFinalizedRequestPriceTx(ctx pkgcontext.Context, raw *types.ProcessRequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractDataOracle.IDataOracleTaskResponse) (*pricetypes.MsgVoteFinalizedRequestPrice, error) {
-	addr, err := d.Server.SenderAddress()
-	if err != nil {
-		return nil, err
-	}
-
-	msg := &pricetypes.MsgVoteFinalizedRequestPrice{
-		Sender:                    addr.String(),
-		TaskIndex:                 raw.Task.TaskIndex,
-		RequestId:                 raw.Task.RequestId,
-		FeeToken:                  raw.Task.FeeToken,
-		Payment:                   raw.Task.Payment,
-		RequestData:               raw.Task.RequestData,
-		CallbackAddress:           raw.Task.CallbackAddress,
-		CallbackFunctionId:        raw.Task.CallbackFunctionId,
-		TaskCreatedBlock:          raw.Task.TaskCreatedBlock,
-		QuorumNumbers:             raw.Task.QuorumNumbers,
-		QuorumThresholdPercentage: raw.Task.QuorumThresholdPercentage,
-		ReferenceTaskIndex:        priceData.ReferenceTaskIndex,
-		Price:                     math.NewIntFromBigInt(new(big.Int).SetBytes(priceData.Data)),
-	}
-
-	if err := d.Server.SignAndBroadcastTx(ctx, msg); err != nil {
-		return nil, err
-	}
-	return msg, nil
-}
-
-func (d DvsPostProcessRequestServer) sendResponseToGateway(ctx pkgcontext.Context, raw *types.ProcessRequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractDataOracle.IDataOracleTaskResponse) error {
-
-	nonSignerStakeIndices := make([][]uint32, len(validatedData.NonSignerStakeIndices))
-	for i, indices := range validatedData.NonSignerStakeIndices {
-		nonSignerStakeIndices[i] = indices.NonSignerStakeIndice
-	}
-
-	req := &taskgateway.RPCVoteFinalizedRequestPrice{
-		ChainID: ctx.ChainID(),
-		TaskRaw: &taskgateway.RPCTaskRaw{
-			TaskType:                  types.TaskTypePriceFeed,
-			TaskIndex:                 raw.Task.TaskIndex,
-			RequestID:                 raw.Task.RequestId,
-			FeeToken:                  raw.Task.FeeToken,
-			Payment:                   raw.Task.Payment.String(),
-			RequestData:               raw.Task.RequestData,
-			CallbackAddress:           raw.Task.CallbackAddress,
-			CallbackFunctionID:        raw.Task.CallbackFunctionId,
-			TaskCreatedBlock:          raw.Task.TaskCreatedBlock,
-			QuorumNumbers:             raw.Task.QuorumNumbers,
-			QuorumThresholdPercentage: raw.Task.QuorumThresholdPercentage,
-		},
-		ValidatedData: &taskgateway.RPCValidatedData{
-			Data:                         validatedData.Data,
-			Error:                        validatedData.Error,
-			Hash:                         validatedData.Hash,
-			NonSignersPubkeysG1:          validatedData.NonSignersPubkeysG1,
-			QuorumApksG1:                 validatedData.QuorumApksG1,
-			SignersApkG2:                 validatedData.SignersApkG2,
-			SignersAggSigG1:              validatedData.SignersAggSigG1,
-			NonSignerQuorumBitmapIndices: validatedData.NonSignerQuorumBitmapIndices,
-			QuorumApkIndices:             validatedData.QuorumApkIndices,
-			TotalStakeIndices:            validatedData.TotalStakeIndices,
-			NonSignerStakeIndices:        nonSignerStakeIndices,
-		},
-		PriceFeedResponse: &taskgateway.RPCPriceFeedResponse{
-			ReferenceTaskIndex: priceData.ReferenceTaskIndex,
-			Price:              new(big.Int).SetBytes(priceData.Data).String(),
-		},
-	}
-
-	reqJs, _ := json.Marshal(req)
-	d.logger.Info("DvsPostProcessRequestServer.sendResponseToGateway", "req", string(reqJs))
-
-	return d.Server.taskGatewayClient.RespondToTask(req)
 }

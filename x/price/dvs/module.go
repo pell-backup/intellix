@@ -1,11 +1,12 @@
 package dvs
 
 import (
-	grpc1 "github.com/cosmos/gogoproto/grpc"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	resulthandlers "intellix/x/price/dvs/result_handlers"
 	"intellix/x/price/dvs/server"
 	"intellix/x/price/dvs/types"
+
+	grpc1 "github.com/cosmos/gogoproto/grpc"
 )
 
 // AppModule implements an application module for the dvs module.
@@ -26,8 +27,8 @@ func NewAppModule(s server.Server) AppModule {
 
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices() {
-	dvsProcessRequestServer := server.NewDvsProcessRequestServer(am.server)
-	dvsPostProcessRequestServer := server.NewDvsPostProcessRequestServer(am.server)
+	dvsProcessRequestServer := server.NewRequestServer(am.server)
+	dvsPostProcessRequestServer := server.NewResponseServer(am.server)
 
 	// register dvs-msg handler server
 	types.RegisterDvsProcessRequestServer(am.ProcessRequestServer, dvsProcessRequestServer)
