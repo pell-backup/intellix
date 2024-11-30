@@ -14,6 +14,8 @@ function load_defaults {
   export PELLDVS_HOME=${PELLDVS_HOME:-/root/.pelldvs}
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
+  export DEBUG_ENABLED=${DEBUG_ENABLED:-false}
+  export DEBUG_PORT=${DEBUG_PORT:-2345}
 
   export GATEWAY_PORT=${GATEWAY_PORT:-8949}
   export AGGREGATOR_RPC_SERVER=${AGGREGATOR_RPC_SERVER:-dvs:26653}
@@ -62,17 +64,13 @@ EOF
 }
 
 function start_gateway {
-  ## TODO: add home dir flag
-  PELLDVS_HOME=$PELLDVS_HOME intellixd start-task-gateway
-}
-
-function start_gateway_debug {
-  ## TODO: add home dir flag
-  go install github.com/go-delve/delve/cmd/dlv@latest
-  dlv exec /usr/bin/intellixd \
-    --listen=:2345 --headless=true --api-version=2 --accept-multiclient\
-    -- start-task-gateway
-  # PELLDVS_HOME=$PELLDVS_HOME intellixd start-task-gateway
+  if [ "$DEBUG_ENABLED" = "true" ]; then
+    dlv exec /usr/bin/intellixd \
+      --listen=:$DEBUG_PORT --headless=true --api-version=2 --accept-multiclient\
+      -- start-task-gateway
+  else
+    intellixd start-task-gateway
+  fi
 }
 
 ## start sshd

@@ -22,12 +22,17 @@ RUN --mount=type=cache,target="/go/pkg/mod" \
 RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
 
 ########## Build intellixd ##########
+ARG DEBUG_ENABLED
 WORKDIR /app/intellixd
 COPY .. /app/intellixd/
 RUN --mount=type=cache,target="/go/pkg/mod" go mod download
 RUN --mount=type=cache,target="/go/pkg/mod" \
     --mount=type=cache,target="/root/.cache/go-build" \
-    make build
+    if [ "$DEBUG_ENABLED" = "true" ]; then \
+        make build-debug; \
+    else \
+        make build; \
+    fi
 
 ########## Setup runtime env ##########
 FROM golang:1.22-bullseye AS runtime
@@ -40,6 +45,7 @@ RUN foundryup
 
 RUN go install github.com/mikefarah/yq/v4@latest
 RUN go install github.com/tomwright/dasel/v2/cmd/dasel@master
+RUN go install github.com/go-delve/delve/cmd/dlv@latest
 COPY --from=build /app/intellixd/build/intellixd /usr/bin/intellixd
 COPY --from=build /app/pelldvs/build/pelldvs /usr/bin/pelldvs
 COPY ./docker/operator/scripts /root/scripts
