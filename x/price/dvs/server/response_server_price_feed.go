@@ -17,7 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 )
 
-func (d ResponseServer) PostProcessRequestPriceFeed(ctx context.Context, in *types.ProcessRequestPriceFeedIn) (*types.PostProcessRequestPriceFeedOut, error) {
+func (d ResponseServer) ResponsePriceFeed(ctx context.Context, in *types.RequestPriceFeedIn) (*types.ResponsePriceFeedOut, error) {
 	pkgCtx := pkgcontext.UnwrapContext(ctx)
 	js, _ := json.Marshal(in)
 	d.logger.Info("DvsPostProcessRequestServer.PostProcessRequestPriceFeed called", "data", string(js))
@@ -43,10 +43,10 @@ func (d ResponseServer) PostProcessRequestPriceFeed(ctx context.Context, in *typ
 		return nil, err
 	}
 
-	return &types.PostProcessRequestPriceFeedOut{}, nil
+	return &types.ResponsePriceFeedOut{}, nil
 }
 
-func (d ResponseServer) sendVoteFinalizedRequestPriceTx(ctx pkgcontext.Context, raw *types.ProcessRequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractDataOracle.IDataOracleTaskResponse) (*pricetypes.MsgVoteFinalizedRequestPrice, error) {
+func (d ResponseServer) sendVoteFinalizedRequestPriceTx(ctx pkgcontext.Context, raw *types.RequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractDataOracle.IDataOracleTaskResponse) (*pricetypes.MsgVoteFinalizedRequestPrice, error) {
 	addr, err := d.Server.SenderAddress()
 	if err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func (d ResponseServer) sendVoteFinalizedRequestPriceTx(ctx pkgcontext.Context, 
 	return msg, nil
 }
 
-func (d ResponseServer) sendResponseToGateway(ctx pkgcontext.Context, raw *types.ProcessRequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractDataOracle.IDataOracleTaskResponse) error {
+func (d ResponseServer) sendResponseToGateway(ctx pkgcontext.Context, raw *types.RequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractDataOracle.IDataOracleTaskResponse) error {
 
 	nonSignerStakeIndices := make([][]uint32, len(validatedData.NonSignerStakeIndices))
 	for i, indices := range validatedData.NonSignerStakeIndices {

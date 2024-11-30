@@ -18,3 +18,4 @@ test/e2e/build/*
 #!test/e2e/dockers/contracts-price-dvs/.env
 /config.dev.yml
 .go-version
+proto/generate/*

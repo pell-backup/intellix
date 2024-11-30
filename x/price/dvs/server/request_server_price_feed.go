@@ -16,7 +16,7 @@ import (
 	"sort"
 )
 
-func (server RequestServer) ProcessRequestPriceFeed(ctx context.Context, request *types.ProcessRequestPriceFeedIn) (*types.ProcessRequestPriceFeedOut, error) {
+func (server RequestServer) RequestPriceFeed(ctx context.Context, request *types.RequestPriceFeedIn) (*types.RequestPriceFeedOut, error) {
 	pkgContext := pkgcontext.UnwrapContext(ctx)
 	server.logger.Info("ProcessRequestPriceFeed", "PriceFeedParam", fmt.Sprintf("%+v", request.PriceFeed))
 
@@ -43,7 +43,7 @@ func (server RequestServer) ProcessRequestPriceFeed(ctx context.Context, request
 	return server.aggregatePrices(pkgContext, request.Task.TaskIndex, request.Task.RequestId, priceFeedTxs)
 }
 
-func (d RequestServer) broadcastVoteRequestPriceFeed(ctx pkgcontext.Context, task *types.ProcessRequestPriceFeedIn, priceFeed *types.PriceFeedParam, rawPrices map[string]math.LegacyDec) error {
+func (d RequestServer) broadcastVoteRequestPriceFeed(ctx pkgcontext.Context, task *types.RequestPriceFeedIn, priceFeed *types.PriceFeedParam, rawPrices map[string]math.LegacyDec) error {
 	d.Logger().Info("broadcastVoteRequestPriceFeed",
 		"rawPrices", fmt.Sprintf("%+v", rawPrices),
 		"task", fmt.Sprintf("%+v", task),
@@ -184,7 +184,7 @@ func (d RequestServer) shouldStopCollecting(ctx pkgcontext.Context, firstTxBlock
 	return currentBlock >= firstTxBlock+d.waitBlockCount
 }
 
-func (d RequestServer) aggregatePrices(ctx pkgcontext.Context, taskIndex uint32, requestID []byte, priceFeedTxs []pricetypes.MsgVoteRequestPriceFeed) (*types.ProcessRequestPriceFeedOut, error) {
+func (d RequestServer) aggregatePrices(ctx pkgcontext.Context, taskIndex uint32, requestID []byte, priceFeedTxs []pricetypes.MsgVoteRequestPriceFeed) (*types.RequestPriceFeedOut, error) {
 	operatorPrices := make(map[string][]math.LegacyDec)
 
 	// calc avg the prices of different data sources within each Operator
@@ -219,7 +219,7 @@ func (d RequestServer) aggregatePrices(ctx pkgcontext.Context, taskIndex uint32,
 		blockRange.End = priceFeedTxs[len(priceFeedTxs)-1].BlockHeight
 	}
 
-	return &types.ProcessRequestPriceFeedOut{
+	return &types.RequestPriceFeedOut{
 		RequestId:     requestID,
 		TaskIndex:     taskIndex,
 		Price:         medianPrice,

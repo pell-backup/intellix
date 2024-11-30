@@ -42,7 +42,8 @@ function operator_healthcheck {
 }
 
 function assert_gt {
-  if [ "$1" -le "$2" ]; then
+  # use awk to compare numbers as big numbers are not supported by bash
+  if [ $(awk "BEGIN {print ($1 > $2)}") -ne 1 ]; then
     echo "[FAIL] Expected $1 to be greater than $2"
     exit 1
   fi
