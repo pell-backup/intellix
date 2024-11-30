@@ -33,6 +33,9 @@ plugins:
       - Mintellix/price/params.proto=intellix/x/price/types
       - Mintellix/price/tx.proto=intellix/x/price/types
       - Mintellix/price/module/module.proto=intellix/x/price/types
+      - Mintellix/processor/params.proto=intellix/x/processor/types
+      - Mintellix/processor/tx.proto=intellix/x/processor/types
+      - Mintellix/processor/module/module.proto=intellix/x/processor/types
   - name: go-pulsar
     out: ./generate/go_grpc
     opt:
@@ -49,3 +52,6 @@ plugins:
       - Mintellix/price/params.proto=intellix/x/price/types
       - Mintellix/price/tx.proto=intellix/x/price/types
       - Mintellix/price/module/module.proto=intellix/x/price/types
+      - Mintellix/processor/params.proto=intellix/x/processor/types
+      - Mintellix/processor/tx.proto=intellix/x/processor/types
+      - Mintellix/processor/module/module.proto=intellix/x/processor/types

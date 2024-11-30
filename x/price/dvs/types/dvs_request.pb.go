@@ -5,12 +5,8 @@ package types
 
 import (
 	context "context"
-	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	cosmossdk_io_math "cosmossdk.io/math"
+	fmt "fmt"
 	_ "github.com/cosmos/cosmos-proto"
 	_ "github.com/cosmos/cosmos-sdk/types/msgservice"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
@@ -20,6 +16,9 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -358,6 +357,7 @@ func _DVSRequest_RequestPriceFeed_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+var DVSRequest_serviceDesc = _DVSRequest_serviceDesc
 var _DVSRequest_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "intellix.price.DVSRequest",
 	HandlerType: (*DVSRequestServer)(nil),
