@@ -62,12 +62,13 @@ services:
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
+      - DEBUG_ENABLED=${DEBUG_ENABLED:-false}
     depends_on:
       gateway:
         condition: service_started
     entrypoint: [ "bash", "/root/scripts/start_dispatcher.sh" ]
     ports:
-      - "${HOST_PORT:-8091}:${CONTAINER_PORT:-8091}"
+      - "3345:${DEBUG_PORT:-2345}"
     volumes:
       - ./operator/scripts:/root/scripts
 
@@ -89,6 +90,9 @@ services:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
       - GATEWAY_ADDR=${GATEWAY_ADDR:-gateway:8949}
+      - DEBUG_ENABLED=${DEBUG_ENABLED:-false}
+    ports:
+      - "3346:${DEBUG_PORT:-2345}"
     depends_on:
       gateway:
         condition: service_started
@@ -103,12 +107,13 @@ services:
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
+      - DEBUG_ENABLED=${DEBUG_ENABLED:-false}
     depends_on:
       dvs:
         condition: service_started
     entrypoint: [ "bash", "/root/scripts/start_gateway.sh" ]
     ports:
-      - "${HOST_PORT:-8092}:${CONTAINER_PORT:-8949}"
+      - "3347:${DEBUG_PORT:-2345}"
     volumes:
       - ./operator/scripts:/root/scripts
 

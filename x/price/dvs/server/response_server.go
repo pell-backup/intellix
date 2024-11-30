@@ -8,8 +8,8 @@ type ResponseServer struct {
 	Server
 }
 
-func NewResponseServer(server Server) types.DvsPostProcessRequestServer {
+func NewResponseServer(server Server) types.DVSResponseServer {
 	return &ResponseServer{Server: server}
 }
 
-var _ types.DvsPostProcessRequestServer = ResponseServer{}
+var _ types.DVSResponseServer = ResponseServer{}

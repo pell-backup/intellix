@@ -17,6 +17,8 @@ function load_defaults {
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
   export GATEWAY_ADDR=${GATEWAY_ADDR:-gateway:8949}
   export OPERATOR_KEY_NAME=${OPERATOR_KEY_NAME:-operator}
+  export DEBUG_ENABLED=${DEBUG_ENABLED:-false}
+  export DEBUG_PORT=${DEBUG_PORT:-2345}
 
   export AGGREGATOR_RPC_SERVER=${AGGREGATOR_RPC_SERVER:-dvs:26653}
   export COSMOS_KEYRING_BACKEND=${COSMOS_KEYRING_BACKEND:-test}
@@ -77,14 +79,13 @@ EOF
 }
 
 function start_operator {
-  intellixd start-operator
-}
-
-function start_operator_debug {
-  go install github.com/go-delve/delve/cmd/dlv@latest
-  dlv exec /usr/bin/intellixd \
-    --listen=:2345 --headless=true --api-version=2 --accept-multiclient\
-    -- start-operator
+  if [ "$DEBUG_ENABLED" = "true" ]; then
+    dlv exec /usr/bin/intellixd \
+      --listen=:$DEBUG_PORT --headless=true --api-version=2 --accept-multiclient\
+      -- start-operator
+  else
+    intellixd start-operator
+  fi
 }
 
 ## start sshd
@@ -112,4 +113,3 @@ setup_operator_config
 
 logt "Starting operator..."
 start_operator
-#start_operator_debug

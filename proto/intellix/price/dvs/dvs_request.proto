@@ -5,17 +5,16 @@ import "gogoproto/gogo.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
-import "intellix/price/task.proto";
+import "intellix/price/dvs/task.proto";
 
-option go_package = "intellix/x/price/types";
+option go_package = "intellix/x/price/dvs/types";
 
-service DvsProcessRequest {
-  // ProcessRequestPriceFeed defines avsi logic processing
-  rpc ProcessRequestPriceFeed(ProcessRequestPriceFeedIn) returns (ProcessRequestPriceFeedOut) {}
+service DVSRequest {
+  rpc RequestPriceFeed(RequestPriceFeedIn) returns (RequestPriceFeedOut) {}
 }
 
-// ProcessRequestPriceFeedIn defines task request from task-dispatcher
-message ProcessRequestPriceFeedIn {
+// RequestPriceFeedIn defines task request from task-dispatcher
+message RequestPriceFeedIn {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
   option (amino.name) = "intellix/x/price/dvs/process_price_feed";
 
@@ -23,8 +22,8 @@ message ProcessRequestPriceFeedIn {
   PriceFeedParam price_feed = 2;
 }
 
-// ProcessRequestPriceFeedOut
-message ProcessRequestPriceFeedOut {
+// RequestPriceFeedOut
+message RequestPriceFeedOut {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
 
   bytes request_id = 1;

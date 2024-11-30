@@ -173,7 +173,7 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractDataOra
 
 	// TODO: add more task-types
 	if task.TaskType.Int64() == TaskTypePrice {
-		taskRequest = &pricetypes.ProcessRequestPriceFeedIn{
+		taskRequest = &pricetypes.RequestPriceFeedIn{
 			Task: &pricetypes.TaskRequest{
 				TaskIndex:                 newTask.TaskIndex,
 				RequestId:                 task.RequestId[:],

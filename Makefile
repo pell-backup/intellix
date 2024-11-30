@@ -85,7 +85,7 @@ build:
 .PHONY: build
 
 build-debug:
-	go build -o $(OUTPUT) ./cmd/intellixd/
+	go build -gcflags="all=-N -l" --trimpath=false -o $(OUTPUT) ./cmd/intellixd/
 .PHONY: build
 
 #? install: Install Intellixd to GOBIN

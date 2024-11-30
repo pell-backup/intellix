@@ -42,7 +42,8 @@ function operator_healthcheck {
 }
 
 function assert_gt {
-  if [ "$1" -le "$2" ]; then
+  # use awk to compare numbers as big numbers are not supported by bash
+  if [ $(awk "BEGIN {print ($1 > $2)}") -ne 1 ]; then
     echo "[FAIL] Expected $1 to be greater than $2"
     exit 1
   fi
@@ -57,9 +58,9 @@ ADMIN_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/PriceOraclePayInNativeConsumer.json" | jq -r .address)
 
 ## create a new task
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "BTC" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "ETH" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
-## wait for the task to be processed
+# wait for the task to be processed
 export TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-20}
 echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
 sleep ${TIMEOUT_FOR_TASK_PROCESS}

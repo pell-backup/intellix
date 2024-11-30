@@ -6,7 +6,7 @@ import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 
-option go_package = "intellix/x/price/types";
+option go_package = "intellix/x/price/dvs/types";
 
 message TaskRequest {
   uint32 task_index = 1;

@@ -10,10 +10,10 @@ type RequestServer struct {
 
 // NewDvsProcessRequestServer returns an implementation of the DvsProcessRequestServer interface
 // for the provided Server.
-func NewRequestServer(server Server) types.DvsProcessRequestServer {
+func NewRequestServer(server Server) types.DVSRequestServer {
 	return &RequestServer{
 		Server: server,
 	}
 }
 
-var _ types.DvsProcessRequestServer = RequestServer{}
+var _ types.DVSRequestServer = RequestServer{}

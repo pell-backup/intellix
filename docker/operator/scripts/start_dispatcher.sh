@@ -10,11 +10,14 @@ logt() {
 function load_defaults {
   export HARDHAT_CONTRACTS_PATH="/app/price-oracle-dvs/lib/pell-middleware-contracts/lib/pell-contracts/deployments/localhost"
   export HARDHAT_DVS_PATH="/app/price-oracle-dvs/deployments/localhost"
-
+  export DEBUG_ENABLED=${DEBUG_ENABLED:-false}
+  export DEBUG_PORT=${DEBUG_PORT:-2345}
 
   export PELLDVS_HOME=${PELLDVS_HOME:-/root/.pelldvs}
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
+  ## TODO: remove this after the integration with the operator
+  export OPERATOR_RPC_SERVER=${OPERATOR_RPC_SERVER:-operator:26657}
 
   export AGGREGATOR_RPC_SERVER=${AGGREGATOR_RPC_SERVER:-dvs:26653}
 }
@@ -41,7 +44,7 @@ function setup_dispatcher_config {
   DATA_ORACLE_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/DataOracle-Proxy.json" | jq -r .address)
   cat <<EOF > $PELLDVS_HOME/config/dispatcher.config.json
 {
-  "dvs_address": "tcp://operator:26657",
+  "dvs_address": "tcp://$OPERATOR_RPC_SERVER",
   "chains": [
     {
       "chain_id": 1337,
@@ -54,12 +57,14 @@ EOF
 }
 
 function start_dispatcher {
-  # intellixd --home "$PELLDVS_HOME"
-#  go install github.com/go-delve/delve/cmd/dlv@latest
-#  dlv exec /usr/bin/intellixd \
-#    --listen=:2345 --headless=true --api-version=2 --accept-multiclient\
-#    -- start-task-dispatcher
-  PELLDVS_HOME=$PELLDVS_HOME intellixd start-task-dispatcher
+  if [ "$DEBUG_ENABLED" = "true" ]; then
+    dlv exec /usr/bin/intellixd \
+      --listen=:$DEBUG_PORT --headless=true --api-version=2 --accept-multiclient\
+      --log --log-output=debugger \
+      -- start-task-dispatcher
+  else
+    intellixd start-task-dispatcher
+  fi
 }
 
 ## start sshd

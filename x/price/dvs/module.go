@@ -11,17 +11,17 @@ import (
 
 // AppModule implements an application module for the dvs module.
 type AppModule struct {
-	server                   server.Server
-	ProcessRequestServer     grpc1.Server
-	PostProcessRequestServer grpc1.Server
+	server         server.Server
+	RequestServer  grpc1.Server
+	ResponseServer grpc1.Server
 }
 
 // NewAppModule creates a new AppModule object
 func NewAppModule(s server.Server) AppModule {
 	return AppModule{
-		server:                   s,
-		ProcessRequestServer:     dvsservermanager.GetProcessRequestHandler(),
-		PostProcessRequestServer: dvsservermanager.GetPostProcessRequestHandler(),
+		server:         s,
+		RequestServer:  dvsservermanager.GetProcessRequestHandler(),
+		ResponseServer: dvsservermanager.GetPostProcessRequestHandler(),
 	}
 }
 
@@ -31,13 +31,13 @@ func (am AppModule) RegisterServices() {
 	dvsPostProcessRequestServer := server.NewResponseServer(am.server)
 
 	// register dvs-msg handler server
-	types.RegisterDvsProcessRequestServer(am.ProcessRequestServer, dvsProcessRequestServer)
-	types.RegisterDvsPostProcessRequestServer(am.PostProcessRequestServer, dvsPostProcessRequestServer)
+	types.RegisterDVSRequestServer(am.RequestServer, dvsProcessRequestServer)
+	types.RegisterDVSResponseServer(am.ResponseServer, dvsPostProcessRequestServer)
 
 	// register dvs-msg result handler
-	if r, ok := am.ProcessRequestServer.(*dvsservermanager.ProcessRequestHandler); ok {
+	if r, ok := am.RequestServer.(*dvsservermanager.ProcessRequestHandler); ok {
 		r.RegisterResultHandler(
-			&types.ProcessRequestPriceFeedOut{}, resulthandlers.NewProcessRequestPriceFeedResultHandler(),
+			&types.RequestPriceFeedOut{}, resulthandlers.NewProcessRequestPriceFeedResultHandler(),
 		)
 	}
 

@@ -3,17 +3,17 @@ package intellix.price;
 
 import "gogoproto/gogo.proto";
 import "intellix/pelldvs/dvs_post_process_validated.proto";
-import "intellix/price/dvs_process_request.proto";
+import "intellix/price/dvs/dvs_request.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 
-option go_package = "intellix/x/price/types";
+option go_package = "intellix/x/price/dvs/types";
 
-service DvsPostProcessRequest {
+service DVSResponse {
   // PostProcessRequestPriceFeed defines avsi logic processing
-  rpc PostProcessRequestPriceFeed(ProcessRequestPriceFeedIn) returns (PostProcessRequestPriceFeedOut) {}
+  rpc ResponsePriceFeed(RequestPriceFeedIn) returns (ResponsePriceFeedOut) {}
 }
 
-message PostProcessRequestPriceFeedOut {
+message ResponsePriceFeedOut {
 }
