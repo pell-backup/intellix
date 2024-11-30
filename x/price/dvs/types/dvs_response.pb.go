@@ -166,6 +166,7 @@ func _DVSResponse_ResponsePriceFeed_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+var DVSResponse_serviceDesc = _DVSResponse_serviceDesc
 var _DVSResponse_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "intellix.price.DVSResponse",
 	HandlerType: (*DVSResponseServer)(nil),

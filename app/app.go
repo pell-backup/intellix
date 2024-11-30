@@ -80,6 +80,7 @@ import (
 
 	pricemodulekeeper "intellix/x/price/keeper"
 
+	processormodulekeeper "intellix/x/processor/keeper"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	"intellix/docs"
@@ -145,7 +146,8 @@ type App struct {
 	ScopedICAHostKeeper       capabilitykeeper.ScopedKeeper
 	ScopedKeepers             map[string]capabilitykeeper.ScopedKeeper
 
-	PriceKeeper pricemodulekeeper.Keeper
+	PriceKeeper     pricemodulekeeper.Keeper
+	ProcessorKeeper processormodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// simulation manager
@@ -252,6 +254,7 @@ func New(
 		&app.GroupKeeper,
 		&app.CircuitBreakerKeeper,
 		&app.PriceKeeper,
+		&app.ProcessorKeeper,
 		// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	); err != nil {
 		panic(err)

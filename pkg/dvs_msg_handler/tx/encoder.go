@@ -1,8 +1,9 @@
 package tx
 
 import (
-	errorsmod "cosmossdk.io/errors"
 	"fmt"
+
+	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/unknownproto"
 	sdk "github.com/cosmos/cosmos-sdk/types"

@@ -4,10 +4,11 @@
 // - protoc             (unknown)
 // source: intellix/price/tx.proto
 
-package types
+package price
 
 import (
 	context "context"
+
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -71,7 +72,7 @@ func (c *msgClient) VoteFinalizedRequestPrice(ctx context.Context, in *MsgVoteFi
 }
 
 // MsgServer is the server API for Msg service.
-// All implementations should embed UnimplementedMsgServer
+// All implementations must embed UnimplementedMsgServer
 // for forward compatibility
 type MsgServer interface {
 	// UpdateParams defines a (governance) operation for updating the module
@@ -79,9 +80,10 @@ type MsgServer interface {
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 	VoteRequestPriceFeed(context.Context, *MsgVoteRequestPriceFeed) (*MsgVoteRequestPriceFeedResponse, error)
 	VoteFinalizedRequestPrice(context.Context, *MsgVoteFinalizedRequestPrice) (*MsgVoteFinalizedRequestPriceResponse, error)
+	mustEmbedUnimplementedMsgServer()
 }
 
-// UnimplementedMsgServer should be embedded to have forward compatible implementations.
+// UnimplementedMsgServer must be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct {
 }
 
@@ -94,6 +96,7 @@ func (UnimplementedMsgServer) VoteRequestPriceFeed(context.Context, *MsgVoteRequ
 func (UnimplementedMsgServer) VoteFinalizedRequestPrice(context.Context, *MsgVoteFinalizedRequestPrice) (*MsgVoteFinalizedRequestPriceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method VoteFinalizedRequestPrice not implemented")
 }
+func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
 // UnsafeMsgServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to MsgServer will

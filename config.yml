@@ -1,1 +1,43 @@
 version: 1
+validation: sovereign
+accounts: 
+- name: alice
+  coins:
+  - 20000token
+  - 200000000stake
+- name: bob
+  coins:
+  - 10000token
+  - 100000000stake
+client:
+  openapi:
+    path: docs/static/openapi.yml
+faucet:
+  name: bob
+  coins:
+  - 5token
+  - 100000stake
+validators:
+- name: alice
+  bonded: 100000000stake
+
+operator:
+  operator_addr: '0x0000000000000000000000000000000000000001'
+  wait_block_count: 10
+
+task_dispatcher:
+  - chain_id: 0x1
+    eth_url: http://127.0.0.1:18545
+    contract_address: '0x0000000000000000000000000000000000000000'
+  - chain_id: 0x10
+    eth_url: http://127.0.0.1:28545
+    contract_address: '0x0000000000000000000000000000000000000001'
+
+task_gateway:
+  sender_address: '0x0000000000000000000000000000000000000000'
+  eth_endpoint: http://127.0.0.1:18545
+  bft_network_remote: http://127.0.0.1:28545
+  contract_address: '0x0000000000000000000000000000000000000001'
+
+build:
+  main: ./cmd/intellixd

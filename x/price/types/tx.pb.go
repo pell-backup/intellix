@@ -374,6 +374,7 @@ func _Msg_VoteFinalizedRequestPrice_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+var Msg_serviceDesc = _Msg_serviceDesc
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "intellix.price.Msg",
 	HandlerType: (*MsgServer)(nil),

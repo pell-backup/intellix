@@ -54,9 +54,12 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	pricemodulev1 "intellix/api/intellix/price/module"
+	processormodulev1 "intellix/api/intellix/processor/module"
 	_ "intellix/x/price/dvs"    // import for side-effects
 	_ "intellix/x/price/module" // import for side-effects
 	pricemoduletypes "intellix/x/price/types"
+	_ "intellix/x/processor/module" // import for side-effects
+	processormoduletypes "intellix/x/processor/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
@@ -95,6 +98,7 @@ var (
 		circuittypes.ModuleName,
 		// chain modules
 		pricemoduletypes.ModuleName,
+		processormoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	}
 
@@ -120,6 +124,7 @@ var (
 		ibcfeetypes.ModuleName,
 		// chain modules
 		pricemoduletypes.ModuleName,
+		processormoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/beginBlockers
 	}
 
@@ -139,6 +144,7 @@ var (
 		ibcfeetypes.ModuleName,
 		// chain modules
 		pricemoduletypes.ModuleName,
+		processormoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/endBlockers
 	}
 
@@ -297,6 +303,10 @@ var (
 			{
 				Name:   pricemoduletypes.ModuleName,
 				Config: appconfig.WrapAny(&pricemodulev1.Module{}),
+			},
+			{
+				Name:   processormoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&processormodulev1.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},

@@ -357,6 +357,7 @@ func _DVSRequest_RequestPriceFeed_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+var DVSRequest_serviceDesc = _DVSRequest_serviceDesc
 var _DVSRequest_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "intellix.price.DVSRequest",
 	HandlerType: (*DVSRequestServer)(nil),

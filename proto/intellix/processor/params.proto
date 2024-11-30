@@ -1,0 +1,15 @@
+syntax = "proto3";
+package intellix.processor;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "intellix/x/processor/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (amino.name) = "intellix/x/processor/Params";
+  option (gogoproto.equal) = true;
+
+  
+}
