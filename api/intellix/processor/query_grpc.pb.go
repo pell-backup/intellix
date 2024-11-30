@@ -8,7 +8,6 @@ package processor
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -20,7 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Query_Params_FullMethodName = "/intellix.processor.Query/Params"
+	Query_Params_FullMethodName        = "/intellix.processor.Query/Params"
+	Query_ShowProcessor_FullMethodName = "/intellix.processor.Query/ShowProcessor"
+	Query_ListProcessor_FullMethodName = "/intellix.processor.Query/ListProcessor"
 )
 
 // QueryClient is the client API for Query service.
@@ -29,6 +30,8 @@ const (
 type QueryClient interface {
 	// Parameters queries the parameters of the module.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
+	ShowProcessor(ctx context.Context, in *QueryShowProcessorRequest, opts ...grpc.CallOption) (*QueryShowProcessorResponse, error)
+	ListProcessor(ctx context.Context, in *QueryListProcessorRequest, opts ...grpc.CallOption) (*QueryListProcessorResponse, error)
 }
 
 type queryClient struct {
@@ -48,12 +51,32 @@ func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts .
 	return out, nil
 }
 
+func (c *queryClient) ShowProcessor(ctx context.Context, in *QueryShowProcessorRequest, opts ...grpc.CallOption) (*QueryShowProcessorResponse, error) {
+	out := new(QueryShowProcessorResponse)
+	err := c.cc.Invoke(ctx, Query_ShowProcessor_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) ListProcessor(ctx context.Context, in *QueryListProcessorRequest, opts ...grpc.CallOption) (*QueryListProcessorResponse, error) {
+	out := new(QueryListProcessorResponse)
+	err := c.cc.Invoke(ctx, Query_ListProcessor_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 // All implementations must embed UnimplementedQueryServer
 // for forward compatibility
 type QueryServer interface {
 	// Parameters queries the parameters of the module.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
+	ShowProcessor(context.Context, *QueryShowProcessorRequest) (*QueryShowProcessorResponse, error)
+	ListProcessor(context.Context, *QueryListProcessorRequest) (*QueryListProcessorResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }
 
@@ -63,6 +86,12 @@ type UnimplementedQueryServer struct {
 
 func (UnimplementedQueryServer) Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
+}
+func (UnimplementedQueryServer) ShowProcessor(context.Context, *QueryShowProcessorRequest) (*QueryShowProcessorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ShowProcessor not implemented")
+}
+func (UnimplementedQueryServer) ListProcessor(context.Context, *QueryListProcessorRequest) (*QueryListProcessorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListProcessor not implemented")
 }
 func (UnimplementedQueryServer) mustEmbedUnimplementedQueryServer() {}
 
@@ -95,6 +124,42 @@ func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_ShowProcessor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryShowProcessorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).ShowProcessor(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_ShowProcessor_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).ShowProcessor(ctx, req.(*QueryShowProcessorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_ListProcessor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryListProcessorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).ListProcessor(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Query_ListProcessor_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).ListProcessor(ctx, req.(*QueryListProcessorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Query_ServiceDesc is the grpc.ServiceDesc for Query service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -105,6 +170,14 @@ var Query_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Params",
 			Handler:    _Query_Params_Handler,
+		},
+		{
+			MethodName: "ShowProcessor",
+			Handler:    _Query_ShowProcessor_Handler,
+		},
+		{
+			MethodName: "ListProcessor",
+			Handler:    _Query_ListProcessor_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
