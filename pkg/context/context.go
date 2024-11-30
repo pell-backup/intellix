@@ -2,9 +2,10 @@ package pkgcontext
 
 import (
 	"context"
+	"time"
+
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"github.com/cosmos/gogoproto/proto"
-	"time"
 )
 
 type ContextKeyType string

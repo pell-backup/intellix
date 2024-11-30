@@ -1,12 +1,13 @@
 package dvsservermanager
 
 import (
-	grpc1 "github.com/cosmos/gogoproto/grpc"
-	"github.com/cosmos/gogoproto/proto"
-	"google.golang.org/grpc"
 	pkgcontext "intellix/pkg/context"
 	result "intellix/pkg/dvs_msg_handler/result_handler"
 	"intellix/pkg/dvs_msg_handler/tx"
+
+	grpc1 "github.com/cosmos/gogoproto/grpc"
+	"github.com/cosmos/gogoproto/proto"
+	"google.golang.org/grpc"
 )
 
 type ProcessRequestHandler struct {

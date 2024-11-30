@@ -2,11 +2,12 @@ package keeper
 
 import (
 	"context"
-	errorsmod "cosmossdk.io/errors"
 	"fmt"
+	"intellix/x/price/types"
+
+	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	"intellix/x/price/types"
 )
 
 func (k msgServer) VoteFinalizedRequestPrice(ctx context.Context, msg *types.MsgVoteFinalizedRequestPrice) (*types.MsgVoteFinalizedRequestPriceResponse, error) {

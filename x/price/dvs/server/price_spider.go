@@ -2,12 +2,13 @@ package server
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"sync"
+
+	"cosmossdk.io/math"
 
 	"github.com/0xPellNetwork/pelldvs/libs/log"
 )

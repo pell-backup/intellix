@@ -1,0 +1,17 @@
+syntax = "proto3";
+package intellix.processor;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "intellix/processor/params.proto";
+
+option go_package = "intellix/x/processor/types";
+
+// GenesisState defines the processor module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
