@@ -1,12 +1,13 @@
 package tx
 
 import (
+	"intellix/x/price/dvs/types"
+	"testing"
+
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
-	"intellix/x/price/dvs/types"
-	"testing"
 )
 
 func TestEncodeDecode(t *testing.T) {
@@ -15,7 +16,7 @@ func TestEncodeDecode(t *testing.T) {
 	coder := NewDefaultDecoder(cdc)
 
 	builder := NewBuilder(cdc)
-	err := builder.SetMsgs(&types.ProcessRequestPriceFeedIn{
+	err := builder.SetMsgs(&types.RequestPriceFeedIn{
 		Task:      &types.TaskRequest{},
 		PriceFeed: &types.PriceFeedParam{},
 	})
@@ -40,7 +41,7 @@ func TestTxMsgs(t *testing.T) {
 	coder := NewDefaultDecoder(cdc)
 
 	builder := NewBuilder(cdc)
-	err := builder.SetMsgs(&types.ProcessRequestPriceFeedIn{
+	err := builder.SetMsgs(&types.RequestPriceFeedIn{
 		Task:      nil,
 		PriceFeed: nil,
 	})
