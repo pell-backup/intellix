@@ -1,0 +1,16 @@
+syntax = "proto3";
+package intellix.processor;
+
+option go_package = "intellix/x/processor/types";
+
+enum ProcessorType {
+  WASM = 0;
+}
+
+message Processor {
+  ProcessorType processorType = 1;
+  bytes config = 2;
+  bytes wasmCode = 3;
+  string creator = 4;
+  uint64 id = 5;
+}

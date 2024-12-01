@@ -8,7 +8,6 @@ package processor
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -20,7 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_UpdateParams_FullMethodName = "/intellix.processor.Msg/UpdateParams"
+	Msg_UpdateParams_FullMethodName    = "/intellix.processor.Msg/UpdateParams"
+	Msg_CreateProcessor_FullMethodName = "/intellix.processor.Msg/CreateProcessor"
 )
 
 // MsgClient is the client API for Msg service.
@@ -30,6 +30,8 @@ type MsgClient interface {
 	// UpdateParams defines a (governance) operation for updating the module
 	// parameters. The authority defaults to the x/gov module account.
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
+	// CreateProcessor creates a processor with given config and code.
+	CreateProcessor(ctx context.Context, in *MsgCreateProcessor, opts ...grpc.CallOption) (*MsgCreateProcessorResponse, error)
 }
 
 type msgClient struct {
@@ -49,6 +51,15 @@ func (c *msgClient) UpdateParams(ctx context.Context, in *MsgUpdateParams, opts 
 	return out, nil
 }
 
+func (c *msgClient) CreateProcessor(ctx context.Context, in *MsgCreateProcessor, opts ...grpc.CallOption) (*MsgCreateProcessorResponse, error) {
+	out := new(MsgCreateProcessorResponse)
+	err := c.cc.Invoke(ctx, Msg_CreateProcessor_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 // All implementations must embed UnimplementedMsgServer
 // for forward compatibility
@@ -56,6 +67,8 @@ type MsgServer interface {
 	// UpdateParams defines a (governance) operation for updating the module
 	// parameters. The authority defaults to the x/gov module account.
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
+	// CreateProcessor creates a processor with given config and code.
+	CreateProcessor(context.Context, *MsgCreateProcessor) (*MsgCreateProcessorResponse, error)
 	mustEmbedUnimplementedMsgServer()
 }
 
@@ -65,6 +78,9 @@ type UnimplementedMsgServer struct {
 
 func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateParams not implemented")
+}
+func (UnimplementedMsgServer) CreateProcessor(context.Context, *MsgCreateProcessor) (*MsgCreateProcessorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateProcessor not implemented")
 }
 func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
 
@@ -97,6 +113,24 @@ func _Msg_UpdateParams_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_CreateProcessor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgCreateProcessor)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).CreateProcessor(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_CreateProcessor_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).CreateProcessor(ctx, req.(*MsgCreateProcessor))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -107,6 +141,10 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateParams",
 			Handler:    _Msg_UpdateParams_Handler,
+		},
+		{
+			MethodName: "CreateProcessor",
+			Handler:    _Msg_CreateProcessor_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

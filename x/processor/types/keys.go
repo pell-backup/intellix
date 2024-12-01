@@ -9,6 +9,9 @@ const (
 
 	// MemStoreKey defines the in-memory store key
 	MemStoreKey = "mem_processor"
+
+	ProcessorKey = "Processor/value/"
+	ProcessorCountKey = "Processor/count"
 )
 
 var (

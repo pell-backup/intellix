@@ -6,6 +6,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "intellix/processor/params.proto";
+import "intellix/processor/processor.proto";
 
 option go_package = "intellix/x/processor/types";
 
@@ -14,6 +15,16 @@ service Query {
   // Parameters queries the parameters of the module.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/intellix/processor/params";
+  }
+
+  // ShowProcessor shows a processor.
+  rpc ShowProcessor(QueryShowProcessorRequest) returns (QueryShowProcessorResponse) {
+    option (google.api.http).get = "/intellix/processor/processor/{id}";
+  }
+
+  // ListProcessor lists processors.
+  rpc ListProcessor(QueryListProcessorRequest) returns (QueryListProcessorResponse) {
+    option (google.api.http).get = "/intellix/processor/processor";
   }
 }
 
@@ -27,4 +38,21 @@ message QueryParamsResponse {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+}
+
+message QueryShowProcessorRequest {
+  uint64 id = 1;
+}
+
+message QueryShowProcessorResponse {
+  Processor processor = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryListProcessorRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryListProcessorResponse {
+  repeated Processor processor = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
