@@ -93,6 +93,22 @@ install:
 	CGO_ENABLED=$(CGO_ENABLED) go install $(BUILD_FLAGS) -tags $(BUILD_TAGS) ./cmd/intellixd
 .PHONY: install
 
+test_runtime:
+	@if [ ! -f "lib/runtime.h" ]; then \
+		echo "Error: lib/runtime.h not found"; \
+		echo "Please build runtime from github.com/IntelliXLabs/iwasm and copy it to lib/"; \
+		exit 1; \
+	fi
+	@if ! ls lib/libruntime.* >/dev/null 2>&1; then \
+		echo "Error: libruntime shared library not found in lib/ directory"; \
+		echo "Expected one of: libruntime.so, libruntime.dylib, or libruntime.dll"; \
+		echo "Please build runtime from github.com/IntelliXLabs/iwasm and copy it to lib/"; \
+		exit 1; \
+	fi
+	LD_LIBRARY_PATH=$(PWD)/lib CGO_LDFLAGS=-L$(PWD)/lib go test ./tests/...
+.PHONY: test_runtime
+
+
 
 ###############################################################################
 ###                              Distribution                               ###
