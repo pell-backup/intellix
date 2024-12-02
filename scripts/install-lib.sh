@@ -40,6 +40,6 @@ else
 fi
 
 echo "Extracting library ${LIB_NAME} ..."
-tar -xzf "${INSTALL_DIR}/${LIB_NAME}" -C "${INSTALL_DIR}"
+tar -xzf "${INSTALL_DIR}/${LIB_NAME}" -C "${INSTALL_DIR}" --strip-components=1
 
 echo "Installation completed successfully"
