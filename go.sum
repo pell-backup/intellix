@@ -249,8 +249,8 @@ github.com/DataDog/datadog-go v3.2.0+incompatible h1:qSG2N4FghB1He/r2mFrWKCaL7dX
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/DataDog/zstd v1.5.5 h1:oWf5W7GtOLgp6bciQYDmhHHjdhYkALu6S/5Ni9ZgSvQ=
 github.com/DataDog/zstd v1.5.5/go.mod h1:g4AWEaM3yOg3HYfnJ3YIawPnVdXJh9QME85blwSAmyw=
-github.com/IntelliXLabs/iwasm v0.0.3 h1:FxF3jjWpCS6xNv7bcy09KVD6ZHe5c5r7x5osQ9hint0=
-github.com/IntelliXLabs/iwasm v0.0.3/go.mod h1:ZqoWcH9G6vi+bXeWUAzhc1RlrnMuLKzBy5wWLZzR17Q=
+github.com/IntelliXLabs/iwasm v0.0.6 h1:T8PfeRLiEGl9p7n3g2ibPA7C9UN05cRR8B0XYx8tOpE=
+github.com/IntelliXLabs/iwasm v0.0.6/go.mod h1:ZqoWcH9G6vi+bXeWUAzhc1RlrnMuLKzBy5wWLZzR17Q=
 github.com/IntelliXLabs/price-oracle-dvs v0.4.0 h1:Q63v/VInwQzXcsh+umskXvEs/ByDxYaXA17sPRktaPc=
 github.com/IntelliXLabs/price-oracle-dvs v0.4.0/go.mod h1:bNqqC3vy2iBgj5cbnLzkTHO1vw9SxIxH4PUtRfoBsTg=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=

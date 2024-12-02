@@ -20,17 +20,20 @@ esac
 ## Download the lib
 DOWNLOAD_URL="https://github.com/IntelliXLabs/iwasm/releases/download/${VERSION}/libruntime-${PLATFORM}-${ARCH}.tar.gz"
 INSTALL_DIR="${PROJECT_DIR}/lib"
-mkdir -p "${INSTALL_DIR}"
 
-echo "Downloading libruntime from ${DOWNLOAD_URL}"
-HTTP_STATUS=$(curl -L \
-    -w "%{http_code}" \
-    -o "${INSTALL_DIR}/libruntime.tar.gz" \
-    "${DOWNLOAD_URL}")
+if [ ! -f "${INSTALL_DIR}/libruntime.tar.gz" ]; then
+    echo "Downloading libruntime from ${DOWNLOAD_URL}"
+    HTTP_STATUS=$(curl -L \
+        -w "%{http_code}" \
+        -o "${INSTALL_DIR}/libruntime.tar.gz" \
+        "${DOWNLOAD_URL}")
 
-if [ "$HTTP_STATUS" -ne 200 ]; then
-    echo "Error: Failed to download library. HTTP status: ${HTTP_STATUS}"
-    exit 1
+    if [ "$HTTP_STATUS" -ne 200 ]; then
+        echo "Error: Failed to download library. HTTP status: ${HTTP_STATUS}"
+        exit 1
+    fi
+else
+    echo "Library already downloaded, skipping download"
 fi
 
 echo "Extracting library..."
