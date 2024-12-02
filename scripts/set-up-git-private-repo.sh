@@ -11,7 +11,7 @@ if [ -z "$GITHUB_TOKEN" ]; then
   exit 1
 fi
 
-GITHUB_REPO_PATH=0xPellNetwork
+GITHUB_REPO_PATH=IntelliXLabs
 
 set_github_repo_token() {
   git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/${GITHUB_REPO_PATH}".insteadOf "https://github.com/${GITHUB_REPO_PATH}"
