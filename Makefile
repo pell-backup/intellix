@@ -81,7 +81,7 @@ include tests.mk
 
 #? build: Build Intellixd
 build:
-	go build -mod=readonly -ldflags "-s -w" -o $(OUTPUT) ./cmd/intellixd/
+	LD_LIBRARY_PATH=$(PWD)/lib CGO_LDFLAGS=-L$(PWD)/lib go build -mod=readonly -ldflags "-s -w" -o $(OUTPUT) ./cmd/intellixd/
 .PHONY: build
 
 build-debug:
