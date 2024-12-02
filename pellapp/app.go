@@ -142,7 +142,7 @@ func NewApp(
 	dvstypes.RegisterInterfaces(app.interfaceRegistry)
 
 	// processor server
-	_ = processordvs.NewAppModule()
+	processordvs.NewAppModule().RegisterServices()
 
 	return app
 }
