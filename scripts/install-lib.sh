@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+set -x
 
 VERSION=${VERSION:-$(grep 'github.com/IntelliXLabs/iwasm' go.mod | grep -o 'v[0-9.]\+')}
 PLATFORM=${PLATFORM:-$(uname -s | tr '[:upper:]' '[:lower:]')}
@@ -38,7 +39,7 @@ else
     echo "Library ${LIB_NAME} already downloaded, skipping download"
 fi
 
-echo "Extracting library..."
+echo "Extracting library ${LIB_NAME} ..."
 tar -xzf "${INSTALL_DIR}/${LIB_NAME}" -C "${INSTALL_DIR}"
 
 echo "Installation completed successfully"
