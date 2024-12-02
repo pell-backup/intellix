@@ -47,10 +47,12 @@ RUN go install github.com/mikefarah/yq/v4@latest
 RUN go install github.com/tomwright/dasel/v2/cmd/dasel@master
 RUN go install github.com/go-delve/delve/cmd/dlv@latest
 COPY --from=build /app/intellixd/build/intellixd /usr/bin/intellixd
+COPY --from=build /app/intellixd/lib/* /usr/local/lib/
 COPY --from=build /app/pelldvs/build/pelldvs /usr/bin/pelldvs
 COPY ./docker/operator/scripts /root/scripts
 COPY ./docker/ssh /root/.ssh
 
+RUN ldconfig /usr/local/lib
 RUN chmod 600 /root/.ssh/*
 
 WORKDIR /root
