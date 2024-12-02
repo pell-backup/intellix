@@ -231,7 +231,7 @@ endif
 test-group-%:split-test-packages
 	cat $(BUILDDIR)/packages.txt.$* | xargs go test -mod=readonly -timeout=15m -race -coverprofile=$(BUILDDIR)/$*.profile.out
 
-test-in-ci:$(BUILDDIR)/packages.txt install-wasm-testdata install-lib
+test-in-ci:$(BUILDDIR)/packages.txt
 	cat $(BUILDDIR)/packages.txt | xargs go test -mod=readonly -timeout=15m -race -coverprofile=$(BUILDDIR)/coverage.txt
 
 test-runtime:

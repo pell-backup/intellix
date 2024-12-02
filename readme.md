@@ -13,6 +13,7 @@ ignite chain serve
 
 Your blockchain in development can be configured with `config.yml`. To learn more, see the [Ignite CLI docs](https://docs.ignite.com).
 
+
 ### Web Frontend
 
 Additionally, Ignite CLI offers both Vue and React options for frontend scaffolding:
@@ -23,6 +24,41 @@ These commands can be run within your scaffolded blockchain project.
 
 
 For more information see the [monorepo for Ignite front-end development](https://github.com/ignite/web).
+
+## Development
+
+### Install Wasm Runtime Library
+
+For Linux AMD64:
+
+```bash
+make install-lib
+# or
+# bash ./scripts/install-lib.sh
+```
+
+This will download the runtime library and extract it to the `lib` directory.
+
+For MacOS:
+Build from source and move to `lib` directory:
+```bash
+git clone https://github.com/IntelliXLabs/iwasm.git
+cd iwasm
+cargo build --release
+mv target/release/libruntime* ${INTELLIX_DIR}/lib/
+```
+
+### Test Wasm Runtime
+
+Download test wasm bytecode to `tests/iwasm/testdata`:
+```bash
+make install-wasm-testdata
+```
+
+Run tests:
+```bash
+make test-runtime
+```
 
 ## Release
 To release a new version of your blockchain, create and push a new tag with `v` prefix. A new draft release with the configured targets will be created.
