@@ -21,6 +21,7 @@ esac
 LIB_NAME="libruntime-${PLATFORM}-${ARCH}.tar.gz"
 DOWNLOAD_URL="https://github.com/IntelliXLabs/iwasm/releases/download/${VERSION}/${LIB_NAME}"
 INSTALL_DIR="${PROJECT_DIR}/lib"
+mkdir -p "${INSTALL_DIR}"
 
 if [ ! -f "${INSTALL_DIR}/${LIB_NAME}" ]; then
     echo "Downloading libruntime from ${DOWNLOAD_URL}"
