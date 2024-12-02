@@ -18,14 +18,15 @@ case ${ARCH} in
 esac
 
 ## Download the lib
-DOWNLOAD_URL="https://github.com/IntelliXLabs/iwasm/releases/download/${VERSION}/libruntime-${PLATFORM}-${ARCH}.tar.gz"
+LIB_NAME="libruntime-${PLATFORM}-${ARCH}.tar.gz"
+DOWNLOAD_URL="https://github.com/IntelliXLabs/iwasm/releases/download/${VERSION}/${LIB_NAME}"
 INSTALL_DIR="${PROJECT_DIR}/lib"
 
-if [ ! -f "${INSTALL_DIR}/libruntime.tar.gz" ]; then
+if [ ! -f "${INSTALL_DIR}/${LIB_NAME}" ]; then
     echo "Downloading libruntime from ${DOWNLOAD_URL}"
     HTTP_STATUS=$(curl -L \
         -w "%{http_code}" \
-        -o "${INSTALL_DIR}/libruntime.tar.gz" \
+        -o "${INSTALL_DIR}/${LIB_NAME}" \
         "${DOWNLOAD_URL}")
 
     if [ "$HTTP_STATUS" -ne 200 ]; then
@@ -33,10 +34,10 @@ if [ ! -f "${INSTALL_DIR}/libruntime.tar.gz" ]; then
         exit 1
     fi
 else
-    echo "Library already downloaded, skipping download"
+    echo "Library ${LIB_NAME} already downloaded, skipping download"
 fi
 
 echo "Extracting library..."
-tar -xzf "${INSTALL_DIR}/libruntime.tar.gz" -C "${INSTALL_DIR}"
+tar -xzf "${INSTALL_DIR}/${LIB_NAME}" -C "${INSTALL_DIR}"
 
 echo "Installation completed successfully"
