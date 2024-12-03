@@ -81,7 +81,7 @@ func (d ResponseServer) sendResponseToGateway(ctx pkgcontext.Context, raw *types
 		nonSignerStakeIndices[i] = indices.NonSignerStakeIndice
 	}
 
-	req := &taskgateway.RPCVoteFinalizedRequestPrice{
+	req := &taskgateway.RPCVoteFinalizedRequestIn{
 		ChainID: ctx.ChainID(),
 		TaskRaw: &taskgateway.RPCTaskRaw{
 			TaskType:                  types.TaskTypePriceFeed,
