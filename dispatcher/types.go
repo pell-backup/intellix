@@ -3,6 +3,7 @@ package taskdispatcher
 import (
 	"bytes"
 	"fmt"
+	"math/big"
 
 	cbor "github.com/fxamacker/cbor/v2"
 )
@@ -69,6 +70,49 @@ func ParsePriceFeed(data []byte) (*PriceFeedParam, error) {
 	quoteSymbol := taskDataTmp[3].(string)
 
 	return &PriceFeedParam{baseSymbol, quoteSymbol}, nil
+}
+
+type ScriptParam struct {
+	ScriptId uint64
+	Params   []byte
+}
+
+func ParseScript(data []byte) (*ScriptParam, error) {
+	cborData := data[24:]
+
+	var rawMap map[string]interface{}
+	if err := cbor.Unmarshal(cborData, &rawMap); err != nil {
+		return nil, fmt.Errorf("CBOR decode failed: %v", err)
+	}
+
+	req := &ScriptParam{}
+
+	// scriptId
+	if scriptIdRaw, ok := rawMap["scriptId"]; ok {
+		switch v := scriptIdRaw.(type) {
+		case uint64:
+			req.ScriptId = v
+		case *big.Int:
+			if v.IsUint64() {
+				req.ScriptId = v.Uint64()
+			} else {
+				return nil, fmt.Errorf("scriptId exceeds uint64 range")
+			}
+		default:
+			return nil, fmt.Errorf("invalid scriptId type")
+		}
+	}
+
+	// params
+	if paramsRaw, ok := rawMap["params"]; ok {
+		if params, ok := paramsRaw.([]byte); ok {
+			req.Params = params
+		} else {
+			return nil, fmt.Errorf("invalid params type")
+		}
+	}
+
+	return req, nil
 }
 
 const (

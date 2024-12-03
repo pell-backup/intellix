@@ -6,6 +6,8 @@ import (
 	"math/big"
 	"os"
 
+	"cosmossdk.io/math"
+
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/ethereum/go-ethereum/common"
@@ -146,6 +148,10 @@ type RPCPriceFeedResponse struct {
 	Price              string `json:"price"`
 }
 
+type RPCScriptProcessorResponse struct {
+	Data []byte `json:"data"`
+}
+
 type RPCValidatedData struct {
 	Data                         []byte     `json:"data,omitempty"`
 	Error                        string     `json:"error,omitempty"`
@@ -160,12 +166,12 @@ type RPCValidatedData struct {
 	NonSignerStakeIndices        [][]uint32 `json:"non_signer_stake_indices,omitempty"`
 }
 
-// RPCVoteFinalizedRequestPrice represents a serializable version of MsgVoteFinalizedRequestPrice
-type RPCVoteFinalizedRequestPrice struct {
-	ChainID           int64                 `json:"chain_id"`
-	TaskRaw           *RPCTaskRaw           `json:"task_raw"`
-	ValidatedData     *RPCValidatedData     `json:"validated_data"`
-	PriceFeedResponse *RPCPriceFeedResponse `json:"price_feed_response"`
+type RPCVoteFinalizedRequestIn struct {
+	ChainID           int64                       `json:"chain_id"`
+	TaskRaw           *RPCTaskRaw                 `json:"task_raw"`
+	ValidatedData     *RPCValidatedData           `json:"validated_data"`
+	PriceFeedResponse *RPCPriceFeedResponse       `json:"price_feed_response"`
+	ScriptResponse    *RPCScriptProcessorResponse `json:"script_response"`
 }
 
 func validateBLSComponents(data *RPCValidatedData) error {
@@ -196,4 +202,32 @@ func validateBLSComponents(data *RPCValidatedData) error {
 	}
 
 	return nil
+}
+
+const (
+	TaskTypePriceFeed = 1
+)
+
+func buildTaskResponseData(taskType int64, in *RPCVoteFinalizedRequestIn) (dataOracle.IDataOracleTaskResponse, error) {
+	var data []byte
+	if taskType == TaskTypePriceFeed {
+		priceInt, ok := math.NewIntFromString(in.PriceFeedResponse.Price)
+		if !ok {
+			return dataOracle.IDataOracleTaskResponse{}, fmt.Errorf("error converting priceFeedResponse price")
+		}
+		packedPrice, err := packUint256(priceInt.BigInt())
+		if err != nil {
+			return dataOracle.IDataOracleTaskResponse{}, fmt.Errorf("error converting priceFeedResponse price")
+		}
+		data = packedPrice
+	} else {
+		// TODO: add advance decode
+		data = in.ScriptResponse.Data
+	}
+
+	taskResp := dataOracle.IDataOracleTaskResponse{
+		ReferenceTaskIndex: in.TaskRaw.TaskIndex,
+		Data:               data,
+	}
+	return taskResp, nil
 }

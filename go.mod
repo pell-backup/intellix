@@ -28,7 +28,7 @@ require (
 	cosmossdk.io/x/upgrade v0.1.4
 	github.com/0xPellNetwork/pelldvs v0.1.1
 	github.com/IntelliXLabs/iwasm v0.0.6
-	github.com/IntelliXLabs/price-oracle-dvs v0.4.0
+	github.com/IntelliXLabs/price-oracle-dvs v0.4.2
 	github.com/bufbuild/buf v1.34.0
 	github.com/cometbft/cometbft v0.38.11
 	github.com/cosmos/cosmos-db v1.0.2
@@ -39,6 +39,7 @@ require (
 	github.com/cosmos/ibc-go/v8 v8.5.1
 	github.com/ethereum/go-ethereum v1.14.7
 	github.com/fxamacker/cbor/v2 v2.7.0
+	github.com/gogo/protobuf v1.3.2
 	github.com/golang/protobuf v1.5.4
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
@@ -149,7 +150,6 @@ require (
 	github.com/godbus/dbus v0.0.0-20190726142602-4481cbc300e2 // indirect
 	github.com/gofrs/uuid/v5 v5.2.0 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
-	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/glog v1.2.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/mock v1.6.0 // indirect

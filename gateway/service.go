@@ -119,7 +119,7 @@ func (tg *TaskGateway) OnStop() {
 	}
 }
 
-func (tg *TaskGateway) RespondToTask(req *RPCVoteFinalizedRequestPrice, resp *RespondToTaskResponse) error {
+func (tg *TaskGateway) RespondToTask(req *RPCVoteFinalizedRequestIn, resp *RespondToTaskResponse) error {
 	err := tg.handleResponse(context.Background(), req)
 	if err != nil {
 		resp.Error = err.Error()
@@ -139,10 +139,10 @@ func (tg *TaskGateway) getAuthOpts(chainId int64) (*bind.TransactOpts, error) {
 	return auth, nil
 }
 
-func (tg *TaskGateway) handleResponse(ctx context.Context, response *RPCVoteFinalizedRequestPrice) error {
+func (tg *TaskGateway) handleResponse(ctx context.Context, response *RPCVoteFinalizedRequestIn) error {
 	value, loaded := tg.taskMap.LoadOrStore(response.TaskRaw.TaskIndex, response)
 	if loaded {
-		existingResponse := value.(*RPCVoteFinalizedRequestPrice)
+		existingResponse := value.(*RPCVoteFinalizedRequestIn)
 		if tg.shouldReplaceResponse(ctx, existingResponse, response) {
 			tg.taskMap.Store(response.TaskRaw.RequestID, response)
 			return tg.wrapSubmitToChain(ctx, response)
@@ -153,12 +153,12 @@ func (tg *TaskGateway) handleResponse(ctx context.Context, response *RPCVoteFina
 	return nil
 }
 
-func (tg *TaskGateway) shouldReplaceResponse(ctx context.Context, existing, new *RPCVoteFinalizedRequestPrice) bool {
+func (tg *TaskGateway) shouldReplaceResponse(ctx context.Context, existing, new *RPCVoteFinalizedRequestIn) bool {
 	// TODO: add security threshold comparison
 	return false
 }
 
-func (tg *TaskGateway) wrapSubmitToChain(ctx context.Context, request *RPCVoteFinalizedRequestPrice) error {
+func (tg *TaskGateway) wrapSubmitToChain(ctx context.Context, request *RPCVoteFinalizedRequestIn) error {
 	var wg = &sync.WaitGroup{}
 	wg.Add(1)
 	var err error
@@ -176,7 +176,7 @@ func (tg *TaskGateway) wrapSubmitToChain(ctx context.Context, request *RPCVoteFi
 	return err
 }
 
-func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinalizedRequestPrice) error {
+func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinalizedRequestIn) error {
 	jsData, _ := json.Marshal(response)
 	tg.logger.Info("TaskGateway.submitToChain request", "data", string(jsData))
 
@@ -216,21 +216,6 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		GroupNumbers:             response.TaskRaw.QuorumNumbers,
 		GroupThresholdPercentage: response.TaskRaw.QuorumThresholdPercentage,
 	}
-	priceInt, ok := math.NewIntFromString(response.PriceFeedResponse.Price)
-
-	if !ok {
-		tg.logger.Error("Error converting taskRaw price", "price", response.PriceFeedResponse.Price)
-		return fmt.Errorf("error converting priceFeedResponse price")
-	}
-	packedPrice, err := packUint256(priceInt.BigInt())
-	if err != nil {
-		tg.logger.Error("Error packing price", "error", err)
-		return err
-	}
-	taskResp := dataOracle.IDataOracleTaskResponse{
-		ReferenceTaskIndex: response.PriceFeedResponse.ReferenceTaskIndex,
-		Data:               packedPrice,
-	}
 
 	sign := dataOracle.IBLSSignatureVerifierNonSignerStakesAndSignature{
 		NonSignerGroupBitmapIndices: response.ValidatedData.NonSignerQuorumBitmapIndices,
@@ -241,6 +226,11 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		GroupApkIndices:             response.ValidatedData.QuorumApkIndices,
 		TotalStakeIndices:           response.ValidatedData.TotalStakeIndices,
 		NonSignerStakeIndices:       response.ValidatedData.NonSignerStakeIndices,
+	}
+
+	taskResp, err := buildTaskResponseData(response.TaskRaw.TaskType, response)
+	if err != nil {
+		return err
 	}
 
 	authOpts, err := tg.getAuthOpts(response.ChainID)

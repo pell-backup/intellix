@@ -5,8 +5,29 @@ import "gogoproto/gogo.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
+import "intellix/price/dvs/task.proto";
 
 option go_package = "intellix/x/processor/dvs/types";
 
 service DVSRequest {
+}
+
+message RequestScriptIn {
+  option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
+
+  uint32 task_index = 1;
+  bytes request_id = 2;
+  string fee_token = 3;
+  string payment = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  bytes request_data = 5;
+  string callback_address = 6;
+  bytes callback_function_id = 7;
+  uint32 task_created_block = 8;
+  bytes quorum_numbers = 9;
+  uint32 quorum_threshold_percentage = 10;
+  uint64 script_id = 11;
+  bytes script_param = 12;
 }
