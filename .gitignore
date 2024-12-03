@@ -19,3 +19,4 @@ test/e2e/build/*
 /config.dev.yml
 .go-version
 proto/generate/
+lib/*

@@ -18,6 +18,7 @@ import (
 	"intellix/x/price/dvs"
 	dvsserver "intellix/x/price/dvs/server"
 	dvstypes "intellix/x/price/dvs/types"
+	processordvs "intellix/x/processor/dvs"
 
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
 )
@@ -139,6 +140,9 @@ func NewApp(
 	app.ProcessRequestServer = dvsservermanager.GetProcessRequestHandler()
 	dvs.NewAppModule(app.DvsServer).RegisterServices()
 	dvstypes.RegisterInterfaces(app.interfaceRegistry)
+
+	// processor server
+	processordvs.NewAppModule().RegisterServices()
 
 	return app
 }

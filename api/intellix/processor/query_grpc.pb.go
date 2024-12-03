@@ -30,7 +30,9 @@ const (
 type QueryClient interface {
 	// Parameters queries the parameters of the module.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
+	// ShowProcessor shows a processor.
 	ShowProcessor(ctx context.Context, in *QueryShowProcessorRequest, opts ...grpc.CallOption) (*QueryShowProcessorResponse, error)
+	// ListProcessor lists processors.
 	ListProcessor(ctx context.Context, in *QueryListProcessorRequest, opts ...grpc.CallOption) (*QueryListProcessorResponse, error)
 }
 
@@ -75,7 +77,9 @@ func (c *queryClient) ListProcessor(ctx context.Context, in *QueryListProcessorR
 type QueryServer interface {
 	// Parameters queries the parameters of the module.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
+	// ShowProcessor shows a processor.
 	ShowProcessor(context.Context, *QueryShowProcessorRequest) (*QueryShowProcessorResponse, error)
+	// ListProcessor lists processors.
 	ListProcessor(context.Context, *QueryListProcessorRequest) (*QueryListProcessorResponse, error)
 	mustEmbedUnimplementedQueryServer()
 }

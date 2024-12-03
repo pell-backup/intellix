@@ -80,8 +80,8 @@ include tests.mk
 ###############################################################################
 
 #? build: Build Intellixd
-build:
-	go build -mod=readonly -ldflags "-s -w" -o $(OUTPUT) ./cmd/intellixd/
+build: install-lib
+	CGO_LDFLAGS=-L$(PWD)/lib go build -mod=readonly -ldflags "-s -w" -o $(OUTPUT) ./cmd/intellixd/
 .PHONY: build
 
 build-debug:
@@ -92,6 +92,13 @@ build-debug:
 install:
 	CGO_ENABLED=$(CGO_ENABLED) go install $(BUILD_FLAGS) -tags $(BUILD_TAGS) ./cmd/intellixd
 .PHONY: install
+
+install-lib:
+	bash scripts/install-lib.sh
+
+install-wasm-testdata:
+	bash scripts/install-wasm-testdata.sh
+
 
 
 ###############################################################################
@@ -211,15 +218,37 @@ $(BUILDDIR):
 # Note we need to check for both in-package tests (.TestGoFiles) and
 # out-of-package tests (.XTestGoFiles).
 $(BUILDDIR)/packages.txt:$(GO_TEST_FILES) $(BUILDDIR)
-	go list -f "{{ if (or .TestGoFiles .XTestGoFiles) }}{{ .ImportPath }}{{ end }}" ./... | grep -v "^$(MODULE_NAME)/test/" | grep -v "^$(MODULE_NAME)/internal/test/" | grep -v "^$(MODULE_NAME)/_back/" | sort > $@
+	go list -f "{{ if (or .TestGoFiles .XTestGoFiles) }}{{ .ImportPath }}{{ end }}" ./... | grep -v "^intellix/tests/iwasm" | grep -v "^$(MODULE_NAME)/internal/test/" | grep -v "^$(MODULE_NAME)/_back/" | sort > $@
 
 split-test-packages:$(BUILDDIR)/packages.txt
+ifeq ($(UNAME_S),Linux)
 	split -d -n l/$(NUM_SPLIT) $< $<.
+else
+	total_lines=$$(wc -l < $<); \
+	lines_per_file=$$((total_lines / $(NUM_SPLIT) + 1)); \
+	split -d -l $$lines_per_file $< $<.
+endif
 test-group-%:split-test-packages
 	cat $(BUILDDIR)/packages.txt.$* | xargs go test -mod=readonly -timeout=15m -race -coverprofile=$(BUILDDIR)/$*.profile.out
 
 test-in-ci:$(BUILDDIR)/packages.txt
 	cat $(BUILDDIR)/packages.txt | xargs go test -mod=readonly -timeout=15m -race -coverprofile=$(BUILDDIR)/coverage.txt
+
+test-runtime:
+	@if [ ! -f "lib/runtime.h" ]; then \
+		echo "Error: lib/runtime.h not found"; \
+		echo "Please build runtime from github.com/IntelliXLabs/iwasm and copy it to lib/"; \
+		exit 1; \
+	fi
+	@if ! ls lib/libruntime.* >/dev/null 2>&1; then \
+		echo "Error: libruntime shared library not found in lib/ directory"; \
+		echo "Expected one of: libruntime.so, libruntime.dylib, or libruntime.dll"; \
+		echo "Please build runtime from github.com/IntelliXLabs/iwasm and copy it to lib/"; \
+		exit 1; \
+	fi
+	LD_LIBRARY_PATH=$(PWD)/lib CGO_LDFLAGS=-L$(PWD)/lib go test ./tests/...
+.PHONY: test-runtime
+
 
 #? help: Get more info on make commands.
 help: Makefile
