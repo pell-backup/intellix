@@ -1,6 +1,7 @@
 package pellapp
 
 import (
+	processortypes "intellix/x/processor/types"
 	"os"
 
 	"github.com/0xPellNetwork/pelldvs/libs/log"
@@ -19,6 +20,7 @@ import (
 	dvsserver "intellix/x/price/dvs/server"
 	dvstypes "intellix/x/price/dvs/types"
 	processordvs "intellix/x/processor/dvs"
+	processordvsserver "intellix/x/processor/dvs/server"
 
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
 )
@@ -41,6 +43,7 @@ type App struct {
 	dvsNode *pelldvs.Node
 
 	DvsServer                dvsserver.Server
+	ProcessorDvsServer       processordvsserver.Server
 	ProcessRequestServer     grpc1.Server
 	PostProcessRequestServer grpc1.Server
 
@@ -126,7 +129,6 @@ func NewApp(
 		panic(err)
 	}
 
-	//dvs server manager
 	app.DvsServer, err = dvsserver.NewServer(
 		app.logger, clientCtx, key, config.CosmosChainId,
 		config.GatewayAddr, config.OperatorAddr,
@@ -135,14 +137,28 @@ func NewApp(
 	if err != nil {
 		panic(err)
 	}
+
+	app.ProcessorDvsServer, err = processordvsserver.NewServer(
+		app.logger, clientCtx, key, config.CosmosChainId,
+		config.GatewayAddr, config.OperatorAddr,
+		config.WaitBlockCount, config.GasPrices, config.GasAdjustment,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	// init dvsservermanager
 	dvsservermanager.InitDvsMsgHelper(app.appCodec)
 	app.PostProcessRequestServer = dvsservermanager.GetPostProcessRequestHandler()
 	app.ProcessRequestServer = dvsservermanager.GetProcessRequestHandler()
+
+	//dvs server manager
 	dvs.NewAppModule(app.DvsServer).RegisterServices()
 	dvstypes.RegisterInterfaces(app.interfaceRegistry)
 
 	// processor server
-	processordvs.NewAppModule().RegisterServices()
+	processordvs.NewAppModule(app.ProcessorDvsServer).RegisterServices()
+	processortypes.RegisterInterfaces(app.interfaceRegistry)
 
 	return app
 }

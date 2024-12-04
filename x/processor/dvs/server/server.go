@@ -31,8 +31,63 @@ type Server struct {
 	waitBlockCount  int64 // price feed wait block count
 }
 
-func NewServer() *Server {
-	return &Server{}
+func NewServer(
+	logger log.Logger,
+	clientCtx client.Context,
+	key *keyring.Record,
+	cosmosChainId string,
+
+	gatewayAddr string,
+	operatorAddress string,
+	waitBlockCount int64,
+
+	gasPrices string,
+	gasAdjustment float64,
+) (Server, error) {
+	if gasPrices == "" {
+		gasPrices = "1stake"
+	}
+	if gasAdjustment == 0 {
+		gasAdjustment = 1.5
+	}
+	if waitBlockCount == 0 {
+		waitBlockCount = 1
+	}
+
+	k := Server{
+		logger:        logger,
+		clientCtx:     clientCtx,
+		key:           key,
+		cosmosChainId: cosmosChainId,
+
+		operatorAddress: operatorAddress,
+		waitBlockCount:  waitBlockCount,
+		gasPrices:       gasPrices,
+		gasAdjustment:   gasAdjustment,
+	}
+
+	if operatorAddress != "" {
+		k.SetOperatorAddress(operatorAddress)
+		_, err := clientCtx.Keyring.Key(clientCtx.GetFromName())
+		if err != nil {
+			return Server{}, fmt.Errorf("operator key not found in keyring: %w", err)
+		}
+	}
+
+	taskGatewayClient, err := taskgateway.NewClient(gatewayAddr, logger)
+	if err != nil {
+		return Server{}, err
+	}
+	k.taskGatewayClient = taskGatewayClient
+
+	return k, nil
+}
+
+func (k *Server) SetOperatorAddress(address string) {
+	if err := sdk.VerifyAddressFormat(sdk.AccAddress(address)); err != nil {
+		panic(err)
+	}
+	k.operatorAddress = address
 }
 
 // SignAndBroadcastTx signs and broadcasts a transaction
