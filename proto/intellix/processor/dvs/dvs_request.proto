@@ -35,4 +35,5 @@ message RequestScriptIn {
 message RequestScriptOut {
   uint32 task_index = 1;
   bytes script_out_data = 2;
+  bytes data_digest = 3;
 }

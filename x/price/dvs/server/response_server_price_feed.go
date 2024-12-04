@@ -19,8 +19,8 @@ import (
 
 func (d ResponseServer) ResponsePriceFeed(ctx context.Context, in *types.RequestPriceFeedIn) (*types.ResponsePriceFeedOut, error) {
 	pkgCtx := pkgcontext.UnwrapContext(ctx)
-	js, _ := json.Marshal(in)
-	d.logger.Info("DvsPostProcessRequestServer.PostProcessRequestPriceFeed called", "data", string(js))
+	//js, _ := json.Marshal(in)
+	//d.logger.Info("DvsPostProcessRequestServer.PostProcessRequestPriceFeed called", "data", string(js))
 
 	validatedData, err := d.getDvsRequestValidatedData(pkgCtx)
 	if err != nil {
@@ -167,6 +167,7 @@ func (d ResponseServer) decodePackedPriceFeedData(data []byte) (*contractDataOra
 	}, nil
 }
 
+// TODO: move to common code
 func (d ResponseServer) getDvsRequestValidatedData(ctx pkgcontext.Context) (*dvstypes.RequestPostRequestValidatedData, error) {
 	reqData, ok := ctx.DvsPostResponseData()
 	if !ok {
