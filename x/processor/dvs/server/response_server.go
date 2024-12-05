@@ -84,6 +84,11 @@ func (r ResponseServer) voteData(ctx pkgcontext.Context, in *types.RequestScript
 }
 
 func (r ResponseServer) responseToTask(ctx pkgcontext.Context, in *types.RequestScriptIn, data []byte, validatedData *dvstypes.RequestPostRequestValidatedData) error {
+	var nonSignerStakeIndices [][]uint32
+	for _, v := range validatedData.NonSignerStakeIndices {
+		nonSignerStakeIndices = append(nonSignerStakeIndices, v.NonSignerStakeIndice)
+	}
+
 	return r.taskGatewayClient.RespondToTask(&taskgateway.RPCVoteFinalizedRequestIn{
 		ChainID: ctx.ChainID(),
 		TaskRaw: &taskgateway.RPCTaskRaw{
@@ -99,7 +104,19 @@ func (r ResponseServer) responseToTask(ctx pkgcontext.Context, in *types.Request
 			QuorumNumbers:             in.QuorumNumbers,
 			QuorumThresholdPercentage: in.QuorumThresholdPercentage,
 		},
-		ValidatedData: &taskgateway.RPCValidatedData{},
+		ValidatedData: &taskgateway.RPCValidatedData{
+			Data:                         validatedData.Data,
+			Error:                        validatedData.Error,
+			Hash:                         validatedData.Hash,
+			NonSignersPubkeysG1:          validatedData.NonSignersPubkeysG1,
+			QuorumApksG1:                 validatedData.QuorumApksG1,
+			SignersApkG2:                 validatedData.SignersApkG2,
+			SignersAggSigG1:              validatedData.SignersAggSigG1,
+			NonSignerQuorumBitmapIndices: validatedData.NonSignerQuorumBitmapIndices,
+			QuorumApkIndices:             validatedData.QuorumApkIndices,
+			TotalStakeIndices:            validatedData.TotalStakeIndices,
+			NonSignerStakeIndices:        nonSignerStakeIndices,
+		},
 		ScriptResponse: &taskgateway.RPCScriptProcessorResponse{
 			Data: data,
 		},

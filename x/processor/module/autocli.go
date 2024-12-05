@@ -42,10 +42,16 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Skip:      true, // skipped because authority gated
 				},
 				{
-					RpcMethod: "CreateProcessor",
-					Use: "create-processor [processor-type] [config] [wasm-code]",
-					Short: "Creates a new processor",
+					RpcMethod:      "CreateProcessor",
+					Use:            "create-processor [processor-type] [config] [wasm-code]",
+					Short:          "Creates a new processor",
 					PositionalArgs: []*autocliv1.PositionalArgDescriptor{{ProtoField: "processorType"}, {ProtoField: "config"}, {ProtoField: "wasmCode"}},
+				},
+				{
+					RpcMethod: "VoteRequestProcessor",
+				},
+				{
+					RpcMethod: "VoteResponseProcessor",
 				},
 				// this line is used by ignite scaffolding # autocli/tx
 			},

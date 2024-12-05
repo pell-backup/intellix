@@ -13,6 +13,7 @@ option go_package = "intellix/x/processor/types";
 message MsgVoteResponseProcessor {
     option (cosmos.msg.v1.signer) = "sender";
     option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
+    option (amino.name) = "intellix/x/processor/MsgVoteResponseProcessor";
 
     uint32 task_index = 1;
     bytes request_id = 2;
@@ -29,4 +30,7 @@ message MsgVoteResponseProcessor {
     uint32 quorum_threshold_percentage = 10;
     uint64 script_id = 11;
     bytes script_aggred_resp = 12;
+    string sender = 13 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }
+
+message MsgVoteResponseProcessorResponse{}
