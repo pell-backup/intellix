@@ -20,3 +20,7 @@ test/e2e/build/*
 .go-version
 proto/generate/
 lib/*
+
+docker/devnet/.intellix
+docker/devnet/.pelldvs
+docker/devnet/.operator

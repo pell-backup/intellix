@@ -1,0 +1,38 @@
+name: intellix
+
+services:
+  dvs:
+    image: intellixlabs-intellix-pelldvs:latest
+    environment:
+      - ETH_RPC_URL=${ETH_RPC_URL}
+      - ETH_WS_URL=${ETH_WS_URL}
+      - ADMIN_KEY=${ADMIN_KEY}
+      - ROOT_KEY=${ROOT_KEY}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL}
+      - SERVICE_CHAIN_WS_URL=${SERVICE_CHAIN_WS_URL}
+    entrypoint: [ "bash", "/root/scripts/start_dvs.sh" ]
+    volumes:
+      - ./.pelldvs:/root/.pelldvs
+      - ./dvs:/root/scripts
+
+  gateway:
+    image: intellixlabs-intellix-operator:latest
+    environment:
+      - ETH_RPC_URL=${ETH_RPC_URL}
+      - ETH_WS_URL=${ETH_WS_URL}
+      - GATEWAY_KEY=${ADMIN_KEY}
+      - ROOT_KEY=${ROOT_KEY}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL}
+    entrypoint: [ "bash", "/root/scripts/start_gateway.sh" ]
+    ports:
+      - "3347:${DEBUG_PORT:-2345}"
+    volumes:
+      - ./.pelldvs:/root/.pelldvs
+      - ./dvs:/root/scripts
+
+
+networks:
+  default:
+    name: intellix-devnet

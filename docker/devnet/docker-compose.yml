@@ -1,0 +1,68 @@
+name: intellix
+
+services:
+
+  dispatcher:
+    image: intellixlabs-intellix-operator:latest
+    environment:
+      - ETH_RPC_URL=${SERVICE_CHAIN_RPC_URL}
+      - ETH_WS_URL=${SERVICE_CHAIN_WS_URL}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+    entrypoint: [ "bash", "/root/scripts/start_dispatcher.sh" ]
+    ports:
+      - "3345:${DEBUG_PORT:-2345}"
+    volumes:
+      - ./operator:/root/scripts
+
+  abci:
+    image: intellixlabs-intellix-operator:latest
+    environment:
+      - ETH_RPC_URL=${SERVICE_CHAIN_RPC_URL}
+      - ETH_WS_URL=${SERVICE_CHAIN_WS_URL}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - VALIDATOR_KEY_MNEMONIC=${VALIDATOR_KEY_MNEMONIC}
+      - OPERATOR_KEY_MNEMONIC=${OPERATOR_KEY_MNEMONIC}
+    entrypoint: [ "bash", "/root/scripts/start_abci.sh" ]
+    volumes:
+      - ./.intellix:/root/.intellix
+      - ./operator:/root/scripts
+
+  operator:
+    image: intellixlabs-intellix-operator:latest
+    environment:
+      - ETH_RPC_URL=${ETH_RPC_URL}
+      - ETH_WS_URL=${ETH_WS_URL}
+      - GATEWAY_ADDR=${GATEWAY_ADDR:-gateway:8949}
+      - OPERATOR_KEY=${OPERATOR_KEY}
+      - OPERATOR_KEY_MNEMONIC=${OPERATOR_KEY_MNEMONIC}
+      - ROOT_KEY=${ROOT_KEY}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - REGISTRY_ROUTER_ADDRESS=${REGISTRY_ROUTER_ADDRESS}
+    ports:
+      - "3346:${DEBUG_PORT:-2345}"
+    depends_on:
+      abci:
+        condition: service_started
+    entrypoint: [ "bash", "/root/scripts/start_operator.sh" ]
+    volumes:
+      - ./.operator:/root/.pelldvs
+      - ./operator:/root/scripts
+
+  # test:
+  #   image: intellixlabs-intellix-operator:latest
+  #   tty: true
+  #   environment:
+  #     - ETH_RPC_URL=http://eth:8545
+  #     - ETH_WS_URL=ws://eth:8545
+  #     - TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-30}
+  #   depends_on:
+  #     operator:
+  #       condition: service_started
+  #   entrypoint: [ "bash" ]
+  #   volumes:
+  #     - ./operator:/root/scripts
+
+networks:
+  default:
+    external: true
+    name: intellix-devnet
