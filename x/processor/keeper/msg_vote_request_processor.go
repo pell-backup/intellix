@@ -47,9 +47,6 @@ func (k msgServer) validateMsgVoteRequestProcessor(msg *types.MsgVoteRequestProc
 	if msg.CallbackAddress == "" {
 		return fmt.Errorf("callback_address cannot be empty")
 	}
-	if msg.ScriptId == 0 {
-		return fmt.Errorf("script_id cannot be zero")
-	}
 
 	return nil
 }

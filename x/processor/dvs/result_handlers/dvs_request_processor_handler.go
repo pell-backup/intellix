@@ -1,7 +1,8 @@
-package resulthandlers
+package result_handlers
 
 import (
 	"github.com/cosmos/gogoproto/proto"
+	"golang.org/x/crypto/sha3"
 	"intellix/x/processor/dvs/types"
 )
 
@@ -27,5 +28,12 @@ func (p *ProcessorRequestResHandler) GetDigest(msg proto.Message) ([]byte, error
 		return nil, nil
 	}
 
-	return r.DataDigest, nil
+	//return r.DataDigest, nil
+	// XXX: calc digest by script out
+	var taskResponseDigest [32]byte
+	hasher := sha3.NewLegacyKeccak256()
+	hasher.Write(r.ScriptOutData)
+	copy(taskResponseDigest[:], hasher.Sum(nil)[:32])
+
+	return taskResponseDigest[:], nil
 }

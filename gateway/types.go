@@ -206,7 +206,7 @@ func validateBLSComponents(data *RPCValidatedData) error {
 
 const (
 	TaskTypePriceFeed int64 = 1
-	TaskTypeProcessor int64 = 2
+	TaskTypeProcessor int64 = 3
 )
 
 func buildTaskResponseData(taskType int64, in *RPCVoteFinalizedRequestIn) (dataOracle.IDataOracleTaskResponse, error) {

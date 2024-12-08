@@ -17,8 +17,9 @@ type ResponseServer struct {
 	runtime api.RuntimeResult
 }
 
-func NewResponseServer() types.DVSResponseServer {
+func NewResponseServer(s Server) types.DVSResponseServer {
 	return &ResponseServer{
+		Server:  s,
 		runtime: api.NewRuntime(),
 	}
 }

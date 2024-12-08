@@ -88,6 +88,10 @@ function start_operator {
   fi
 }
 
+function upload_wasm_script {
+  ssh abci "intellixd tx processor create-processor 'Intellix' ./scripts/processor_data/mock_processor.wasm --from $OPERATOR_KEY_NAME --chain-id $COSMOS_CHAIN_ID --keyring-backend test --gas auto --fees 20000stake -y"
+}
+
 ## start sshd
 /usr/sbin/sshd
 
@@ -104,6 +108,7 @@ if [ ! -f /root/operator_initialized ]; then
   logt "Init operator"
   source "$(dirname "$0")/init_operator.sh"
   gen_cosmos_key
+  upload_wasm_script
 
   touch /root/operator_initialized
 fi

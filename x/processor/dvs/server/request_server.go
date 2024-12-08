@@ -19,8 +19,9 @@ type RequestServer struct {
 	runtime api.RuntimeResult
 }
 
-func NewRequestServer() types.DVSRequestServer {
+func NewRequestServer(s Server) types.DVSRequestServer {
 	return &RequestServer{
+		Server:  s,
 		runtime: api.NewRuntime(),
 	}
 }
@@ -46,7 +47,7 @@ func (r RequestServer) RequestScript(ctx context.Context, in *types.RequestScrip
 		return nil, err
 	}
 
-	aggrData, digest, err := r.aggrDataByExecWasmAggrScript(pkgContext, instance, scriptConfig, aggrDataIn, in.ScriptParam)
+	aggrData, digest, err := r.aggrDataByExecWasmAggrScript(pkgContext, instance, scriptConfig, aggrDataIn)
 	if err != nil {
 		return nil, err
 	}
@@ -203,8 +204,8 @@ func (r RequestServer) shouldStopCollecting(ctx pkgcontext.Context, firstTxBlock
 	return currentBlock >= firstTxBlock+r.waitBlockCount
 }
 
-func (r RequestServer) aggrDataByExecWasmAggrScript(ctx pkgcontext.Context, instance api.InstanceResult, scriptConfig []byte, datas [][]byte, scriptParam []byte) ([]byte, []byte, error) {
-	dataRes, err := instance.Aggregate(scriptConfig, datas, scriptParam)
+func (r RequestServer) aggrDataByExecWasmAggrScript(ctx pkgcontext.Context, instance api.InstanceResult, scriptConfig []byte, datas [][]byte) ([]byte, []byte, error) {
+	dataRes, err := instance.Aggregate(scriptConfig, datas, []byte("first"))
 	if err != nil {
 		return nil, nil, err
 	}

@@ -1,11 +1,12 @@
 package dvs
 
 import (
-	grpc1 "github.com/cosmos/gogoproto/grpc"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
-	resulthandlers "intellix/x/price/dvs/result_handlers"
+	resulthandlers "intellix/x/processor/dvs/result_handlers"
 	"intellix/x/processor/dvs/server"
 	"intellix/x/processor/dvs/types"
+
+	grpc1 "github.com/cosmos/gogoproto/grpc"
 )
 
 type AppModule struct {
@@ -23,8 +24,8 @@ func NewAppModule(s server.Server) *AppModule {
 }
 
 func (am AppModule) RegisterServices() {
-	reqServer := server.NewRequestServer()
-	respServer := server.NewResponseServer()
+	reqServer := server.NewRequestServer(am.server)
+	respServer := server.NewResponseServer(am.server)
 
 	types.RegisterDVSRequestServer(am.RequestServer, reqServer)
 	types.RegisterDVSResponseServer(am.ResponseServer, respServer)

@@ -3,8 +3,6 @@ package taskdispatcher
 import (
 	"bytes"
 	"fmt"
-	"math/big"
-
 	cbor "github.com/fxamacker/cbor/v2"
 )
 
@@ -77,42 +75,31 @@ type ScriptParam struct {
 	Params   []byte
 }
 
+// ParseScript
+// XXX: unknown encode method
 func ParseScript(data []byte) (*ScriptParam, error) {
-	cborData := data[24:]
+	//fmt.Printf("data hex: %x\n", data)
+	//fmt.Printf("data raw: %s\n", data)
+	//dataStr := base64.StdEncoding.EncodeToString(data)
+	//fmt.Printf("dataStr base64: %s\n", dataStr)
 
-	var rawMap map[string]interface{}
-	if err := cbor.Unmarshal(cborData, &rawMap); err != nil {
-		return nil, fmt.Errorf("CBOR decode failed: %v", err)
+	result := &ScriptParam{}
+
+	// "hscriptId"(9 bytes)
+	if len(data) < 10 {
+		return nil, fmt.Errorf("invalid data length")
 	}
 
-	req := &ScriptParam{}
+	// scriptId after "hscriptId"(1 byte)
+	result.ScriptId = uint64(data[9]) // 0c -> 12
 
-	// scriptId
-	if scriptIdRaw, ok := rawMap["scriptId"]; ok {
-		switch v := scriptIdRaw.(type) {
-		case uint64:
-			req.ScriptId = v
-		case *big.Int:
-			if v.IsUint64() {
-				req.ScriptId = v.Uint64()
-			} else {
-				return nil, fmt.Errorf("scriptId exceeds uint64 range")
-			}
-		default:
-			return nil, fmt.Errorf("invalid scriptId type")
-		}
+	// params after "fparamsD"(8 bytes)
+	paramsStart := 18 // 9(hscriptId) + 1(scriptId value) + 8(fparamsD)
+	if len(data) > paramsStart {
+		result.Params = data[paramsStart:]
 	}
 
-	// params
-	if paramsRaw, ok := rawMap["params"]; ok {
-		if params, ok := paramsRaw.([]byte); ok {
-			req.Params = params
-		} else {
-			return nil, fmt.Errorf("invalid params type")
-		}
-	}
-
-	return req, nil
+	return result, nil
 }
 
 const (

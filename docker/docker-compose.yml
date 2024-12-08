@@ -2,7 +2,7 @@ name: intellix
 
 services:
   hardhat:
-    image: hardhat:${CONTRACT_VERSION:-v0.4.0}
+    image: hardhat:${CONTRACT_VERSION:-v0.4.2}
     environment:
       - LOCALHOST_URL=http://eth:8545
       - ETH_RPC_URL=http://eth:8545
@@ -127,6 +127,6 @@ services:
     depends_on:
       operator:
         condition: service_started
-    entrypoint: [ "bash" ]
+    entrypoint: [ "bash", "/root/scripts/test_wasm.sh" ]
     volumes:
       - ./operator/scripts:/root/scripts
