@@ -170,6 +170,7 @@ func newApp(t *testing.T) (*app.App, context.Context) {
 	appOptions[server.FlagInvCheckPeriod] = simcli.FlagPeriodValue
 
 	bApp, err := app.New(logger, db, nil, true, appOptions, fauxMerkleModeOpt, baseapp.SetChainID(SimAppChainID))
+	require.NoError(t, err, "app New failed")
 
 	return bApp, context.Background()
 }

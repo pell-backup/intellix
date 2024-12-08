@@ -51,6 +51,7 @@ func NewClientContext(
 	grpcAddr = strings.TrimPrefix(grpcAddr, "http://")
 	grpcAddr = strings.TrimPrefix(grpcAddr, "https://")
 	grpcAddr = strings.Replace(grpcAddr, "26657", "9090", 1)
+	//nolint:staticcheck
 	grpcConn, err := grpc.Dial(
 		grpcAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
