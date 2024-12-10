@@ -89,7 +89,7 @@ function start_operator {
 }
 
 function upload_wasm_script {
-  ssh abci "intellixd tx processor create-processor 'Intellix' ./scripts/processor_data/mock_processor.wasm --from $OPERATOR_KEY_NAME --chain-id $COSMOS_CHAIN_ID --keyring-backend test --gas auto --fees 20000stake -y"
+  ssh abci "intellixd tx processor create-processor 'Intellix' ./scripts/processor_data/mock_processor.wasm --from $OPERATOR_KEY_NAME --chain-id $COSMOS_CHAIN_ID --keyring-backend test --gas auto --fees 2000000stake -y"
 }
 
 ## start sshd

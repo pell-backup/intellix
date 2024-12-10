@@ -193,7 +193,7 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractDataOra
 				QuoteSymbol: priceFeed.QuoteSymbol,
 			},
 		}
-	} else {
+	} else if task.TaskType.Int64() == TaskTypeScript {
 		scriptData, err := ParseScript(newTask.Task.RequestData)
 		if err != nil {
 			td.logger.Error("Failed to parse script data", "chainID", chainID, "error", err)

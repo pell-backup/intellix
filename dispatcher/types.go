@@ -75,33 +75,46 @@ type ScriptParam struct {
 	Params   []byte
 }
 
-// ParseScript
-// XXX: unknown encode method
 func ParseScript(data []byte) (*ScriptParam, error) {
-	//fmt.Printf("data hex: %x\n", data)
-	//fmt.Printf("data raw: %s\n", data)
-	//dataStr := base64.StdEncoding.EncodeToString(data)
-	//fmt.Printf("dataStr base64: %s\n", dataStr)
+	// decode cbor
+	reader := bytes.NewReader(data)
+	decoder := cbor.NewDecoder(reader)
 
-	result := &ScriptParam{}
+	var key string
+	result := make(map[string]interface{})
+	for i := 0; ; i++ {
+		var item interface{}
+		err := decoder.Decode(&item)
+		if err != nil {
+			if err.Error() == "EOF" {
+				break
+			}
+			return nil, err
+		}
 
-	// "hscriptId"(9 bytes)
-	if len(data) < 10 {
-		return nil, fmt.Errorf("invalid data length")
+		if i%2 == 0 {
+			// key
+			if str, ok := item.(string); ok {
+				key = str
+			}
+		} else {
+			// value
+			result[key] = item
+		}
 	}
 
-	// scriptId after "hscriptId"(1 byte)
-	result.ScriptId = uint64(data[9]) // 0c -> 12
-
-	// params after "fparamsD"(8 bytes)
-	paramsStart := 18 // 9(hscriptId) + 1(scriptId value) + 8(fparamsD)
-	if len(data) > paramsStart {
-		result.Params = data[paramsStart:]
+	var sp = &ScriptParam{}
+	if scriptId, ok := result["scriptId"]; ok {
+		sp.ScriptId = scriptId.(uint64)
+	}
+	if params, ok := result["params"]; ok {
+		sp.Params = params.([]byte)
 	}
 
-	return result, nil
+	return sp, nil
 }
 
 const (
-	TaskTypePrice int64 = 1
+	TaskTypePrice  int64 = 1
+	TaskTypeScript int64 = 3
 )
