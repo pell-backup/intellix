@@ -9,4 +9,32 @@ import "amino/amino.proto";
 option go_package = "intellix/x/processor/dvs/types";
 
 service DVSRequest {
+  rpc RequestScript(RequestScriptIn) returns (RequestScriptOut) {}
+}
+
+message RequestScriptIn {
+  option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
+
+  uint32 task_index = 1;
+  bytes request_id = 2;
+  string fee_token = 3;
+  string payment = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  bytes request_data = 5;
+  string callback_address = 6;
+  bytes callback_function_id = 7;
+  uint32 task_created_block = 8;
+  bytes quorum_numbers = 9;
+  uint32 quorum_threshold_percentage = 10;
+  uint64 script_id = 11;
+  bytes script_param = 12;
+  bool advance_decode = 13;
+}
+
+message RequestScriptOut {
+  uint32 task_index = 1;
+  bytes script_out_data = 2;
+  bytes data_digest = 3;
 }

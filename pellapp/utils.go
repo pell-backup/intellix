@@ -1,8 +1,6 @@
 package pellapp
 
 import (
-	"os"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -11,6 +9,10 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtxconfig "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+	"os"
+	"strings"
 )
 
 func NewClientContext(
@@ -44,5 +46,22 @@ func NewClientContext(
 	if err != nil {
 		panic(err)
 	}
-	return clientCtx.WithClient(c).WithNodeURI(cosmosNodeUrl).WithChainID(chainId)
+
+	grpcAddr := cosmosNodeUrl
+	grpcAddr = strings.TrimPrefix(grpcAddr, "http://")
+	grpcAddr = strings.TrimPrefix(grpcAddr, "https://")
+	grpcAddr = strings.Replace(grpcAddr, "26657", "9090", 1)
+	//nolint:staticcheck
+	grpcConn, err := grpc.Dial(
+		grpcAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithDefaultCallOptions(
+			grpc.ForceCodec(codec.NewProtoCodec(interfaceRegistry).GRPCCodec()),
+		),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	return clientCtx.WithClient(c).WithNodeURI(cosmosNodeUrl).WithChainID(chainId).WithGRPCClient(grpcConn)
 }

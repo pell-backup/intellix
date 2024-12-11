@@ -7,6 +7,7 @@ import (
 	"intellix/pkg/dvs_msg_handler/tx"
 	"intellix/pkg/pelldvs"
 	pricetypes "intellix/x/price/dvs/types"
+	processortypes "intellix/x/processor/dvs/types"
 	"sync"
 
 	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
@@ -163,16 +164,16 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractDataOra
 		"taskIndex", newTask.TaskIndex,
 		"task", fmt.Sprintf("%+v", newTask.Task),
 	)
-	priceFeed, err := ParsePriceFeed(newTask.Task.RequestData)
-	if err != nil {
-		td.logger.Error("Failed to parse price feed", "chainID", chainID, "error", err)
-		return nil, err
-	}
+
 	task := newTask.Task
 	var taskRequest sdk.Msg
 
-	// TODO: add more task-types
 	if task.TaskType.Int64() == TaskTypePrice {
+		priceFeed, err := ParsePriceFeed(newTask.Task.RequestData)
+		if err != nil {
+			td.logger.Error("Failed to parse price feed", "chainID", chainID, "error", err)
+			return nil, err
+		}
 		taskRequest = &pricetypes.RequestPriceFeedIn{
 			Task: &pricetypes.TaskRequest{
 				TaskIndex:                 newTask.TaskIndex,
@@ -185,11 +186,33 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractDataOra
 				TaskCreatedBlock:          task.TaskCreatedBlock,
 				QuorumNumbers:             task.GroupNumbers,
 				QuorumThresholdPercentage: task.GroupThresholdPercentage,
+				AdvanceDecode:             task.AdvanceDecode,
 			},
 			PriceFeed: &pricetypes.PriceFeedParam{
 				BaseSymbol:  priceFeed.BaseSymbol,
 				QuoteSymbol: priceFeed.QuoteSymbol,
 			},
+		}
+	} else if task.TaskType.Int64() == TaskTypeScript {
+		scriptData, err := ParseScript(newTask.Task.RequestData)
+		if err != nil {
+			td.logger.Error("Failed to parse script data", "chainID", chainID, "error", err)
+			return nil, err
+		}
+		taskRequest = &processortypes.RequestScriptIn{
+			TaskIndex:                 newTask.TaskIndex,
+			RequestId:                 task.RequestId[:],
+			FeeToken:                  task.FeeToken.Hex(),
+			Payment:                   math.NewIntFromBigInt(task.Payment),
+			RequestData:               task.RequestData,
+			CallbackAddress:           task.CallbackAddress.Hex(),
+			CallbackFunctionId:        task.CallbackFunctionId[:],
+			TaskCreatedBlock:          task.TaskCreatedBlock,
+			QuorumNumbers:             task.GroupNumbers,
+			QuorumThresholdPercentage: task.GroupThresholdPercentage,
+			AdvanceDecode:             task.AdvanceDecode,
+			ScriptId:                  scriptData.ScriptId,
+			ScriptParam:               scriptData.Params,
 		}
 	}
 	if taskRequest == nil {

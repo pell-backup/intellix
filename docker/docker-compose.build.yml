@@ -9,9 +9,9 @@ services:
         - HTTP_PROXY=$HTTP_PROXY
         - HTTPS_PROXY=$HTTPS_PROXY
         - GITHUB_TOKEN=$GITHUB_TOKEN
-        - CONTRACT_VERSION=${CONTRACT_VERSION:-v0.4.0}
+        - CONTRACT_VERSION=${CONTRACT_VERSION:-v0.4.2}
       tags:
-        - hardhat:${CONTRACT_VERSION:-v0.4.0}
+        - hardhat:${CONTRACT_VERSION:-v0.4.3}
 
   pelldvs:
     build:
