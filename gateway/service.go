@@ -2,19 +2,15 @@ package taskgateway
 
 import (
 	"context"
+	"cosmossdk.io/math"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/core/types"
+	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"math/big"
 	"net"
 	"net/rpc"
 	"os"
-	"time"
-
-	"cosmossdk.io/math"
-	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
-	"github.com/ethereum/go-ethereum/accounts/keystore"
 
 	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/service"
@@ -244,6 +240,10 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 	if err != nil {
 		return err
 	}
+
+	// For debug purpose,
+	// set gas limit to 1000000 to bypass transaction pre-execution and force broadcast
+	// authOpts.GasLimit = 1000000
 
 	transaction, err := tg.contractDataOracle.ResponseToTask(authOpts, task, taskResp, sign)
 	if err != nil {
