@@ -238,6 +238,10 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		return err
 	}
 
+	// For debug purpose,
+	// set gas limit to 1000000 to bypass transaction pre-execution and force broadcast
+	// authOpts.GasLimit = 1000000
+
 	transaction, err := tg.contractDataOracle.ResponseToTask(authOpts, task, taskResp, sign)
 	if err != nil {
 		// Try to get the failed transaction receipt
@@ -250,6 +254,8 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 	}
 
 	if transaction != nil {
+		tg.logger.Info("Transaction submitted", "txHash", transaction.Hash().Hex())
+		// TODO: should wait for the receipt
 		if receipt, receiptErr := tg.ethClient.TransactionReceipt(ctx, transaction.Hash()); receiptErr == nil {
 			tg.logger.Error("Transaction Status",
 				"txHash", transaction.Hash().Hex(),

@@ -62,7 +62,7 @@ services:
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
-      - DEBUG_ENABLED=${DEBUG_ENABLED:-false}
+      - DEBUG_ENABLED=${DISPATCHER_DEBUG_ENABLED:-false}
     depends_on:
       gateway:
         condition: service_started
@@ -90,7 +90,7 @@ services:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
       - GATEWAY_ADDR=${GATEWAY_ADDR:-gateway:8949}
-      - DEBUG_ENABLED=${DEBUG_ENABLED:-false}
+      - DEBUG_ENABLED=${OPERATOR_DEBUG_ENABLED:-false}
     ports:
       - "3346:${DEBUG_PORT:-2345}"
     depends_on:
@@ -107,10 +107,7 @@ services:
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
-      - DEBUG_ENABLED=${DEBUG_ENABLED:-false}
-    depends_on:
-      dvs:
-        condition: service_started
+      - DEBUG_ENABLED=${GATEWAY_DEBUG_ENABLED:-false}
     entrypoint: [ "bash", "/root/scripts/start_gateway.sh" ]
     ports:
       - "3347:${DEBUG_PORT:-2345}"

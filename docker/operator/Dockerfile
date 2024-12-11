@@ -24,8 +24,12 @@ RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/In
 ########## Build intellixd ##########
 ARG DEBUG_ENABLED
 WORKDIR /app/intellixd
-COPY .. /app/intellixd/
+COPY go.mod go.sum ./
+COPY scripts ./scripts
+RUN bash scripts/install-lib.sh
 RUN --mount=type=cache,target="/go/pkg/mod" go mod download
+
+COPY .. /app/intellixd/
 RUN --mount=type=cache,target="/go/pkg/mod" \
     --mount=type=cache,target="/root/.cache/go-build" \
     if [ "$DEBUG_ENABLED" = "true" ]; then \
