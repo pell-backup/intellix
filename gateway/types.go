@@ -6,8 +6,6 @@ import (
 	"math/big"
 	"os"
 
-	"cosmossdk.io/math"
-
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/ethereum/go-ethereum/common"
@@ -143,14 +141,9 @@ type RPCTaskRaw struct {
 	AdvanceDecode             bool   `json:"advance_decode"`
 }
 
-// RPCPriceFeedResponse represents a serializable version of PriceFeedResponse
-type RPCPriceFeedResponse struct {
+type RPCTaskResponse struct {
 	ReferenceTaskIndex uint32 `json:"reference_task_index"`
-	Price              string `json:"price"`
-}
-
-type RPCScriptProcessorResponse struct {
-	Data []byte `json:"data"`
+	Data               []byte `json:"data"`
 }
 
 type RPCValidatedData struct {
@@ -168,11 +161,10 @@ type RPCValidatedData struct {
 }
 
 type RPCVoteFinalizedRequestIn struct {
-	ChainID           int64                       `json:"chain_id"`
-	TaskRaw           *RPCTaskRaw                 `json:"task_raw"`
-	ValidatedData     *RPCValidatedData           `json:"validated_data"`
-	PriceFeedResponse *RPCPriceFeedResponse       `json:"price_feed_response"`
-	ScriptResponse    *RPCScriptProcessorResponse `json:"script_response"`
+	ChainID        int64             `json:"chain_id"`
+	TaskRaw        *RPCTaskRaw       `json:"task_raw"`
+	ValidatedData  *RPCValidatedData `json:"validated_data"`
+	RespToTaskData []byte            `json:"resp_to_task_data"` // decoded data
 }
 
 func validateBLSComponents(data *RPCValidatedData) error {
@@ -209,26 +201,3 @@ const (
 	TaskTypePriceFeed int64 = 1
 	TaskTypeProcessor int64 = 3
 )
-
-func buildTaskResponseData(taskType int64, in *RPCVoteFinalizedRequestIn) (dataOracle.IDataOracleTaskResponse, error) {
-	var data []byte
-	if taskType == TaskTypePriceFeed {
-		priceInt, ok := math.NewIntFromString(in.PriceFeedResponse.Price)
-		if !ok {
-			return dataOracle.IDataOracleTaskResponse{}, fmt.Errorf("error converting priceFeedResponse price")
-		}
-		packedPrice, err := packUint256(priceInt.BigInt())
-		if err != nil {
-			return dataOracle.IDataOracleTaskResponse{}, fmt.Errorf("error converting priceFeedResponse price")
-		}
-		data = packedPrice
-	} else if taskType == TaskTypeProcessor {
-		data = in.ScriptResponse.Data
-	}
-
-	taskResp := dataOracle.IDataOracleTaskResponse{
-		ReferenceTaskIndex: in.TaskRaw.TaskIndex,
-		Data:               data,
-	}
-	return taskResp, nil
-}

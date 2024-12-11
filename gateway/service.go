@@ -230,9 +230,9 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		NonSignerStakeIndices:       response.ValidatedData.NonSignerStakeIndices,
 	}
 
-	taskResp, err := buildTaskResponseData(response.TaskRaw.TaskType, response)
-	if err != nil {
-		return err
+	taskResp := dataOracle.IDataOracleTaskResponse{
+		ReferenceTaskIndex: response.TaskRaw.TaskIndex,
+		Data:               response.RespToTaskData,
 	}
 
 	authOpts, err := tg.getAuthOpts(response.ChainID)

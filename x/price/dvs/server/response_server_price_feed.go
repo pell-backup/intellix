@@ -3,18 +3,17 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	taskgateway "intellix/gateway"
 	pkgcontext "intellix/pkg/context"
-	dvsservermanager "intellix/pkg/dvs_msg_handler"
+	"intellix/pkg/pelldvs"
 	dvstypes "intellix/pkg/pelldvs/types"
+	"intellix/pkg/utils"
 	"intellix/x/price/dvs/types"
 	pricetypes "intellix/x/price/types"
 	"math/big"
 
 	"cosmossdk.io/math"
 	contractDataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 )
 
 func (d ResponseServer) ResponsePriceFeed(ctx context.Context, in *types.RequestPriceFeedIn) (*types.ResponsePriceFeedOut, error) {
@@ -22,11 +21,12 @@ func (d ResponseServer) ResponsePriceFeed(ctx context.Context, in *types.Request
 	//js, _ := json.Marshal(in)
 	//d.logger.Info("DvsPostProcessRequestServer.PostProcessRequestPriceFeed called", "data", string(js))
 
-	validatedData, err := d.getDvsRequestValidatedData(pkgCtx)
+	validatedData, err := pelldvs.GetDvsRequestValidatedData(pkgCtx)
 	if err != nil {
 		return nil, err
 	}
-	taskResp, err := d.decodePackedPriceFeedData(validatedData.Data)
+
+	taskResp, err := utils.AbiDecodeResponseTaskParam(validatedData.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,7 @@ func (d ResponseServer) sendResponseToGateway(ctx pkgcontext.Context, raw *types
 	req := &taskgateway.RPCVoteFinalizedRequestIn{
 		ChainID: ctx.ChainID(),
 		TaskRaw: &taskgateway.RPCTaskRaw{
-			TaskType:                  types.TaskTypePriceFeed,
+			TaskType:                  taskgateway.TaskTypePriceFeed,
 			TaskIndex:                 raw.Task.TaskIndex,
 			RequestID:                 raw.Task.RequestId,
 			FeeToken:                  raw.Task.FeeToken,
@@ -110,77 +110,11 @@ func (d ResponseServer) sendResponseToGateway(ctx pkgcontext.Context, raw *types
 			TotalStakeIndices:            validatedData.TotalStakeIndices,
 			NonSignerStakeIndices:        nonSignerStakeIndices,
 		},
-		PriceFeedResponse: &taskgateway.RPCPriceFeedResponse{
-			ReferenceTaskIndex: priceData.ReferenceTaskIndex,
-			Price:              new(big.Int).SetBytes(priceData.Data).String(),
-		},
+		RespToTaskData: priceData.Data,
 	}
 
 	reqJs, _ := json.Marshal(req)
 	d.logger.Info("DvsPostProcessRequestServer.sendResponseToGateway", "req", string(reqJs))
 
 	return d.Server.taskGatewayClient.RespondToTask(req)
-}
-
-func (d ResponseServer) decodePackedPriceFeedData(data []byte) (*contractDataOracle.IDataOracleTaskResponse, error) {
-	taskResponseType, err := abi.NewType("tuple", "", []abi.ArgumentMarshaling{
-		{
-			Name: "referenceTaskIndex",
-			Type: "uint32",
-		},
-		{
-			Name: "data",
-			Type: "bytes",
-		},
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to create ABI type: %w", err)
-	}
-
-	arguments := abi.Arguments{
-		{
-			Type: taskResponseType,
-		},
-	}
-
-	// decode
-	values, err := arguments.Unpack(data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unpack data: %w", err)
-	}
-
-	if len(values) != 1 {
-		return nil, fmt.Errorf("unexpected number of values: got %d, want 1", len(values))
-	}
-
-	r, ok := values[0].(struct {
-		ReferenceTaskIndex uint32 `json:"referenceTaskIndex"`
-		Data               []byte `json:"data"`
-	})
-	d.logger.Debug("decodePackedPriceFeedData", "r", fmt.Sprintf("%+v", r))
-	if !ok {
-		return nil, fmt.Errorf("expected %T, got %T", &contractDataOracle.IDataOracleTaskResponse{}, values[0])
-	}
-
-	return &contractDataOracle.IDataOracleTaskResponse{
-		ReferenceTaskIndex: r.ReferenceTaskIndex,
-		Data:               r.Data,
-	}, nil
-}
-
-// TODO: move to common code
-func (d ResponseServer) getDvsRequestValidatedData(ctx pkgcontext.Context) (*dvstypes.RequestPostRequestValidatedData, error) {
-	reqData, ok := ctx.DvsPostResponseData()
-	if !ok {
-		return nil, fmt.Errorf("not DvsRequestData found")
-	}
-	validatedDataMsg, err := dvsservermanager.DecodeMsg(reqData)
-	if err != nil {
-		return nil, err
-	}
-	validatedData, ok := validatedDataMsg.(*dvstypes.RequestPostRequestValidatedData)
-	if !ok {
-		return nil, fmt.Errorf("expected %T, got %T", &dvstypes.RequestPostRequestValidatedData{}, validatedData)
-	}
-	return validatedData, nil
 }
