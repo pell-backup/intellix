@@ -4,13 +4,16 @@ import (
 	"context"
 	"cosmossdk.io/math"
 	"encoding/json"
+	"errors"
 	"fmt"
 	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
+	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"net"
 	"net/rpc"
 	"os"
+	"time"
 
 	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/service"
@@ -136,9 +139,6 @@ func (tg *TaskGateway) getAuthOpts(chainId int64) (*bind.TransactOpts, error) {
 		return nil, fmt.Errorf("failed to create transaction authenticator: %v", err)
 	}
 
-	auth.GasLimit = 21000
-	auth.GasPrice = big.NewInt(100000000000)
-
 	return auth, nil
 }
 
@@ -205,12 +205,11 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		tg.logger.Error("Error converting taskRaw payment", "payment", response.TaskRaw.Payment)
 		return fmt.Errorf("error converting taskRaw payment")
 	}
-	// TODO: add advance decode
 	task := dataOracle.IDataOracleTask{
 		TaskType:                 math.NewInt(response.TaskRaw.TaskType).BigInt(),
 		RequestId:                [32]byte(response.TaskRaw.RequestID),
 		FeeToken:                 *feeTokenAddr,
-		AdvanceDecode:            false,
+		AdvanceDecode:            response.TaskRaw.AdvanceDecode,
 		Payment:                  paymentInt.BigInt(),
 		RequestData:              response.TaskRaw.RequestData,
 		CallbackAddress:          *cbAddr,
@@ -266,7 +265,7 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 func (tg *TaskGateway) queryTransaction(ctx context.Context, tx *types.Transaction) error {
 	tg.logger.Info("Transaction submitted", "txHash", tx.Hash().Hex())
 
-	timeoutCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	receipt, err := bind.WaitMined(timeoutCtx, tg.ethClient, tx)

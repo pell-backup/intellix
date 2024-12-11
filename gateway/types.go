@@ -140,6 +140,7 @@ type RPCTaskRaw struct {
 	TaskCreatedBlock          uint32 `json:"task_created_block"`
 	QuorumNumbers             []byte `json:"quorum_numbers"`
 	QuorumThresholdPercentage uint32 `json:"quorum_threshold_percentage"`
+	AdvanceDecode             bool   `json:"advance_decode"`
 }
 
 // RPCPriceFeedResponse represents a serializable version of PriceFeedResponse
@@ -221,8 +222,7 @@ func buildTaskResponseData(taskType int64, in *RPCVoteFinalizedRequestIn) (dataO
 			return dataOracle.IDataOracleTaskResponse{}, fmt.Errorf("error converting priceFeedResponse price")
 		}
 		data = packedPrice
-	} else {
-		// TODO: add advance decode
+	} else if taskType == TaskTypeProcessor {
 		data = in.ScriptResponse.Data
 	}
 

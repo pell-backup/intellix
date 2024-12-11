@@ -16,13 +16,11 @@ import (
 
 type RequestServer struct {
 	Server
-	runtime api.RuntimeResult
 }
 
 func NewRequestServer(s Server) types.DVSRequestServer {
 	return &RequestServer{
-		Server:  s,
-		runtime: api.NewRuntime(),
+		Server: s,
 	}
 }
 
@@ -32,10 +30,12 @@ func (r RequestServer) RequestScript(ctx context.Context, in *types.RequestScrip
 	pkgContext := pkgcontext.UnwrapContext(ctx)
 	r.logger.Info("RequestScript", "in", fmt.Sprintf("%+v", in))
 
-	instance, scriptConfig, err := r.loadWasmScript(pkgContext, in.ScriptId)
+	instance, runtime, scriptConfig, err := r.loadWasmScript(pkgContext, in.ScriptId)
 	if err != nil {
 		return nil, err
 	}
+	defer runtime.Dispose()
+	defer instance.Dispose()
 
 	data, err := r.fetchDataByExecWasmFetchingScript(pkgContext, instance, scriptConfig, in.ScriptParam)
 	if err != nil {
@@ -59,7 +59,7 @@ func (r RequestServer) RequestScript(ctx context.Context, in *types.RequestScrip
 	}, nil
 }
 
-func (r RequestServer) loadWasmScript(ctx pkgcontext.Context, scriptId uint64) (api.InstanceResult, []byte, error) {
+func (r RequestServer) loadWasmScript(ctx pkgcontext.Context, scriptId uint64) (api.InstanceResult, api.RuntimeResult, []byte, error) {
 	conn := r.clientCtx.GRPCClient
 	queryClient := processortypes.NewQueryClient(conn)
 
@@ -69,12 +69,24 @@ func (r RequestServer) loadWasmScript(ctx pkgcontext.Context, scriptId uint64) (
 
 	resp, err := queryClient.ShowProcessor(ctx, req)
 	if err != nil {
-		return api.InstanceResult{}, nil, fmt.Errorf("failed to query processor: %w", err)
+		return api.InstanceResult{}, api.RuntimeResult{}, nil, fmt.Errorf("failed to query processor: %w", err)
 	}
 
-	instance, err := r.runtime.CreateInstance(resp.Processor.WasmCode)
+	runtime := api.NewRuntime()
+	if runtime.Err() != nil {
+		defer runtime.Dispose()
+		return api.InstanceResult{}, api.RuntimeResult{}, nil, fmt.Errorf("failed to create runtime: %w", runtime.Err())
+	}
 
-	return instance, resp.Processor.Config, err
+	instance, err := runtime.CreateInstance(resp.Processor.WasmCode)
+	if err != nil {
+		return api.InstanceResult{}, api.RuntimeResult{}, nil, fmt.Errorf("failed to create instance: %w", err)
+	}
+	if instance.Err() != nil {
+		return api.InstanceResult{}, api.RuntimeResult{}, nil, fmt.Errorf("failed to create instance: %w", instance.Err())
+	}
+
+	return instance, runtime, resp.Processor.Config, err
 }
 
 func (r RequestServer) fetchDataByExecWasmFetchingScript(ctx pkgcontext.Context, instance api.InstanceResult, scriptConfig []byte, scriptParam []byte) ([]byte, error) {

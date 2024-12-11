@@ -11,7 +11,7 @@ services:
         - GITHUB_TOKEN=$GITHUB_TOKEN
         - CONTRACT_VERSION=${CONTRACT_VERSION:-v0.4.2}
       tags:
-        - hardhat:${CONTRACT_VERSION:-v0.4.2}
+        - hardhat:${CONTRACT_VERSION:-v0.4.3}
 
   pelldvs:
     build:

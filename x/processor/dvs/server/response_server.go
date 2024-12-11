@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/IntelliXLabs/iwasm/api"
 	taskgateway "intellix/gateway"
 	pkgcontext "intellix/pkg/context"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
@@ -14,13 +13,11 @@ import (
 
 type ResponseServer struct {
 	Server
-	runtime api.RuntimeResult
 }
 
 func NewResponseServer(s Server) types.DVSResponseServer {
 	return &ResponseServer{
-		Server:  s,
-		runtime: api.NewRuntime(),
+		Server: s,
 	}
 }
 
@@ -104,6 +101,7 @@ func (r ResponseServer) responseToTask(ctx pkgcontext.Context, in *types.Request
 			TaskCreatedBlock:          in.TaskCreatedBlock,
 			QuorumNumbers:             in.QuorumNumbers,
 			QuorumThresholdPercentage: in.QuorumThresholdPercentage,
+			AdvanceDecode:             in.AdvanceDecode,
 		},
 		ValidatedData: &taskgateway.RPCValidatedData{
 			Data:                         validatedData.Data,

@@ -30,6 +30,7 @@ message RequestScriptIn {
   uint32 quorum_threshold_percentage = 10;
   uint64 script_id = 11;
   bytes script_param = 12;
+  bool advance_decode = 13;
 }
 
 message RequestScriptOut {

@@ -168,7 +168,6 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractDataOra
 	task := newTask.Task
 	var taskRequest sdk.Msg
 
-	// TODO: add more task-types
 	if task.TaskType.Int64() == TaskTypePrice {
 		priceFeed, err := ParsePriceFeed(newTask.Task.RequestData)
 		if err != nil {
@@ -187,6 +186,7 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractDataOra
 				TaskCreatedBlock:          task.TaskCreatedBlock,
 				QuorumNumbers:             task.GroupNumbers,
 				QuorumThresholdPercentage: task.GroupThresholdPercentage,
+				AdvanceDecode:             task.AdvanceDecode,
 			},
 			PriceFeed: &pricetypes.PriceFeedParam{
 				BaseSymbol:  priceFeed.BaseSymbol,
@@ -210,6 +210,7 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractDataOra
 			TaskCreatedBlock:          task.TaskCreatedBlock,
 			QuorumNumbers:             task.GroupNumbers,
 			QuorumThresholdPercentage: task.GroupThresholdPercentage,
+			AdvanceDecode:             task.AdvanceDecode,
 			ScriptId:                  scriptData.ScriptId,
 			ScriptParam:               scriptData.Params,
 		}

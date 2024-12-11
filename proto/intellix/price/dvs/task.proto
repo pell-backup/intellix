@@ -22,6 +22,7 @@ message TaskRequest {
   uint32 task_created_block = 8;
   bytes quorum_numbers = 9;
   uint32 quorum_threshold_percentage = 10;
+  bool advance_decode = 11;
 }
 
 // PriceFeedParam defines the price feed parameters

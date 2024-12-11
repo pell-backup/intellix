@@ -2,7 +2,7 @@ package result_handlers
 
 import (
 	"github.com/cosmos/gogoproto/proto"
-	"golang.org/x/crypto/sha3"
+	"intellix/pkg/utils"
 	"intellix/x/processor/dvs/types"
 )
 
@@ -19,7 +19,7 @@ func (p *ProcessorRequestResHandler) GetData(msg proto.Message) ([]byte, error) 
 		return nil, nil
 	}
 
-	return r.ScriptOutData, nil
+	return utils.AbiEncodeResponseTaskParam(r.TaskIndex, r.ScriptOutData)
 }
 
 func (p *ProcessorRequestResHandler) GetDigest(msg proto.Message) ([]byte, error) {
@@ -27,13 +27,9 @@ func (p *ProcessorRequestResHandler) GetDigest(msg proto.Message) ([]byte, error
 	if !ok {
 		return nil, nil
 	}
-
-	//return r.DataDigest, nil
-	// XXX: calc digest by script out
-	var taskResponseDigest [32]byte
-	hasher := sha3.NewLegacyKeccak256()
-	hasher.Write(r.ScriptOutData)
-	copy(taskResponseDigest[:], hasher.Sum(nil)[:32])
-
-	return taskResponseDigest[:], nil
+	data, err := utils.AbiEncodeResponseTaskParam(r.TaskIndex, r.ScriptOutData)
+	if err != nil {
+		return nil, err
+	}
+	return utils.DigestKeccak256(data), nil
 }

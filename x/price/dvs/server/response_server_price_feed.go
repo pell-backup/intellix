@@ -95,6 +95,7 @@ func (d ResponseServer) sendResponseToGateway(ctx pkgcontext.Context, raw *types
 			TaskCreatedBlock:          raw.Task.TaskCreatedBlock,
 			QuorumNumbers:             raw.Task.QuorumNumbers,
 			QuorumThresholdPercentage: raw.Task.QuorumThresholdPercentage,
+			AdvanceDecode:             raw.Task.AdvanceDecode,
 		},
 		ValidatedData: &taskgateway.RPCValidatedData{
 			Data:                         validatedData.Data,
