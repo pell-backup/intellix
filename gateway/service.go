@@ -17,7 +17,6 @@ import (
 
 	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/service"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -42,18 +41,6 @@ type TaskGateway struct {
 	contractDataOracle *dataOracle.ContractDataOracle
 	taskMap            sync.Map
 	nonceMap           sync.Map
-}
-
-// TODO: put it in a common location
-func packUint256(value *big.Int) ([]byte, error) {
-	uint256Type, err := abi.NewType("uint256", "", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	arguments := abi.Arguments{{Type: uint256Type}}
-
-	return arguments.Pack(value)
 }
 
 func NewTaskGateway(logger dvslog.Logger, ctx context.Context, cfg *TaskGatewayCfg) (*TaskGateway, error) {
