@@ -3,11 +3,14 @@ package taskgateway
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"net"
 	"net/rpc"
 	"os"
+	"time"
 
 	"cosmossdk.io/math"
 	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
@@ -136,6 +139,10 @@ func (tg *TaskGateway) getAuthOpts(chainId int64) (*bind.TransactOpts, error) {
 		tg.logger.Error("Failed to create transaction authenticator", "error", err)
 		return nil, fmt.Errorf("failed to create transaction authenticator: %v", err)
 	}
+
+	auth.GasLimit = 21000
+	auth.GasPrice = big.NewInt(100000000000)
+
 	return auth, nil
 }
 
@@ -250,15 +257,40 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 	}
 
 	if transaction != nil {
-		if receipt, receiptErr := tg.ethClient.TransactionReceipt(ctx, transaction.Hash()); receiptErr == nil {
-			tg.logger.Error("Transaction Status",
-				"txHash", transaction.Hash().Hex(),
-				"status", receipt.Status,
-				"gasUsed", receipt.GasUsed,
-				"blockNumber", receipt.BlockNumber,
-				"blockHash", receipt.BlockHash.Hex())
-		}
+		_ = tg.queryTransaction(ctx, transaction)
 	}
 
+	return nil
+}
+
+func (tg *TaskGateway) queryTransaction(ctx context.Context, tx *types.Transaction) error {
+	tg.logger.Info("Transaction submitted", "txHash", tx.Hash().Hex())
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+
+	receipt, err := bind.WaitMined(timeoutCtx, tg.ethClient, tx)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			tg.logger.Error("Transaction confirmation timeout",
+				"txHash", tx.Hash().Hex())
+			return fmt.Errorf("transaction confirmation timeout: %s", tx.Hash().Hex())
+		}
+		tg.logger.Error("Error waiting for transaction to be mined",
+			"txHash", tx.Hash().Hex(),
+			"error", err)
+		return err
+	}
+
+	tg.logger.Info("Transaction confirmed",
+		"txHash", tx.Hash().Hex(),
+		"status", receipt.Status,
+		"gasUsed", receipt.GasUsed,
+		"blockNumber", receipt.BlockNumber,
+		"blockHash", receipt.BlockHash.Hex())
+
+	if receipt.Status == 0 {
+		return fmt.Errorf("transaction failed: %s", tx.Hash().Hex())
+	}
 	return nil
 }
