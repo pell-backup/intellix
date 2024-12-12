@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"intellix/pkg/dvs_msg_handler/tx"
-	"intellix/pkg/pelldvs"
 	pricetypes "intellix/x/price/dvs/types"
 	processortypes "intellix/x/processor/dvs/types"
 	"sync"
@@ -16,7 +15,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"cosmossdk.io/math"
-	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
+	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"
 	contractDataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/log"
 	"github.com/cometbft/cometbft/libs/service"
@@ -29,7 +28,7 @@ type TaskDispatcher struct {
 	service.BaseService
 
 	logger        dvslog.Logger
-	pellDVSClient *pelldvs.Client
+	pellDVSClient *rpclocal.Local
 	chains        map[uint64]*chainWatcher
 	mu            sync.Mutex
 	msgEncoder    tx.MsgEncoder
@@ -46,7 +45,7 @@ func newTaskProtoEncoder() tx.MsgEncoder {
 	return tx.NewDefaultDecoder(cdc)
 }
 
-func NewTaskDispatcher(logger dvslog.Logger, pellDVSClient *pelldvs.Client, configs []*ChainConfig) (*TaskDispatcher, error) {
+func NewTaskDispatcher(logger dvslog.Logger, pellDVSClient *rpclocal.Local, configs []*ChainConfig) (*TaskDispatcher, error) {
 	td := &TaskDispatcher{
 		logger:        logger,
 		pellDVSClient: pellDVSClient,
@@ -141,15 +140,14 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractDataOra
 		quorumNumbers[i] = uint32(b)
 	}
 
-	err = td.pellDVSClient.RequestDVS(context.Background(), &avsitypes.RequestProcessDVSRequest{
-		Request: &avsitypes.DVSRequest{
-			Data:                      taskData,
-			Height:                    int64(newTask.Raw.BlockNumber),
-			ChainId:                   int64(chainID),
-			GroupNumbers:              quorumNumbers,
-			GroupThresholdPercentages: []uint32{newTask.Task.GroupThresholdPercentage},
-		},
-	})
+	_, err = td.pellDVSClient.RequestDVS(
+		context.Background(),
+		taskData,
+		int64(newTask.Raw.BlockNumber),
+		int64(chainID),
+		quorumNumbers,
+		[]uint32{newTask.Task.GroupThresholdPercentage},
+	)
 	if err != nil {
 		td.logger.Error("Failed to send task to PellDVS", "chainID", chainID, "error", err)
 		return

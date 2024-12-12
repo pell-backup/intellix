@@ -58,7 +58,7 @@ func initRootCmd(
 		queryCommand(),
 		txCommand(),
 		keys.Commands(),
-		taskDispatcherCommand(),
+		// taskDispatcherCommand(),
 		taskGatewayCommand(),
 		pellAppCommand(),
 	)

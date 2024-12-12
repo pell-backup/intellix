@@ -1,10 +1,14 @@
 package cmd
 
 import (
+	"fmt"
+	taskdispatcher "intellix/dispatcher"
 	"intellix/pkg/logger"
+	pkglogger "intellix/pkg/logger"
 	"os"
 
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
+
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/spf13/cobra"
 
@@ -13,12 +17,14 @@ import (
 	app "intellix/pellapp"
 )
 
+var configDispatcherFile string
+
 func pellAppCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start-operator",
 		Short: "Start the PellApp Operator service",
 		Long: "Start the PellApp Operator service, Example:\n" +
-			"intellixd start-operator --config=config.yml",
+			"intellixd start-operator--config=config.yml --config-dispatcher=config.yaml",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serverCtx := server.GetServerContextFromCmd(cmd)
 			home := getConfigHome()
@@ -70,9 +76,52 @@ func pellAppCommand() *cobra.Command {
 			a := app.NewApp(dApp.InterfaceRegistry(),
 				logger.NewDVSLogAdapter(serverCtx.Logger), pellAppConfig,
 			)
-			return a.Start()
+
+			config := serverCtx.Config
+			if configDispatcherFile == "" {
+				configDispatcherFile = home + "/config/dispatcher.config.json"
+			}
+
+			viper.SetConfigFile(configDispatcherFile)
+			if err := viper.ReadInConfig(); err != nil {
+				return err
+			}
+			if err := viper.Unmarshal(config); err != nil {
+				return err
+			}
+
+			var conf = &taskdispatcher.Config{}
+			err = viper.Unmarshal(conf)
+			if err != nil {
+				return err
+			}
+			if err := conf.Validate(); err != nil {
+				return err
+			}
+
+			// start task dispatcher
+			dvsLogger := pkglogger.NewDVSLogAdapter(serverCtx.Logger)
+
+			td, err := taskdispatcher.NewTaskDispatcher(dvsLogger.With("module", "task-dispacther"), a.DVSClient, conf.Chains)
+			if err != nil {
+				return fmt.Errorf("failed to create TaskDispatcher: %w", err)
+			}
+
+			err = td.Start()
+			if err != nil {
+				return fmt.Errorf("failed to start TaskDispatcher: %w", err)
+			}
+
+			//start Operator
+			if err = a.Start(); err != nil {
+				return err
+			}
+
+			return nil
 		},
 	}
 	cmd.Flags().StringVar(&configFile, "config", "", "config file")
+	cmd.Flags().StringVar(&configDispatcherFile, "config-dispatcher", "", "dispatcher config file")
+
 	return cmd
 }
