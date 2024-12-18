@@ -24,6 +24,7 @@ function load_defaults {
 ## TODO: move operator config to seperated location
 function init_pelldvs_config {
   pelldvs init --home $PELLDVS_HOME
+  
   update-config() {
     KEY="$1"
     VALUE="$2"
@@ -50,7 +51,6 @@ function init_pelldvs_config {
   else
     update-config operator_bls_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.bls.key.json"
   fi
-
   ## FIXME: why should we use chain.detail.json?
   scp dvs://$PELLDVS_HOME/config/chain.detail.json $PELLDVS_HOME/config/chain.detail.json
 }

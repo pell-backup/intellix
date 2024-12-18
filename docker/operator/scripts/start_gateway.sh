@@ -30,6 +30,21 @@ function setup_gateway_key {
   export GATEWAY_ADDRESS=$(pelldvs keys show gateway --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
 }
 
+function contract_healthcheck {
+  set +e
+  while true; do
+    DATA_ORACLE_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/DataOracle-Proxy.json" | jq -r .address)
+    if [ -z "$DATA_ORACLE_ADDRESS" ]; then
+      echo "DATA_ORACLE_ADDRESS is empty, waiting..."
+      sleep 5
+    else
+      echo "contract_address is ready"
+      break
+    fi
+  done
+  set -e
+}
+
 
 function setup_gateway_config {
   setup_gateway_key
@@ -62,6 +77,8 @@ function start_gateway {
 
 logt "Load Default Values for ENV Vars if not set."
 load_defaults
+
+contract_healthcheck
 
 logt "Setup gateway config"
 setup_gateway_config

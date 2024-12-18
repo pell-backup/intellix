@@ -23,6 +23,7 @@ import (
 	processordvsserver "intellix/x/processor/dvs/server"
 
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
+	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"
 )
 
 const (
@@ -48,6 +49,8 @@ type App struct {
 	PostProcessRequestServer grpc1.Server
 
 	logger log.Logger
+
+	DVSClient *rpclocal.Local
 }
 
 func (app *App) SetInterfaceRegistry(registry codectypes.InterfaceRegistry) codectypes.InterfaceRegistry {
@@ -130,6 +133,9 @@ func NewApp(
 	if err != nil {
 		panic(err)
 	}
+
+	// TODO: use rpc/Client
+	app.DVSClient = app.dvsNode.GetLocalClient()
 
 	// cosmos network
 	kr, err := keyring.New(Name, keyring.BackendTest, config.RootDir, os.Stdin, app.appCodec)
