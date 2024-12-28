@@ -3,6 +3,9 @@ package server
 import (
 	"context"
 	"fmt"
+	taskgateway "intellix/gateway"
+	sdktypes "intellix/sdk/types"
+
 	"github.com/0xPellNetwork/pelldvs/libs/log"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -13,8 +16,6 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/spf13/pflag"
-	taskgateway "intellix/gateway"
-	pkgcontext "intellix/pkg/context"
 )
 
 type Server struct {
@@ -91,7 +92,7 @@ func (k *Server) SetOperatorAddress(address string) {
 }
 
 // SignAndBroadcastTx signs and broadcasts a transaction
-func (k *Server) SignAndBroadcastTx(ctx pkgcontext.Context, msg sdk.Msg) error {
+func (k *Server) SignAndBroadcastTx(ctx sdktypes.Context, msg sdk.Msg) error {
 	txf, err := k.prepareTxFactory(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to prepare tx factory: %w", err)
@@ -139,7 +140,7 @@ func (k *Server) SenderAddress() (sdk.AccAddress, error) {
 }
 
 // prepareTxFactory prepare tx factory
-func (k *Server) prepareTxFactory(ctx pkgcontext.Context) (tx.Factory, error) {
+func (k *Server) prepareTxFactory(ctx sdktypes.Context) (tx.Factory, error) {
 	txf, err := tx.NewFactoryCLI(k.clientCtx, &pflag.FlagSet{})
 	if err != nil {
 		return tx.Factory{}, err

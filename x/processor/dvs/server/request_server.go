@@ -4,12 +4,13 @@ import (
 	"bytes"
 	context "context"
 	"fmt"
-	cmttypes "github.com/cometbft/cometbft/types"
-	"github.com/cosmos/cosmos-sdk/x/authz"
-	pkgcontext "intellix/pkg/context"
+	sdktypes "intellix/sdk/types"
 	"intellix/x/processor/dvs/types"
 	processortypes "intellix/x/processor/types"
 	"time"
+
+	cmttypes "github.com/cometbft/cometbft/types"
+	"github.com/cosmos/cosmos-sdk/x/authz"
 
 	"github.com/IntelliXLabs/iwasm/api"
 )
@@ -27,7 +28,7 @@ func NewRequestServer(s Server) types.DVSRequestServer {
 var _ types.DVSRequestServer = RequestServer{}
 
 func (r RequestServer) RequestScript(ctx context.Context, in *types.RequestScriptIn) (*types.RequestScriptOut, error) {
-	pkgContext := pkgcontext.UnwrapContext(ctx)
+	pkgContext := sdktypes.UnwrapContext(ctx)
 	r.logger.Info("RequestScript", "in", fmt.Sprintf("%+v", in))
 
 	instance, runtime, scriptConfig, err := r.loadWasmScript(pkgContext, in.ScriptId)
@@ -59,7 +60,7 @@ func (r RequestServer) RequestScript(ctx context.Context, in *types.RequestScrip
 	}, nil
 }
 
-func (r RequestServer) loadWasmScript(ctx pkgcontext.Context, scriptId uint64) (api.InstanceResult, api.RuntimeResult, []byte, error) {
+func (r RequestServer) loadWasmScript(ctx sdktypes.Context, scriptId uint64) (api.InstanceResult, api.RuntimeResult, []byte, error) {
 	conn := r.clientCtx.GRPCClient
 	queryClient := processortypes.NewQueryClient(conn)
 
@@ -89,7 +90,7 @@ func (r RequestServer) loadWasmScript(ctx pkgcontext.Context, scriptId uint64) (
 	return instance, runtime, resp.Processor.Config, err
 }
 
-func (r RequestServer) fetchDataByExecWasmFetchingScript(ctx pkgcontext.Context, instance api.InstanceResult, scriptConfig []byte, scriptParam []byte) ([]byte, error) {
+func (r RequestServer) fetchDataByExecWasmFetchingScript(ctx sdktypes.Context, instance api.InstanceResult, scriptConfig []byte, scriptParam []byte) ([]byte, error) {
 	dataRes, err := instance.PrepareData(scriptConfig, scriptParam)
 	if err != nil {
 		return nil, err
@@ -100,7 +101,7 @@ func (r RequestServer) fetchDataByExecWasmFetchingScript(ctx pkgcontext.Context,
 	return data, err
 }
 
-func (r RequestServer) waitForEnoughOperateVote(ctx pkgcontext.Context, in *types.RequestScriptIn, srcData []byte) ([][]byte, error) {
+func (r RequestServer) waitForEnoughOperateVote(ctx sdktypes.Context, in *types.RequestScriptIn, srcData []byte) ([][]byte, error) {
 	// broadcast VoteRequestScript
 	voteIn := processortypes.MsgVoteRequestProcessor{
 		TaskIndex:                 in.TaskIndex,
@@ -145,7 +146,7 @@ func (r RequestServer) waitForEnoughOperateVote(ctx pkgcontext.Context, in *type
 		}
 
 		// wait for next block
-		ctx = ctx.WithBlockHeight(block.Header.Height + 1)
+		ctx = ctx.WithHeight(block.Header.Height + 1)
 		time.Sleep(time.Millisecond * 10)
 	}
 
@@ -209,14 +210,14 @@ func (r RequestServer) isVoteRequestTx(tx cmttypes.Tx) (*processortypes.MsgVoteR
 	return voteMsg, true
 }
 
-func (r RequestServer) shouldStopCollecting(ctx pkgcontext.Context, firstTxBlock, currentBlock int64) bool {
+func (r RequestServer) shouldStopCollecting(ctx sdktypes.Context, firstTxBlock, currentBlock int64) bool {
 	if firstTxBlock == 0 {
 		return false
 	}
 	return currentBlock >= firstTxBlock+r.waitBlockCount
 }
 
-func (r RequestServer) aggrDataByExecWasmAggrScript(ctx pkgcontext.Context, instance api.InstanceResult, scriptConfig []byte, datas [][]byte) ([]byte, []byte, error) {
+func (r RequestServer) aggrDataByExecWasmAggrScript(ctx sdktypes.Context, instance api.InstanceResult, scriptConfig []byte, datas [][]byte) ([]byte, []byte, error) {
 	dataRes, err := instance.Aggregate(scriptConfig, datas, []byte("first"))
 	if err != nil {
 		return nil, nil, err

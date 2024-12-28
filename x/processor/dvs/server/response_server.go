@@ -3,10 +3,10 @@ package server
 import (
 	"context"
 	taskgateway "intellix/gateway"
-	pkgcontext "intellix/pkg/context"
 	"intellix/pkg/pelldvs"
 	dvstypes "intellix/pkg/pelldvs/types"
 	"intellix/pkg/utils"
+	sdktypes "intellix/sdk/types"
 	"intellix/x/processor/dvs/types"
 	processortypes "intellix/x/processor/types"
 )
@@ -24,7 +24,7 @@ func NewResponseServer(s Server) types.DVSResponseServer {
 var _ types.DVSResponseServer = ResponseServer{}
 
 func (r ResponseServer) ResponseScript(ctx context.Context, in *types.RequestScriptIn) (*types.ResponseScriptOut, error) {
-	pkgCtx := pkgcontext.UnwrapContext(ctx)
+	pkgCtx := sdktypes.UnwrapContext(ctx)
 	validatedData, err := pelldvs.GetDvsRequestValidatedData(pkgCtx)
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (r ResponseServer) ResponseScript(ctx context.Context, in *types.RequestScr
 	return &types.ResponseScriptOut{}, nil
 }
 
-func (r ResponseServer) voteData(ctx pkgcontext.Context, in *types.RequestScriptIn, data []byte) error {
+func (r ResponseServer) voteData(ctx sdktypes.Context, in *types.RequestScriptIn, data []byte) error {
 	msg := &processortypes.MsgVoteResponseProcessor{
 		TaskIndex:                 in.TaskIndex,
 		RequestId:                 in.RequestId,
@@ -70,7 +70,7 @@ func (r ResponseServer) voteData(ctx pkgcontext.Context, in *types.RequestScript
 	return nil
 }
 
-func (r ResponseServer) responseToTask(ctx pkgcontext.Context, in *types.RequestScriptIn, data []byte, validatedData *dvstypes.RequestPostRequestValidatedData) error {
+func (r ResponseServer) responseToTask(ctx sdktypes.Context, in *types.RequestScriptIn, data []byte, validatedData *dvstypes.RequestPostRequestValidatedData) error {
 	var nonSignerStakeIndices [][]uint32
 	for _, v := range validatedData.NonSignerStakeIndices {
 		nonSignerStakeIndices = append(nonSignerStakeIndices, v.NonSignerStakeIndice)

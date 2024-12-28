@@ -2,16 +2,14 @@ package pelldvs
 
 import (
 	"fmt"
-	pkgcontext "intellix/pkg/context"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	dvstypes "intellix/pkg/pelldvs/types"
+	sdktypes "intellix/sdk/types"
 )
 
-func GetDvsRequestValidatedData(ctx pkgcontext.Context) (*dvstypes.RequestPostRequestValidatedData, error) {
-	reqData, ok := ctx.DvsPostResponseData()
-	if !ok {
-		return nil, fmt.Errorf("not DvsRequestData found")
-	}
+func GetDvsRequestValidatedData(ctx sdktypes.Context) (*dvstypes.RequestPostRequestValidatedData, error) {
+	reqData := ctx.DvsPostResponseData()
+
 	validatedDataMsg, err := dvsservermanager.DecodeMsg(reqData)
 	if err != nil {
 		return nil, err

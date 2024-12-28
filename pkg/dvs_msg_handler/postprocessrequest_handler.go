@@ -1,9 +1,9 @@
 package dvsservermanager
 
 import (
-	pkgcontext "intellix/pkg/context"
 	result "intellix/pkg/dvs_msg_handler/result_handler"
 	"intellix/pkg/dvs_msg_handler/tx"
+	sdktypes "intellix/sdk/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
@@ -33,7 +33,7 @@ func (p *PostProcessRequestHandler) RegisterService(sd *grpc.ServiceDesc, handle
 // InvokeRouterRawByData
 // requestData: binary data from processRequestData, for found router and dispatcher
 // reqMsg: post-process-response data, attached to context
-func (p *PostProcessRequestHandler) InvokeRouterRawByData(ctx pkgcontext.Context, requestData []byte, postProcessResponseMsg sdk.Msg) (*result.Result, error) {
+func (p *PostProcessRequestHandler) InvokeRouterRawByData(ctx sdktypes.Context, requestData []byte, postProcessResponseMsg sdk.Msg) (*result.Result, error) {
 	postResponseData, err := p.Mgr.encoder.EncodeMsgs(postProcessResponseMsg)
 	if err != nil {
 		return nil, err
