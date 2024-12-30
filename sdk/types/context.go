@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
 )
 
 type ContextKeyType string
@@ -15,13 +15,12 @@ const (
 
 type Context struct {
 	baseCtx                   context.Context
-	header                    cmtproto.Header
 	chainID                   int64
 	height                    int64
 	groupNumbers              []uint32
 	groupThresholdPercentages []uint32
 	dvsPostResponseData       []byte
-	//TODO  Operators
+	operator                  []*avsitypes.Operator
 }
 
 // Read-only accessors
@@ -31,6 +30,7 @@ func (c Context) Height() int64                       { return c.height }
 func (c Context) GroupNumbers() []uint32              { return c.groupNumbers }
 func (c Context) GroupThresholdPercentages() []uint32 { return c.groupThresholdPercentages }
 func (c Context) DvsPostResponseData() []byte         { return c.dvsPostResponseData }
+func (c Context) Operator() []*avsitypes.Operator     { return c.operator }
 
 func (c Context) Value(key any) any {
 	if key == ContextKey {
@@ -51,14 +51,10 @@ func (c Context) Err() error {
 	return c.baseCtx.Err()
 }
 
-func NewContext(baseCtx context.Context, header *cmtproto.Header) Context {
-	if header == nil {
-		header = &cmtproto.Header{}
-	}
-
+// todo delete header
+func NewContext(baseCtx context.Context) Context {
 	return Context{
 		baseCtx: baseCtx,
-		header:  *header,
 	}
 }
 
@@ -88,16 +84,13 @@ func (c Context) WithGroupNumbers(groupNumbers []uint32) Context {
 	return c
 }
 
-func (c Context) WithGroupThresholdPercentages(groupThresholdPercentages []uint32) Context {
-	c.groupThresholdPercentages = groupThresholdPercentages
+func (c Context) WithOperator(operator []*avsitypes.Operator) Context {
+	c.operator = operator
 	return c
 }
 
-// WithBlockHeader returns a Context with an updated CometBFT block header in UTC time.
-func (c Context) WithBlockHeader(header cmtproto.Header) Context {
-	// https://github.com/gogo/protobuf/issues/519
-	header.Time = header.Time.UTC()
-	c.header = header
+func (c Context) WithGroupThresholdPercentages(groupThresholdPercentages []uint32) Context {
+	c.groupThresholdPercentages = groupThresholdPercentages
 	return c
 }
 

@@ -237,6 +237,8 @@ github.com/0xPellNetwork/pell-middleware-contracts v0.2.26 h1:HZc5Sg7mNTtERSN7UW
 github.com/0xPellNetwork/pell-middleware-contracts v0.2.26/go.mod h1:Qex0CyN926FuTONIfZfoMsbs+2UDCwMpkZg3QvRccvQ=
 github.com/0xPellNetwork/pelldvs v0.1.2-0.20241212131451-ccc4eee115e5 h1:z0uhsbH5s1HIVW6thyn4A+azgrgbHNiVhgCcGKNi1SQ=
 github.com/0xPellNetwork/pelldvs v0.1.2-0.20241212131451-ccc4eee115e5/go.mod h1:WpgsqtSa4B+YqukyMZriIZdiA3nThK0vPlLeDeLXguI=
+github.com/0xPellNetwork/pelldvs v0.1.10 h1:LhCvq7gioFwMltaiKoJuX2VJVykPvRMg0mk/9mCSgd0=
+github.com/0xPellNetwork/pelldvs v0.1.10/go.mod h1:bmYmveAvPHu9IWPdfegFkUktyTdUrRfiNZJWCEFJ4Io=
 github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 h1:/vQbFIOMbk2FiG/kXiLl8BRyzTWDw7gX/Hz7Dd5eDMs=
 github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4/go.mod h1:hN7oaIRCjzsZ2dE+yG5k+rsdt3qcwykqK6HVGcKwsw4=
 github.com/99designs/keyring v1.2.1 h1:tYLp1ULvO7i3fI5vE21ReQuj99QFSs7lGm0xWyJo87o=

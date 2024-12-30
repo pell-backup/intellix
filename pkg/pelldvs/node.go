@@ -56,6 +56,7 @@ func NewNode(
 		privval.LoadOrGenFilePV(n.nodeCfg.PrivValidatorKeyFile(), n.nodeCfg.PrivValidatorStateFile()),
 		nodeKey,
 		proxy.NewLocalClientCreator(app),
+		config.DefaultDBProvider,
 		n.agg,
 		node.DefaultMetricsProvider(n.nodeCfg.Instrumentation),
 		logger,

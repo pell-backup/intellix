@@ -25,11 +25,15 @@ func (app *BaseApp) Query(ctx context.Context, query *avsitypes.RequestQuery) (*
 
 func (app *BaseApp) ProcessDVSRequest(ctx context.Context, req *avsitypes.RequestProcessDVSRequest) (*avsitypes.ResponseProcessDVSRequest, error) {
 	// new SDK context
-	sdkCtx := sdktypes.NewContext(ctx, nil)
+	sdkCtx := sdktypes.NewContext(ctx)
 	sdkCtx = sdkCtx.WithChainID(req.Request.ChainId).
 		WithHeight(req.Request.Height).
 		WithGroupNumbers(req.Request.GroupNumbers).
-		WithGroupThresholdPercentages(req.Request.GroupThresholdPercentages)
+		WithGroupThresholdPercentages(req.Request.GroupThresholdPercentages).
+		WithOperator(req.Operator)
+
+	reqJs, _ := json.Marshal(req)
+	app.logger.Debug("AVSI.ProcessDVSRequest", "req", string(reqJs))
 
 	handlerSrc := dvsservermanager.GetProcessRequestHandlerSrc()
 	res, err := handlerSrc.InvokeRouterRawByData(sdkCtx, req.Request.Data)
@@ -46,7 +50,7 @@ func (app *BaseApp) ProcessDVSRequest(ctx context.Context, req *avsitypes.Reques
 
 func (app *BaseApp) ProcessDVSResponse(ctx context.Context, req *avsitypes.RequestProcessDVSResponse) (*avsitypes.ResponseProcessDVSResponse, error) {
 	// new SDK context
-	sdkCtx := sdktypes.NewContext(ctx, nil)
+	sdkCtx := sdktypes.NewContext(ctx)
 	sdkCtx = sdkCtx.WithChainID(req.DvsRequest.ChainId).
 		WithHeight(req.DvsRequest.Height).
 		WithGroupNumbers(req.DvsRequest.GroupNumbers).
