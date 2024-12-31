@@ -11,21 +11,20 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+type ChainConfig struct {
+	EthEndpoint     string `mapstructure:"eth_endpoint"`
+	ContractAddress string `mapstructure:"contract_address"`
+	ChainID         int64  `mapstructure:"chain_id"`
+}
+
 type TaskGatewayCfg struct {
-	ServerAddr          string `mapstructure:"server_addr"`
-	EthEndpoint         string `mapstructure:"eth_endpoint"`
-	SenderAddress       string `mapstructure:"sender_address"`
-	ContractAddress     string `mapstructure:"contract_address"`
-	PrivateKeyStorePath string `mapstructure:"private_key_store_path"`
+	ServerAddr          string                `mapstructure:"server_addr"`
+	SenderAddress       string                `mapstructure:"sender_address"`
+	PrivateKeyStorePath string                `mapstructure:"private_key_store_path"`
+	Chains              map[int64]ChainConfig `mapstructure:"chains"`
 }
 
 func (t TaskGatewayCfg) Validate() error {
-	if t.EthEndpoint == "" {
-		return fmt.Errorf("eth endpoint cannot be empty")
-	}
-	if t.ContractAddress == "" {
-		return fmt.Errorf("contract address cannot be empty")
-	}
 	if t.SenderAddress == "" {
 		return fmt.Errorf("sender address cannot be empty")
 	}
@@ -37,6 +36,17 @@ func (t TaskGatewayCfg) Validate() error {
 	}
 	if _, err := os.Stat(t.PrivateKeyStorePath); errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("key_store_path does not exist")
+	}
+	if len(t.Chains) == 0 {
+		return fmt.Errorf("no chain configs provided")
+	}
+	for chainID, cfg := range t.Chains {
+		if cfg.EthEndpoint == "" {
+			return fmt.Errorf("eth endpoint for chain %d cannot be empty", chainID)
+		}
+		if cfg.ContractAddress == "" {
+			return fmt.Errorf("contract address for chain %d cannot be empty", chainID)
+		}
 	}
 	return nil
 }
