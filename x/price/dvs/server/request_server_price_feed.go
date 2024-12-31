@@ -106,7 +106,6 @@ func (d RequestServer) collectVoteRequestPriceFeedTxs(ctx sdktypes.Context, requ
 		}
 
 		// wait for next block
-		ctx = ctx.WithHeight(block.Header.Height + 1)
 		time.Sleep(time.Millisecond * 10)
 	}
 
