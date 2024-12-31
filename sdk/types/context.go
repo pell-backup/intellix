@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	dvstypes "intellix/pkg/pelldvs/types"
 	"time"
 
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
@@ -19,8 +20,9 @@ type Context struct {
 	height                    int64
 	groupNumbers              []uint32
 	groupThresholdPercentages []uint32
-	dvsPostResponseData       []byte
-	operator                  []*avsitypes.Operator
+	requestData               []byte
+	operators                 []*avsitypes.Operator
+	validateResponse          *dvstypes.RequestPostRequestValidatedData
 }
 
 // Read-only accessors
@@ -29,8 +31,11 @@ func (c Context) ChainID() int64                      { return c.chainID }
 func (c Context) Height() int64                       { return c.height }
 func (c Context) GroupNumbers() []uint32              { return c.groupNumbers }
 func (c Context) GroupThresholdPercentages() []uint32 { return c.groupThresholdPercentages }
-func (c Context) DvsPostResponseData() []byte         { return c.dvsPostResponseData }
-func (c Context) Operator() []*avsitypes.Operator     { return c.operator }
+func (c Context) RequestData() []byte                 { return c.requestData }
+func (c Context) Operators() []*avsitypes.Operator    { return c.operators }
+func (c Context) ValidateResponse() *dvstypes.RequestPostRequestValidatedData {
+	return c.validateResponse
+}
 
 func (c Context) Value(key any) any {
 	if key == ContextKey {
@@ -84,8 +89,13 @@ func (c Context) WithGroupNumbers(groupNumbers []uint32) Context {
 	return c
 }
 
-func (c Context) WithOperator(operator []*avsitypes.Operator) Context {
-	c.operator = operator
+func (c Context) WithRequestData(requestData []byte) Context {
+	c.requestData = requestData
+	return c
+}
+
+func (c Context) WithOperator(operators []*avsitypes.Operator) Context {
+	c.operators = operators
 	return c
 }
 
@@ -94,8 +104,8 @@ func (c Context) WithGroupThresholdPercentages(groupThresholdPercentages []uint3
 	return c
 }
 
-func (c Context) WithDvsPostResponseData(postProcessResponseData []byte) Context {
-	c.dvsPostResponseData = postProcessResponseData
+func (c Context) WithValidateResponse(validateData *dvstypes.RequestPostRequestValidatedData) Context {
+	c.validateResponse = validateData
 	return c
 }
 

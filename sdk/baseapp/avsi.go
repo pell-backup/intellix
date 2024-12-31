@@ -2,7 +2,6 @@ package baseapp
 
 import (
 	"context"
-	"encoding/json"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	dvstypes "intellix/pkg/pelldvs/types"
 	sdktypes "intellix/sdk/types"
@@ -29,11 +28,9 @@ func (app *BaseApp) ProcessDVSRequest(ctx context.Context, req *avsitypes.Reques
 	sdkCtx = sdkCtx.WithChainID(req.Request.ChainId).
 		WithHeight(req.Request.Height).
 		WithGroupNumbers(req.Request.GroupNumbers).
+		WithRequestData(req.Request.Data).
 		WithGroupThresholdPercentages(req.Request.GroupThresholdPercentages).
 		WithOperator(req.Operator)
-
-	reqJs, _ := json.Marshal(req)
-	app.logger.Debug("AVSI.ProcessDVSRequest", "req", string(reqJs))
 
 	handlerSrc := dvsservermanager.GetProcessRequestHandlerSrc()
 	res, err := handlerSrc.InvokeRouterRawByData(sdkCtx, req.Request.Data)
@@ -54,13 +51,12 @@ func (app *BaseApp) ProcessDVSResponse(ctx context.Context, req *avsitypes.Reque
 	sdkCtx = sdkCtx.WithChainID(req.DvsRequest.ChainId).
 		WithHeight(req.DvsRequest.Height).
 		WithGroupNumbers(req.DvsRequest.GroupNumbers).
-		WithGroupThresholdPercentages(req.DvsRequest.GroupThresholdPercentages)
-
-	reqJs, _ := json.Marshal(req)
-	app.logger.Debug("AVSI.ProcessDVSResponse", "req", string(reqJs))
+		WithRequestData(req.DvsRequest.Data).
+		WithGroupThresholdPercentages(req.DvsRequest.GroupThresholdPercentages).
+		WithValidateResponse(dvstypes.NewValidatedResponse(req.DvsResponse))
 
 	handlerSrc := dvsservermanager.GetPostProcessRequestHandlerSrc()
-	_, err := handlerSrc.InvokeRouterRawByData(sdkCtx, req.DvsRequest.Data, dvstypes.NewValidatedResponse(req.DvsResponse))
+	_, err := handlerSrc.InvokeRouterRawByData(sdkCtx, req.DvsRequest.Data)
 	if err != nil {
 		app.logger.Error("post request error", "err", err)
 		return nil, err
