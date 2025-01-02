@@ -1,9 +1,9 @@
 package dvsservermanager
 
 import (
-	pkgcontext "intellix/pkg/context"
 	result "intellix/pkg/dvs_msg_handler/result_handler"
 	"intellix/pkg/dvs_msg_handler/tx"
+	sdktypes "intellix/sdk/types"
 
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	"github.com/cosmos/gogoproto/proto"
@@ -37,7 +37,7 @@ func (p *ProcessRequestHandler) RegisterService(sd *grpc.ServiceDesc, handler in
 //	return res.Data, nil
 //}
 
-func (p *ProcessRequestHandler) InvokeRouterRawByData(ctx pkgcontext.Context, data []byte) (*result.Result, error) {
+func (p *ProcessRequestHandler) InvokeRouterRawByData(ctx sdktypes.Context, data []byte) (*result.Result, error) {
 	res, err := p.Mgr.HandleByData(ctx, data)
 	if err != nil {
 		return nil, err

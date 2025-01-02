@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	taskgateway "intellix/gateway"
-	pkgcontext "intellix/pkg/context"
 	"intellix/x/price/types"
+
+	sdktypes "intellix/sdk/types"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -135,7 +136,7 @@ func (k *Server) GetLatestBlock(ctx context.Context) (*cmttypes.Block, error) {
 }
 
 // SignAndBroadcastTx signs and broadcasts a transaction
-func (k *Server) SignAndBroadcastTx(ctx pkgcontext.Context, msg sdk.Msg) error {
+func (k *Server) SignAndBroadcastTx(ctx sdktypes.Context, msg sdk.Msg) error {
 	txf, err := k.prepareTxFactory(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to prepare tx factory: %w", err)
@@ -175,7 +176,7 @@ func (k *Server) SignAndBroadcastTx(ctx pkgcontext.Context, msg sdk.Msg) error {
 }
 
 // prepareTxFactory prepare tx factory
-func (k *Server) prepareTxFactory(ctx pkgcontext.Context) (tx.Factory, error) {
+func (k *Server) prepareTxFactory(ctx sdktypes.Context) (tx.Factory, error) {
 	txf, err := tx.NewFactoryCLI(k.clientCtx, &pflag.FlagSet{})
 	if err != nil {
 		return tx.Factory{}, err

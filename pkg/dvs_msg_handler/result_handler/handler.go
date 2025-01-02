@@ -1,7 +1,7 @@
 package resulthandler
 
 import (
-	pkgcontext "intellix/pkg/context"
+	sdktypes "intellix/sdk/types"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -25,7 +25,7 @@ func (r *ResultCustomizedMgr) RegisterCustomizedFunc(t proto.Message, f ResultCu
 // WrapServiceResult wraps a result from a protobuf RPC service method call (res proto.Message, err error)
 // in a Result object or error. This method takes care of marshaling the res param to
 // protobuf and attaching any events on the ctx.EventManager() to the Result.
-func (r *ResultCustomizedMgr) WrapServiceResult(ctx pkgcontext.Context, res proto.Message, err error) (*Result, error) {
+func (r *ResultCustomizedMgr) WrapServiceResult(ctx sdktypes.Context, res proto.Message, err error) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
