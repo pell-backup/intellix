@@ -53,7 +53,7 @@ func (app *BaseApp) ProcessDVSResponse(ctx context.Context, req *avsitypes.Reque
 		WithGroupNumbers(req.DvsRequest.GroupNumbers).
 		WithRequestData(req.DvsRequest.Data).
 		WithGroupThresholdPercentages(req.DvsRequest.GroupThresholdPercentages).
-		WithValidateResponse(dvstypes.NewValidatedResponse(req.DvsResponse))
+		WithValidatedResponse(dvstypes.NewValidatedResponse(req.DvsResponse))
 
 	handlerSrc := dvsservermanager.GetPostProcessRequestHandlerSrc()
 	_, err := handlerSrc.InvokeRouterRawByData(sdkCtx, req.DvsRequest.Data)

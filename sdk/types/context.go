@@ -22,7 +22,7 @@ type Context struct {
 	groupThresholdPercentages []uint32
 	requestData               []byte
 	operators                 []*avsitypes.Operator
-	validateResponse          *dvstypes.RequestPostRequestValidatedData
+	validatedResponse         *dvstypes.RequestPostRequestValidatedData
 }
 
 // Read-only accessors
@@ -33,8 +33,8 @@ func (c Context) GroupNumbers() []uint32              { return c.groupNumbers }
 func (c Context) GroupThresholdPercentages() []uint32 { return c.groupThresholdPercentages }
 func (c Context) RequestData() []byte                 { return c.requestData }
 func (c Context) Operators() []*avsitypes.Operator    { return c.operators }
-func (c Context) ValidateResponse() *dvstypes.RequestPostRequestValidatedData {
-	return c.validateResponse
+func (c Context) ValidatedResponse() *dvstypes.RequestPostRequestValidatedData {
+	return c.validatedResponse
 }
 
 func (c Context) Value(key any) any {
@@ -104,8 +104,8 @@ func (c Context) WithGroupThresholdPercentages(groupThresholdPercentages []uint3
 	return c
 }
 
-func (c Context) WithValidateResponse(validateData *dvstypes.RequestPostRequestValidatedData) Context {
-	c.validateResponse = validateData
+func (c Context) WithValidatedResponse(validatedData *dvstypes.RequestPostRequestValidatedData) Context {
+	c.validatedResponse = validatedData
 	return c
 }
 

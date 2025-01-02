@@ -7,7 +7,7 @@ import (
 )
 
 func GetDvsRequestValidatedData(ctx sdktypes.Context) (*dvstypes.RequestPostRequestValidatedData, error) {
-	validatedData := ctx.ValidateResponse()
+	validatedData := ctx.ValidatedResponse()
 	if validatedData == nil {
 		return nil, fmt.Errorf("not DvsRequestData found")
 	}
