@@ -40,6 +40,8 @@ jobs:
       OPERATOR_KEY: ${{ secrets.TESTNET_OPERATOR_KEY }}
       OPERATOR_KEY_MNEMONIC: ${{ secrets.TESTNET_OPERATOR_KEY_MNEMONIC }}
       OPERATOR_HOST_PELLDVS_HOME: /home/ubuntu/.intellix-homes/intellix-testnet/operator
+      ETH_RPC_URL: https://pevm.pell.dev
+      GATEWAY_ADDR: ${GATEWAY_ADDR:-gateway:8949}
     steps:
       - name: trigger deploy
         run: |
@@ -89,7 +91,7 @@ jobs:
           echo "ETH_RPC_URL=${ETH_RPC_URL}" >> ${ENV_FILE}
           echo "NETWORK=${NETWORK}" >> ${ENV_FILE}
           echo "CHAIN_ID=${CHAIN_ID}" >> ${ENV_FILE}
-          echo "HOST_PELLDVS_HOME=${HOST_PELLDVS_HOME}" >> ${ENV_FILE}
+          echo "HOST_PELLDVS_HOME=${DISPATCHER_HOST_PELLDVS_HOME}" >> ${ENV_FILE}
           echo "" >> ${ENV_FILE}
           
           docker compose -p ${COMPOSE_PROJECT} -f docker-compose.yml --env-file ${ENV_FILE} up -d dispatcher
@@ -98,7 +100,6 @@ jobs:
           HOST_DEBUG_PORT: 33346
           OPERATOR_HOST_PORT: 36657
           ETH_RPC_URL: https://pevm.pell.dev
-          HOST_PELLDVS_HOME: ${DISPATCHER_HOST_PELLDVS_HOME}
 
       - name: Start services - operator - operator
         run: |
@@ -113,7 +114,7 @@ jobs:
           echo "NETWORK=${NETWORK}" >> ${ENV_FILE}
           echo "CHAIN_ID=${CHAIN_ID}" >> ${ENV_FILE}
           
-          echo "HOST_PELLDVS_HOME=${HOST_PELLDVS_HOME}" >> ${ENV_FILE}
+          echo "HOST_PELLDVS_HOME=${OPERATOR_HOST_PELLDVS_HOME}" >> ${ENV_FILE}
           
           echo "GATEWAY_ADDR=${GATEWAY_ADDR}" >> ${ENV_FILE}
           
@@ -126,5 +127,4 @@ jobs:
         env:
           HOST_DEBUG_PORT: 33347
           ETH_RPC_URL: https://pevm.pell.dev
-          HOST_PELLDVS_HOME: ${OPERATOR_HOST_PELLDVS_HOME}
           GATEWAY_ADDR: ${GATEWAY_ADDR:-gateway:8949}
