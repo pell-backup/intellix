@@ -14,19 +14,6 @@ services:
     volumes:
       - ./operator:/root/scripts
 
-  abci:
-    image: intellixlabs-intellix-operator:latest
-    environment:
-      - ETH_RPC_URL=${SERVICE_CHAIN_RPC_URL}
-      - ETH_WS_URL=${SERVICE_CHAIN_WS_URL}
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
-      - VALIDATOR_KEY_MNEMONIC=${VALIDATOR_KEY_MNEMONIC}
-      - OPERATOR_KEY_MNEMONIC=${OPERATOR_KEY_MNEMONIC}
-    entrypoint: [ "bash", "/root/scripts/start_abci.sh" ]
-    volumes:
-      - ./.intellix:/root/.intellix
-      - ./operator:/root/scripts
-
   operator:
     image: intellixlabs-intellix-operator:latest
     environment:
@@ -47,20 +34,6 @@ services:
     volumes:
       - ./.operator:/root/.pelldvs
       - ./operator:/root/scripts
-
-  # test:
-  #   image: intellixlabs-intellix-operator:latest
-  #   tty: true
-  #   environment:
-  #     - ETH_RPC_URL=http://eth:8545
-  #     - ETH_WS_URL=ws://eth:8545
-  #     - TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-30}
-  #   depends_on:
-  #     operator:
-  #       condition: service_started
-  #   entrypoint: [ "bash" ]
-  #   volumes:
-  #     - ./operator:/root/scripts
 
 networks:
   default:
