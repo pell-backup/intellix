@@ -7,8 +7,12 @@ function load_defaults {
 }
 
 function setup_root_key {
-  # Root key is the key from Pell Network's testnet used to fund
-  echo -ne '\n\n' | pelldvs keys import --key-type ecdsa --insecure root $ROOT_KEY --home $PELLDVS_HOME >/dev/null
+  ## If root key is not imported, import it
+  if ! pelldvs keys show root --home "$PELLDVS_HOME" >/dev/null 2>&1; then
+    # Root key is the key from Pell Network's testnet used to fund
+    echo -ne '\n\n' | pelldvs keys import --key-type ecdsa --insecure root $ROOT_KEY --home $PELLDVS_HOME >/dev/null
+  fi
+  export ROOT_ADDRESS=$(pelldvs keys show root --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | jq -r .address)
 }
 
 function fetch_dvs_address() {
@@ -29,6 +33,8 @@ function fetch_pell_address {
 }
 
 function faucet {
+  setup_root_key
+
   RECEIVER_ADDRESS="$1"
   AMOUNT=$(printf "%0.f" "${2:-1e18}")
 
@@ -51,9 +57,3 @@ function show_operator_registered {
 }
 
 load_defaults
-## If root key is not imported, import it
-if ! pelldvs keys show root --home "$PELLDVS_HOME" >/dev/null 2>&1; then
-  setup_root_key
-fi
-
-export ROOT_ADDRESS=$(pelldvs keys show root --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | jq -r .address)
