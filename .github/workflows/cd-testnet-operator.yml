@@ -41,7 +41,7 @@ jobs:
       OPERATOR_KEY_MNEMONIC: ${{ secrets.TESTNET_OPERATOR_KEY_MNEMONIC }}
       OPERATOR_HOST_PELLDVS_HOME: /home/ubuntu/.intellix-homes/intellix-testnet/operator
       ETH_RPC_URL: https://pevm.pell.dev
-      GATEWAY_ADDR: ${GATEWAY_ADDR:-gateway:8949}
+      GATEWAY_ADDR: gateway:8949
     steps:
       - name: trigger deploy
         run: |
@@ -127,4 +127,4 @@ jobs:
         env:
           HOST_DEBUG_PORT: 33347
           ETH_RPC_URL: https://pevm.pell.dev
-          GATEWAY_ADDR: ${GATEWAY_ADDR:-gateway:8949}
+          GATEWAY_ADDR: gateway:8949
