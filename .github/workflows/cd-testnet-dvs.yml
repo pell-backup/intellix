@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 30
     env:
       TAG: ${{ github.event.pull_request.head.sha || github.workflow_sha }}
-      COMPOSE_PROJECT_NAME: intellix_testnet
+      COMPOSE_PROJECT_NAME: intellix-testnet
       GITHUB_TOKEN: ${{ secrets.TESTNET_GH_TOKEN }}
       REGISTRY_ROUTER_ADDRESS: ${{ vars.TESTNET_REGISTRY_ROUTER_ADDRESS }}
       SERVICE_CHAIN_RPC_URL: ${{ secrets.TESTNET_SERVICE_CHAIN_RPC_URL }}
@@ -44,10 +44,6 @@ jobs:
       GATEWAY_KEY: ${{ secrets.TESTNET_GATEWAY_KEY }}
       GATEWAY_HOST_PELLDVS_HOME: /home/ubuntu/.intellix-homes/intellix-testnet/gateway
     steps:
-      - name: overwrite env
-        run: |
-          export REGISTRY_ROUTER_ADDRESS=${REGISTRY_ROUTER_ADDRESS:-0xD59A4aaf8478CC74bEF0407Ba7C82aE9A7a9493B}
-
       - name: Setup new work dir
         id: setup_new_work_dir
         run: |
@@ -87,17 +83,16 @@ jobs:
           echo "ETH_RPC_URL=https://pevm.pell.dev" >> ./.env-dvs
           echo "ETH_WS_URL=wss://pevm.pell.dev" >> ./.env-dvs
           echo "REGISTRY_ROUTER_ADDRESS=${REGISTRY_ROUTER_ADDRESS}" >> ./.env-dvs
-          echo "SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL}" >> ./.env-dvs
-          echo "SERVICE_CHAIN_WS_URL=${SERVICE_CHAIN_WS_URL}" >> ./.env-dvs
-          echo "AGGREGATOR_INDEXER_BATCH_SIZE=${AGGREGATOR_INDEXER_BATCH_SIZE}" >> ./.env-dvs
           echo "NETWORK=${NETWORK}" >> ./.env-dvs
           echo "CHAIN_ID=${CHAIN_ID}" >> ./.env-dvs
           echo "GITHUB_TOKEN=${GITHUB_TOKEN}" >> ./.env-dvs
+          echo "SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL}" >> ./.env-dvs
+          echo "SERVICE_CHAIN_WS_URL=${SERVICE_CHAIN_WS_URL}" >> ./.env-dvs
+          echo "AGGREGATOR_INDEXER_BATCH_SIZE=${AGGREGATOR_INDEXER_BATCH_SIZE}" >> ./.env-dvs
+          echo "HOST_PELLDVS_HOME=${AGGREGATOR_HOST_PELLDVS_HOME}" >> ./.env-dvs
           echo "" >> ./.env-dvs
           docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} -f docker-compose.dvs.yml --env-file ./.env-dvs up -d dvs
         working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet
-        env:
-          HOST_PELLDVS_HOME: ${AGGREGATOR_HOST_PELLDVS_HOME}
 
       - name: Start services - task gateway
         run: |
@@ -111,11 +106,10 @@ jobs:
           echo "CHAIN_ID=${CHAIN_ID}" >> ./.env-gateway
           echo "GITHUB_TOKEN=${GITHUB_TOKEN}" >> ./.env-gateway
           echo "GATEWAY_KEY=${GATEWAY_KEY}" >> ./.env-gateway
+          echo "HOST_PELLDVS_HOME=${GATEWAY_HOST_PELLDVS_HOME}" >> ./.env-dvs
           echo "" >> ./.env-gateway
           docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} -f docker-compose.dvs.yml --env-file ./.env-gateway up -d gateway
         working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet
-        env:
-          HOST_PELLDVS_HOME: ${GATEWAY_HOST_PELLDVS_HOME}
 
       - name: sleep 30 seconds
         run: sleep 30
