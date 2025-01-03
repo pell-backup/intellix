@@ -5,14 +5,14 @@ on:
   workflow_dispatch: # allow running workflow manually
   pull_request:
     branches:
-      - feat/docker-devnet
+      - feat/devnet
     paths:
       - '.github/workflows/cd-testnet-cosmos.yml'
       - 'docker/devnet/operator/*.sh'
       - 'docker/devnet/docker-compose.yml'
   push:
     branches:
-      - feat/docker-devnet
+      - feat/devnet
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
     paths:
