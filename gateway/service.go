@@ -60,10 +60,14 @@ func NewTaskGateway(logger dvslog.Logger, ctx context.Context, cfg *TaskGatewayC
 		return nil, err
 	}
 
+	logger.Info("Connected to Ethereum", "endpoint", cfg.EthEndpoint)
+
 	contract, err := dataOracle.NewContractDataOracle(common.HexToAddress(cfg.ContractAddress), ethClient)
 	if err != nil {
 		return nil, err
 	}
+
+	logger.Info("Connected to DataOracle contract", "address", cfg.ContractAddress)
 
 	// Read private key
 	keyJSON, err := os.ReadFile(cfg.PrivateKeyStorePath)
@@ -97,6 +101,9 @@ func NewTaskGateway(logger dvslog.Logger, ctx context.Context, cfg *TaskGatewayC
 	}
 
 	tg.BaseService = *service.NewBaseService(nil, "TaskGateway", tg)
+
+	logger.Info("TaskGateway created", "config", cfg)
+
 	return tg, nil
 }
 
@@ -107,6 +114,8 @@ func (tg *TaskGateway) OnStart() error {
 		tg.logger.Error("Failed to start listener", "address", tg.serverAddr, "error", err)
 		panic(err)
 	}
+
+	tg.logger.Info("TaskGateway listening", "address", tg.serverAddr)
 
 	go tg.server.Accept(tg.listener)
 	return nil

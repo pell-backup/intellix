@@ -18,6 +18,8 @@ function load_defaults {
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
 
+  export SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL:-https://bsc-testnet.blockpi.network/v1/rpc/public}
+
   export GATEWAY_PORT=${GATEWAY_PORT:-8949}
   export GATEWAY_KEY=${GATEWAY_KEY}
   export AGGREGATOR_RPC_SERVER=${AGGREGATOR_RPC_SERVER:-dvs:26653}
@@ -51,12 +53,14 @@ function setup_gateway_config {
   setup_gateway_key
   DATA_ORACLE_ADDRESS=$(fetch_dvs_address "$HARDHAT_DVS_PATH/DataOracle-Proxy.json")
 
+  mkdir -p $PELLDVS_HOME/config
+
   # TODO: remove sender_address from config
   cat <<EOF > $PELLDVS_HOME/config/gateway.config.json
 {
   "server_addr": "0.0.0.0:$GATEWAY_PORT",
   "sender_address": "$GATEWAY_ADDRESS",
-  "eth_endpoint": "$ETH_RPC_URL",
+  "eth_endpoint": "$SERVICE_CHAIN_RPC_URL",
   "contract_address": "$DATA_ORACLE_ADDRESS",
   "private_key_store_path": "$PELLDVS_HOME/keys/gateway.ecdsa.key.json"
 }
@@ -73,8 +77,8 @@ function start_gateway {
 logt "Load Default Values for ENV Vars if not set."
 load_defaults
 
-logt "Check if DVS is ready"
-dvs_healthcheck
+#logt "Check if DVS is ready"
+#dvs_healthcheck
 
 logt "Setup gateway config"
 setup_gateway_config

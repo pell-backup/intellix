@@ -14,5 +14,5 @@ function load_defaults {
 load_defaults
 PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(fetch_dvs_address "$HARDHAT_DVS_PATH/PriceOraclePayInNativeConsumer.json")
 
-RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" | cast to-dec)
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "ETH" --private-key "$ADMIN_KEY"
+RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --rpc-url $SERVICE_CHAIN_RPC_URL | cast to-dec)
+cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "ETH" --rpc-url $SERVICE_CHAIN_RPC_URL --private-key "$ADMIN_KEY"

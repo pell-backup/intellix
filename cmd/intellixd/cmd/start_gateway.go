@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+
 	taskgateway "intellix/gateway"
 	pkglogger "intellix/pkg/logger"
 
@@ -41,11 +42,14 @@ func taskGatewayCommand() *cobra.Command {
 			}
 
 			dvsLogger := pkglogger.NewDVSLogAdapter(serverCtx.Logger)
+
+			dvsLogger.Info("Starting TaskGateway service", "config", conf)
 			taskGateway, err := taskgateway.NewTaskGateway(dvsLogger, context.Background(), conf)
 			if err != nil {
 				return fmt.Errorf("failed to create TaskGateway: %w", err)
 			}
 
+			dvsLogger.Info("prepare to start TaskGateway service")
 			err = taskGateway.Start()
 			if err != nil {
 				return fmt.Errorf("failed to start TaskGateway: %w", err)

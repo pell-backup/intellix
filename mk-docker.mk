@@ -9,6 +9,12 @@ check-env-gh-token:
 docker-build: check-env-gh-token
 	@cd docker && docker compose -f docker-compose.build.yml build
 
+docker-build-pelldvs: check-env-gh-token
+	@cd docker && docker compose -f docker-compose.build.yml build pelldvs
+
+docker-build-operator: check-env-gh-token
+	@cd docker && docker compose -f docker-compose.build.yml build operator
+
 docker-up:
 	@cd docker && docker compose down -v && docker compose up -d
 
