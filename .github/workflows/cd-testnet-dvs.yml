@@ -9,6 +9,8 @@ on:
     paths:
       - '.github/workflows/cd-tesetnet-dvs.yml'
       - "docker/devnet/docker-compose.dvs.yml"
+      - "docker/docker-compose.build.yml"
+      - "docker/devnet/dvs/*.sh"
   push:
     branches:
       - feat/docker-devnet
@@ -17,6 +19,8 @@ on:
     paths:
       - '.github/workflows/cd-tesetnet-dvs.yml'
       - "docker/devnet/docker-compose.dvs.yml"
+      - "docker/docker-compose.build.yml"
+      - "docker/devnet/dvs/*.sh"
 jobs:
   deploy-staging:
     runs-on: [ "self-hosted", "Linux", "X64", "devnet" ]
