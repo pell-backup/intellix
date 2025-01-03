@@ -24,7 +24,7 @@ on:
 jobs:
   deploy-staging:
     runs-on: [ "self-hosted", "Linux", "X64", "devnet" ]
-    timeout-minutes: 10
+    timeout-minutes: 30
     env:
       TAG: ${{ github.event.pull_request.head.sha || github.workflow_sha }}
       COMPOSE_PROJECT_NAME: intellix-testnet
