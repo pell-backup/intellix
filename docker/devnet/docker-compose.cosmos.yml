@@ -1,0 +1,21 @@
+name: intellix
+
+services:
+
+  abci:
+    image: intellixlabs-intellix-operator:latest
+    environment:
+      - ETH_RPC_URL=${SERVICE_CHAIN_RPC_URL}
+      - ETH_WS_URL=${SERVICE_CHAIN_WS_URL}
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - VALIDATOR_KEY_MNEMONIC=${VALIDATOR_KEY_MNEMONIC}
+      - OPERATOR_KEY_MNEMONIC=${OPERATOR_KEY_MNEMONIC}
+    entrypoint: [ "bash", "/root/scripts/start_abci.sh" ]
+    volumes:
+      - ./.intellix:/root/.intellix
+      - ./operator:/root/scripts
+
+networks:
+  default:
+    external: true
+    name: intellix-devnet
