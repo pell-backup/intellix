@@ -106,7 +106,7 @@ jobs:
           echo "CHAIN_ID=${CHAIN_ID}" >> ./.env-gateway
           echo "GITHUB_TOKEN=${GITHUB_TOKEN}" >> ./.env-gateway
           echo "GATEWAY_KEY=${GATEWAY_KEY}" >> ./.env-gateway
-          echo "HOST_PELLDVS_HOME=${GATEWAY_HOST_PELLDVS_HOME}" >> ./.env-dvs
+          echo "HOST_PELLDVS_HOME=${GATEWAY_HOST_PELLDVS_HOME}" >> ./.env-gateway
           echo "" >> ./.env-gateway
           docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} -f docker-compose.dvs.yml --env-file ./.env-gateway up -d gateway
         working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet
