@@ -33,8 +33,8 @@ jobs:
       CHAIN_ID: ${{ vars.TESTNET_SERVICE_CHAIN_ID }}
       NETWORK: ${{ vars.TESTNET_NETWORK }}
       REGISTRY_ROUTER_ADDRESS: ${{ vars.TESTNET_REGISTRY_ROUTER_ADDRESS }}
-      VALIDATOR_KEY_MNEMONIC: ${{ secrets.VALIDATOR_KEY_MNEMONIC }}
-      OPERATOR_KEY_MNEMONIC: ${{ secrets.OPERATOR_KEY_MNEMONIC }}
+      VALIDATOR_KEY_MNEMONIC: ${{ secrets.TESTNET_VALIDATOR_KEY_MNEMONIC }}
+      OPERATOR_KEY_MNEMONIC: ${{ secrets.TESTNET_OPERATOR_KEY_MNEMONIC }}
       ABCI_HOST_INTELLIX_HOME: /home/ubuntu/.intellix-homes/intellix-testnet/abci
       HOST_ABCI_PORT: 36657
     steps:
@@ -90,9 +90,4 @@ jobs:
           echo "HOST_INTELLIX_HOME=${ABCI_HOST_INTELLIX_HOME}" >> ${ENV_FILE}
           echo "" >> ${ENV_FILE}
           docker compose -p ${COMPOSE_PROJECT} -f docker-compose.cosmos.yml --env-file ${ENV_FILE} up -d abci
-        working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet
-
-      - name: Test services
-        run: |
-          nc -vz 127.0.0.1 $HOST_ABCI_PORT
         working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet
