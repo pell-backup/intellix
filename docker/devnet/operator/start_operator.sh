@@ -17,6 +17,7 @@ function load_defaults {
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
   export GATEWAY_ADDR=${GATEWAY_ADDR:-gateway:8949}
   export OPERATOR_KEY_NAME=${OPERATOR_KEY_NAME:-operator}
+  export OPERATOR_KEY=${OPERATOR_KEY}
   export OPERATOR_KEY_MNEMONIC=${OPERATOR_KEY_MNEMONIC}
   export AGGREGATOR_RPC_URL=${AGGREGATOR_RPC_URL:-dvs:26653}
 
@@ -108,7 +109,7 @@ EOF
 }
 
 function start_operator {
-  intellixd start-operator
+  intellixd start-operator --home $PELLDVS_HOME
 }
 
 ## start sshd
@@ -117,15 +118,20 @@ function start_operator {
 logt "Load Default Values for ENV Vars if not set."
 load_defaults
 
-logt "Check if DVS is ready"
-dvs_healthcheck
+#logt "Check if DVS is ready"
+#dvs_healthcheck
 
-logt "Check if Gateway is ready"
-gateway_healthcheck
+#logt "Check if Gateway is ready"
+#gateway_healthcheck
+
+logt "setup operator key"
+source "$(dirname "$0")/setup_operator_key.sh"
 
 logt "Setup operator config"
 init_pelldvs_config
+
 setup_operator_config
+
 
 logt "Starting operator..."
 start_operator

@@ -17,6 +17,10 @@ function load_defaults {
   export PELLDVS_HOME=${PELLDVS_HOME:-/root/.pelldvs}
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
+
+  export SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL:-https://bsc-testnet.blockpi.network/v1/rpc/public}
+  export SERVICE_CHAIN_WS_URL=${SERVICE_CHAIN_WS_URL}
+
   ## TODO: remove this after the integration with the operator
   export OPERATOR_RPC_SERVER=${OPERATOR_RPC_SERVER:-operator:26657}
 
@@ -49,7 +53,7 @@ function setup_dispatcher_config {
   "chains": [
     {
       "chain_id": $CHAIN_ID,
-      "eth_url": "$ETH_WS_URL",
+      "eth_url": "$SERVICE_CHAIN_WS_URL",
       "contract_address": "$DATA_ORACLE_ADDRESS"
     }
   ]
@@ -64,7 +68,7 @@ function start_dispatcher {
       --log --log-output=debugger \
       -- start-task-dispatcher
   else
-    intellixd start-task-dispatcher
+    intellixd start-task-dispatcher --home $PELLDVS_HOME
   fi
 }
 
@@ -74,8 +78,8 @@ function start_dispatcher {
 logt "Load Default Values for ENV Vars if not set."
 load_defaults
 
-logt "Check if DVS is ready"
-dvs_healthcheck
+#logt "Check if DVS is ready"
+#dvs_healthcheck
 
 logt "Setup dispatcher config"
 setup_dispatcher_config

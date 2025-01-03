@@ -3,36 +3,34 @@ name: intellix
 services:
 
   dispatcher:
-    image: intellixlabs-intellix-operator:latest
+    image: intellix-testnet-operator:latest
     environment:
-      - ETH_RPC_URL=${SERVICE_CHAIN_RPC_URL}
-      - ETH_WS_URL=${SERVICE_CHAIN_WS_URL}
       - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - SERVICE_CHAIN_WS_URL=${SERVICE_CHAIN_WS_URL}
+      - NETWORK=${NETWORK}
+      - CHAIN_ID=${CHAIN_ID}
     entrypoint: [ "bash", "/root/scripts/start_dispatcher.sh" ]
     ports:
-      - "3345:${DEBUG_PORT:-2345}"
+      - "${HOST_DEBUG_PORT:-23345}:${DEBUG_PORT:-2345}"
     volumes:
+      - "${HOST_PELLDVS_HOME:-./.dispatcher}:/root/.pelldvs"
       - ./operator:/root/scripts
 
   operator:
-    image: intellixlabs-intellix-operator:latest
+    image: intellix-testnet-operator:latest
     environment:
       - ETH_RPC_URL=${ETH_RPC_URL}
       - ETH_WS_URL=${ETH_WS_URL}
       - GATEWAY_ADDR=${GATEWAY_ADDR:-gateway:8949}
       - OPERATOR_KEY=${OPERATOR_KEY}
       - OPERATOR_KEY_MNEMONIC=${OPERATOR_KEY_MNEMONIC}
-      - ROOT_KEY=${ROOT_KEY}
       - GITHUB_TOKEN=${GITHUB_TOKEN}
       - REGISTRY_ROUTER_ADDRESS=${REGISTRY_ROUTER_ADDRESS}
     ports:
-      - "3346:${DEBUG_PORT:-2345}"
-    depends_on:
-      abci:
-        condition: service_started
+      - "${HOST_DEBUG_PORT:-23346}:${DEBUG_PORT:-2345}"
     entrypoint: [ "bash", "/root/scripts/start_operator.sh" ]
     volumes:
-      - ./.operator:/root/.pelldvs
+      - "${HOST_OPERATOR_HOME:-./.operator}:/root/.pelldvs"
       - ./operator:/root/scripts
 
 networks:
