@@ -120,6 +120,7 @@ jobs:
           
           echo "OPERATOR_KEY=${{ secrets.TESTNET_OPERATOR_KEY }}" >> ${ENV_FILE}
           echo "OPERATOR_KEY_MNEMONIC=${OPERATOR_KEY_MNEMONIC}" >> ${ENV_FILE}
+          echo "HOST_SERVER_PORT=${OPERATOR_HOST_SERVER_PORT}" >> ${ENV_FILE}
           echo "" >> ${ENV_FILE}
           
           docker compose -p ${COMPOSE_PROJECT} -f docker-compose.yml --env-file ${ENV_FILE} up -d operator
