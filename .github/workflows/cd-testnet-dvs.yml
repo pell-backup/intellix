@@ -28,25 +28,25 @@ jobs:
     env:
       TAG: ${{ github.event.pull_request.head.sha || github.workflow_sha }}
       COMPOSE_PROJECT_NAME: intellix-testnet
-      GITHUB_TOKEN: ${{ secrets.TESNET_GH_TOKEN }}
-      REGISTRY_ROUTER_ADDRESS: ${{ vars.TESNET_REGISTRY_ROUTER_ADDRESS }}
-      SERVICE_CHAIN_RPC_URL: ${{ secrets.TESNET_SERVICE_CHAIN_RPC_URL }}
-      SERVICE_CHAIN_WS_URL: ${{ secrets.TESNET_SERVICE_CHAIN_WS_URL }}
-      CHAIN_ID: ${{ vars.TESNET_SERVICE_CHAIN_ID }}
-      NETWORK: ${{ vars.TESNET_NETWORK }}
+      GITHUB_TOKEN: ${{ secrets.TESTNET_GH_TOKEN }}
+      REGISTRY_ROUTER_ADDRESS: ${{ vars.TESTNET_REGISTRY_ROUTER_ADDRESS }}
+      SERVICE_CHAIN_RPC_URL: ${{ secrets.TESTNET_SERVICE_CHAIN_RPC_URL }}
+      SERVICE_CHAIN_WS_URL: ${{ secrets.TESTNET_SERVICE_CHAIN_WS_URL }}
+      CHAIN_ID: ${{ vars.TESTNET_SERVICE_CHAIN_ID }}
+      NETWORK: ${{ vars.TESTNET_NETWORK }}
       AGGREGATOR_RPC_PORT: 26653
       AGGREGATOR_HOST_DEBUG_PORT: 13346
       AGGREGATOR_HOST_SERVER_PORT: 46653
       AGGREGATOR_HOST_PELLDVS_HOME: /home/ubuntu/.intellix-homes/intellix-testnet/dvs
-      AGGREGATOR_INDEXER_BATCH_SIZE: ${{ vars.TESNET_AGGREGATOR_INDEXER_BATCH_SIZE }}
+      AGGREGATOR_INDEXER_BATCH_SIZE: ${{ vars.TESTNET_AGGREGATOR_INDEXER_BATCH_SIZE }}
       GATEWAY_HOST_SERVER_PORT: 48949
       GATEWAY_HOST_DEBUG_PORT: 13347
-      GATEWAY_KEY: ${{ secrets.TESNET_GATEWAY_KEY }}
+      GATEWAY_KEY: ${{ secrets.TESTNET_GATEWAY_KEY }}
       GATEWAY_HOST_PELLDVS_HOME: /home/ubuntu/.intellix-homes/intellix-testnet/gateway
     steps:
       - name: overwrite env
         run: |
-          export REGISTRY_ROUTER_ADDRESS=${REGISTRY_ROUTER_ADDRESS:-0x17f5325eC73aE21396Ccc8B2A9730e2Fc685184E}
+          export REGISTRY_ROUTER_ADDRESS=${REGISTRY_ROUTER_ADDRESS:-0xD59A4aaf8478CC74bEF0407Ba7C82aE9A7a9493B}
 
       - name: Setup new work dir
         id: setup_new_work_dir
