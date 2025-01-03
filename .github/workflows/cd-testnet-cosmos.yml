@@ -1,0 +1,90 @@
+name: operator-cd-staging
+# Runs the CI end-to-end test network on all pushes to v0.38.x
+# and every pull request, but only if any Go files have been changed.
+on:
+  workflow_dispatch: # allow running workflow manually
+  pull_request:
+    branches:
+      - feat/docker-devnet
+    paths:
+      - '.github/workflows/cd-testnet-cosmos.yml'
+      - 'docker/devnet/operator/*.sh'
+      - 'docker/devnet/docker-compose.yml'
+  push:
+    branches:
+      - feat/docker-devnet
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+    paths:
+      - '.github/workflows/cd-testnet-cosmos.yml'
+      - 'docker/devnet/operator/start_abci.sh'
+      - 'docker/devnet/docker-compose.cosmos.yml'
+jobs:
+  deploy-staging:
+    runs-on: [ "self-hosted", "Linux", "X64", "ci", "dvs" ]
+    timeout-minutes: 30
+    env:
+      TAG: ${{ github.event.pull_request.head.sha || github.workflow_sha }}
+      COMPOSE_PROJECT: intellix-testnet
+      GITHUB_TOKEN: ${{ secrets.TESTNET_GH_TOKEN }}
+      ETH_RPC_URL: https://pevm.pell.dev
+      SERVICE_CHAIN_RPC_URL: ${{ secrets.TESTNET_SERVICE_CHAIN_RPC_URL }}
+      SERVICE_CHAIN_WS_URL: ${{ secrets.TESTNET_SERVICE_CHAIN_WS_URL }}
+      CHAIN_ID: ${{ vars.TESTNET_SERVICE_CHAIN_ID }}
+      NETWORK: ${{ vars.TESTNET_NETWORK }}
+      REGISTRY_ROUTER_ADDRESS: ${{ vars.TESTNET_REGISTRY_ROUTER_ADDRESS }}
+      VALIDATOR_KEY_MNEMONIC: ${{ secrets.VALIDATOR_KEY_MNEMONIC }}
+      OPERATOR_KEY_MNEMONIC: ${{ secrets.OPERATOR_KEY_MNEMONIC }}
+      ABCI_HOST_PELLDVS_HOME: /home/ubuntu/.intellix-homes/intellix-testnet/abci
+      HOST_ABCI_PORT: 36657
+    steps:
+      - name: trigger deploy
+        run: |
+          echo "trigger deploy by update this file"
+
+      - name: Setup new work dir
+        id: setup_new_work_dir
+        run: |
+          CLEAN_WORKFLOW_NAME=$(echo "${{ github.workflow }}" | tr -cs '[:alnum:]' '_')
+          CLEAN_JOB_NAME=$(echo "${{ github.job }}" | tr -cs '[:alnum:]' '_')
+          echo "NEW_WORK_DIR=./deploys/${CLEAN_WORKFLOW_NAME}/${CLEAN_JOB_NAME}" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v4
+        with:
+          path: ${{ env.NEW_WORK_DIR }}
+
+      - name: ensure home dir
+        run: |
+          mkdir -p /home/ubuntu/.intellix-homes/intellix-testnet/{intellix,operator,pelldvs}
+
+      - name: setup github private repo access
+        run: |
+          git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
+          git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
+
+      - name: Build docker images
+        run: |
+          docker compose -p ${COMPOSE_PROJECT} -f docker-compose.build.yml build operator
+        working-directory: ${{ env.NEW_WORK_DIR }}/docker
+
+      - name: Shutdown services
+        run: |
+          docker compose -p ${COMPOSE_PROJECT} -f docker-compose.cosmos.yml down
+        working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet
+
+      - name: Start services - abci
+        run: |
+          ENV_FILE=./.env-cosmos-abci
+          rm -rf ${ENV_FILE}
+          echo "# cosmos - abci " >> ${ENV_FILE}
+          echo "SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL}" >> ${ENV_FILE}
+          echo "SERVICE_CHAIN_WS_URL=${SERVICE_CHAIN_WS_URL}" >> ${ENV_FILE}
+          echo "REGISTRY_ROUTER_ADDRESS=${REGISTRY_ROUTER_ADDRESS}" >> ${ENV_FILE}
+          echo "ETH_RPC_URL=${ETH_RPC_URL}" >> ${ENV_FILE}
+          echo "NETWORK=${NETWORK}" >> ${ENV_FILE}
+          echo "CHAIN_ID=${CHAIN_ID}" >> ${ENV_FILE}
+          echo "HOST_ABCI_PORT=${HOST_ABCI_PORT}" >> ${ENV_FILE}
+          echo "HOST_INTELLIX_HOME=${HOST_INTELLIX_HOME}" >> ${ENV_FILE}
+          echo "" >> ${ENV_FILE}
+          docker compose -p ${COMPOSE_PROJECT} -f docker-compose.cosmos.yml --env-file ${ENV_FILE} up -d abci
+        working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet

@@ -3,7 +3,7 @@ name: intellix
 services:
 
   abci:
-    image: intellixlabs-intellix-operator:latest
+    image: intellix-testnet-operator:latest
     environment:
       - ETH_RPC_URL=${SERVICE_CHAIN_RPC_URL}
       - ETH_WS_URL=${SERVICE_CHAIN_WS_URL}
@@ -12,8 +12,10 @@ services:
       - OPERATOR_KEY_MNEMONIC=${OPERATOR_KEY_MNEMONIC}
     entrypoint: [ "bash", "/root/scripts/start_abci.sh" ]
     volumes:
-      - ./.intellix:/root/.intellix
+      - ${HOST_INTELLIX_HOME:-./.intellix}:/root/.intellix
       - ./operator:/root/scripts
+    ports:
+      - "${HOST_ABCI_PORT:-26657}:26657"
 
 networks:
   default:

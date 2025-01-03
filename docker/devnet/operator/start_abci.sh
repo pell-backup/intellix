@@ -73,7 +73,7 @@ function start_abci {
 logt "Load Default Values for ENV Vars if not set."
 load_defaults
 
-if [ ! -f /root/.intellix/config/genesis.json ]; then
+if [ ! -f ${INTELLIX_HOME}/config/genesis.json ]; then
 
   logt "Init Genesis"
   init_genesis
