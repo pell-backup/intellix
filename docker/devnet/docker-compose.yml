@@ -1,7 +1,6 @@
 name: intellix
 
 services:
-
   dispatcher:
     image: intellix-testnet-operator:latest
     environment:
@@ -30,7 +29,7 @@ services:
       - "${HOST_DEBUG_PORT:-23346}:${DEBUG_PORT:-2345}"
     entrypoint: [ "bash", "/root/scripts/start_operator.sh" ]
     volumes:
-      - "${HOST_OPERATOR_HOME:-./.operator}:/root/.pelldvs"
+      - "${HOST_PELLDVS_HOME:-./.operator}:/root/.pelldvs"
       - ./operator:/root/scripts
 
 networks:

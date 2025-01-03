@@ -81,13 +81,15 @@ jobs:
           ENV_FILE=./.env-operator-dispatcher
           rm -rf ${ENV_FILE}
           
-          echo "# operator - ${ENV_FILE} " >> ${ENV_FILE}
+          echo "# env - ${ENV_FILE} " >> ${ENV_FILE}
+          echo "GITHUB_TOKEN=${GITHUB_TOKEN}" >> ${ENV_FILE}
           echo "SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL}" >> ${ENV_FILE}
           echo "SERVICE_CHAIN_WS_URL=${SERVICE_CHAIN_WS_URL}" >> ${ENV_FILE}
           echo "REGISTRY_ROUTER_ADDRESS=${REGISTRY_ROUTER_ADDRESS}" >> ${ENV_FILE}
           echo "ETH_RPC_URL=${ETH_RPC_URL}" >> ${ENV_FILE}
           echo "NETWORK=${NETWORK}" >> ${ENV_FILE}
           echo "CHAIN_ID=${CHAIN_ID}" >> ${ENV_FILE}
+          echo "HOST_PELLDVS_HOME=${HOST_PELLDVS_HOME}" >> ${ENV_FILE}
           echo "" >> ${ENV_FILE}
           
           docker compose -p ${COMPOSE_PROJECT} -f docker-compose.yml --env-file ${ENV_FILE} up -d dispatcher
@@ -103,8 +105,9 @@ jobs:
           ENV_FILE=./.env-operator-operator
           rm -rf ${ENV_FILE}
           
-          echo "# operator - ${ENV_FILE} " >> ${ENV_FILE}
+          echo "# env - ${ENV_FILE} " >> ${ENV_FILE}
           
+          echo "GITHUB_TOKEN=${GITHUB_TOKEN}" >> ${ENV_FILE}
           echo "REGISTRY_ROUTER_ADDRESS=${REGISTRY_ROUTER_ADDRESS}" >> ${ENV_FILE}
           echo "ETH_RPC_URL=${ETH_RPC_URL}" >> ${ENV_FILE}
           echo "NETWORK=${NETWORK}" >> ${ENV_FILE}
