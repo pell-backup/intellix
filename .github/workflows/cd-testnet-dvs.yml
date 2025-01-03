@@ -71,13 +71,13 @@ jobs:
 
       - name: Build docker images
         run: |
-          docker compose -p ${COMPOSE_PROJECT_NAME} -f docker-compose.build.yml build pelldvs
-          docker compose -p ${COMPOSE_PROJECT_NAME} -f docker-compose.build.yml build operator
+          docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} -f docker-compose.build.yml build pelldvs
+          docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} -f docker-compose.build.yml build operator
         working-directory: ${{ env.NEW_WORK_DIR }}/docker
 
       - name: Shutdown services
         run: |
-          docker compose -p ${COMPOSE_PROJECT_NAME} -f docker-compose.dvs.yml down -v
+          docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} -f docker-compose.dvs.yml down -v
         working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet
 
       - name: Start services - aggregator
@@ -94,7 +94,7 @@ jobs:
           echo "CHAIN_ID=${CHAIN_ID}" >> ./.env-dvs
           echo "GITHUB_TOKEN=${GITHUB_TOKEN}" >> ./.env-dvs
           echo "" >> ./.env-dvs
-          docker compose -p ${COMPOSE_PROJECT_NAME} -f docker-compose.dvs.yml --env-file ./.env-dvs up -d dvs
+          docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} -f docker-compose.dvs.yml --env-file ./.env-dvs up -d dvs
         working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet
         env:
           HOST_PELLDVS_HOME: ${AGGREGATOR_HOST_PELLDVS_HOME}
@@ -112,7 +112,7 @@ jobs:
           echo "GITHUB_TOKEN=${GITHUB_TOKEN}" >> ./.env-gateway
           echo "GATEWAY_KEY=${GATEWAY_KEY}" >> ./.env-gateway
           echo "" >> ./.env-gateway
-          docker compose -p ${COMPOSE_PROJECT_NAME} -f docker-compose.dvs.yml --env-file ./.env-gateway up -d gateway
+          docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} -f docker-compose.dvs.yml --env-file ./.env-gateway up -d gateway
         working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet
         env:
           HOST_PELLDVS_HOME: ${GATEWAY_HOST_PELLDVS_HOME}
@@ -121,7 +121,7 @@ jobs:
         run: sleep 30
 
       - name: Check docker service status
-        run: docker compose -p ${COMPOSE_PROJECT_NAME} -f docker-compose.dvs.yml ps -a
+        run: docker compose -p ${{ env.COMPOSE_PROJECT_NAME }} -f docker-compose.dvs.yml ps -a
         working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet
 
       - name: Test services
