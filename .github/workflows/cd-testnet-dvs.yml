@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 30
     env:
       TAG: ${{ github.event.pull_request.head.sha || github.workflow_sha }}
-      COMPOSE_PROJECT_NAME: intellix-testnet
+      COMPOSE_PROJECT_NAME: intellix_testnet
       GITHUB_TOKEN: ${{ secrets.TESTNET_GH_TOKEN }}
       REGISTRY_ROUTER_ADDRESS: ${{ vars.TESTNET_REGISTRY_ROUTER_ADDRESS }}
       SERVICE_CHAIN_RPC_URL: ${{ secrets.TESTNET_SERVICE_CHAIN_RPC_URL }}
