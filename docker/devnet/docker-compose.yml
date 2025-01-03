@@ -27,6 +27,7 @@ services:
       - REGISTRY_ROUTER_ADDRESS=${REGISTRY_ROUTER_ADDRESS}
     ports:
       - "${HOST_DEBUG_PORT:-23346}:${DEBUG_PORT:-2345}"
+      - "${HOST_SERVER_PORT:-36657}:26657"
     entrypoint: [ "bash", "/root/scripts/start_operator.sh" ]
     volumes:
       - "${HOST_PELLDVS_HOME:-./.operator}:/root/.pelldvs"
