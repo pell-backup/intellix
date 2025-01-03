@@ -21,7 +21,7 @@ on:
       - 'docker/devnet/docker-compose.cosmos.yml'
 jobs:
   deploy-staging:
-    runs-on: [ "self-hosted", "Linux", "X64", "ci", "dvs" ]
+    runs-on: [ "self-hosted", "Linux", "X64", "devnet" ]
     timeout-minutes: 30
     env:
       TAG: ${{ github.event.pull_request.head.sha || github.workflow_sha }}
