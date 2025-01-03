@@ -1,4 +1,4 @@
-name: cd-tesetnet-operator
+name: cd-testnet-operator
 # Runs the CI end-to-end test network on all pushes to v0.38.x
 # and every pull request, but only if any Go files have been changed.
 on:
@@ -73,13 +73,14 @@ jobs:
 
       - name: Shutdown services
         run: |
-          docker compose -p ${{ env.COMPOSE_PROJECT }} -f docker-compose.yml down
+          docker compose -p ${COMPOSE_PROJECT} -f docker-compose.yml down
         working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet
 
       - name: Start services - operator - dispatcher
         run: |
           ENV_FILE=./.env-operator-dispatcher
           rm -rf ${ENV_FILE}
+          
           echo "# operator - ${ENV_FILE} " >> ${ENV_FILE}
           echo "SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL}" >> ${ENV_FILE}
           echo "SERVICE_CHAIN_WS_URL=${SERVICE_CHAIN_WS_URL}" >> ${ENV_FILE}
@@ -88,7 +89,8 @@ jobs:
           echo "NETWORK=${NETWORK}" >> ${ENV_FILE}
           echo "CHAIN_ID=${CHAIN_ID}" >> ${ENV_FILE}
           echo "" >> ${ENV_FILE}
-          docker compose -p ${{ env.COMPOSE_PROJECT }} -f docker-compose.yml up -d dispatcher
+          
+          docker compose -p ${COMPOSE_PROJECT} -f docker-compose.yml --env-file ${ENV_FILE} up -d dispatcher
         working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet
         env:
           HOST_DEBUG_PORT: 33346
@@ -96,10 +98,6 @@ jobs:
           ETH_RPC_URL: https://pevm.pell.dev
           HOST_PELLDVS_HOME: ${DISPATCHER_HOST_PELLDVS_HOME}
 
-      - name: remove operator 02 keys
-        run: |
-          sudo rm -rf /home/ubuntu/.intellix-homes/intellix-testnet/operator02/keys/operator*
-        working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet
       - name: Start services - operator - operator
         run: |
           ENV_FILE=./.env-operator-operator
@@ -120,7 +118,7 @@ jobs:
           echo "OPERATOR_KEY_MNEMONIC=${OPERATOR_KEY_MNEMONIC}" >> ${ENV_FILE}
           echo "" >> ${ENV_FILE}
           
-          docker compose -p ${{ env.COMPOSE_PROJECT }} -f docker-compose.yml up -d operator
+          docker compose -p ${COMPOSE_PROJECT} -f docker-compose.yml --env-file ${ENV_FILE} up -d operator
         working-directory: ${{ env.NEW_WORK_DIR }}/docker/devnet
         env:
           HOST_DEBUG_PORT: 33347
