@@ -16,7 +16,7 @@ service DVSRequest {
 // RequestPriceFeedIn defines task request from task-dispatcher
 message RequestPriceFeedIn {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
-  option (amino.name) = "intellix/x/price/dvs/process_price_feed";
+  option (amino.name) = "intellix/dvs/price/process_price_feed";
 
   TaskRequest task = 1;
   PriceFeedParam price_feed = 2;
