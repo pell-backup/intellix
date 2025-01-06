@@ -3,12 +3,12 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"intellix/dvs/price/types"
 	taskgateway "intellix/gateway"
 	"intellix/pkg/pelldvs"
 	dvstypes "intellix/pkg/pelldvs/types"
 	"intellix/pkg/utils"
 	sdktypes "intellix/sdk/types"
-	"intellix/x/price/dvs/types"
 	pricetypes "intellix/x/price/types"
 	"math/big"
 

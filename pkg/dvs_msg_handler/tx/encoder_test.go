@@ -1,7 +1,7 @@
 package tx
 
 import (
-	"intellix/x/price/dvs/types"
+	"intellix/dvs/price/types"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/codec"

@@ -24,6 +24,8 @@ buf generate
 cd ..
 cp -r proto/generate/cosmos/intellix/x/* ./x/
 cp -r proto/generate/cosmos/intellix/pkg/* ./pkg/
+cp -r proto/generate/cosmos/intellix/dvs/* ./dvs/
+
 rm -rf proto/generate
 
 # # Format proto go imports.

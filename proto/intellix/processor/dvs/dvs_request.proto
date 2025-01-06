@@ -6,7 +6,7 @@ import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 
-option go_package = "intellix/x/processor/dvs/types";
+option go_package = "intellix/dvs/processor/types";
 
 service DVSRequest {
   rpc RequestScript(RequestScriptIn) returns (RequestScriptOut) {}

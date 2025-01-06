@@ -8,7 +8,7 @@ import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 
-option go_package = "intellix/x/price/dvs/types";
+option go_package = "intellix/dvs/price/types";
 
 service DVSResponse {
   // PostProcessRequestPriceFeed defines avsi logic processing
