@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"intellix/dvs/price/types"
 	sdktypes "intellix/sdk/types"
-	"intellix/x/price/dvs/types"
 	pricetypes "intellix/x/price/types"
 	"time"
 

@@ -2,12 +2,12 @@ package server
 
 import (
 	"context"
+	"intellix/dvs/processor/types"
 	taskgateway "intellix/gateway"
 	"intellix/pkg/pelldvs"
 	dvstypes "intellix/pkg/pelldvs/types"
 	"intellix/pkg/utils"
 	sdktypes "intellix/sdk/types"
-	"intellix/x/processor/dvs/types"
 	processortypes "intellix/x/processor/types"
 )
 

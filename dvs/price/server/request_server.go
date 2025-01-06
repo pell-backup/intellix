@@ -1,7 +1,7 @@
 package server
 
 import (
-	"intellix/x/price/dvs/types"
+	"intellix/dvs/price/types"
 )
 
 type RequestServer struct {

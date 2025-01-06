@@ -1,10 +1,10 @@
 package dvs
 
 import (
+	resulthandlers "intellix/dvs/processor/result_handlers"
+	"intellix/dvs/processor/server"
+	"intellix/dvs/processor/types"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
-	resulthandlers "intellix/x/processor/dvs/result_handlers"
-	"intellix/x/processor/dvs/server"
-	"intellix/x/processor/dvs/types"
 
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 )

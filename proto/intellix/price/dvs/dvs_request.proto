@@ -7,7 +7,7 @@ import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 import "intellix/price/dvs/task.proto";
 
-option go_package = "intellix/x/price/dvs/types";
+option go_package = "intellix/dvs/price/types";
 
 service DVSRequest {
   rpc RequestPriceFeed(RequestPriceFeedIn) returns (RequestPriceFeedOut) {}

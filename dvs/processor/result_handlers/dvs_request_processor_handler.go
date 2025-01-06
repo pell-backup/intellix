@@ -1,9 +1,10 @@
 package result_handlers
 
 import (
-	"github.com/cosmos/gogoproto/proto"
+	"intellix/dvs/processor/types"
 	"intellix/pkg/utils"
-	"intellix/x/processor/dvs/types"
+
+	"github.com/cosmos/gogoproto/proto"
 )
 
 type ProcessorRequestResHandler struct {

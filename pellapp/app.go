@@ -1,7 +1,8 @@
 package pellapp
 
 import (
-	processordvstypes "intellix/x/processor/dvs/types"
+	dvs "intellix/dvs/price"
+	processordvstypes "intellix/dvs/processor/types"
 	"os"
 
 	"github.com/0xPellNetwork/pelldvs/libs/log"
@@ -13,14 +14,13 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 
+	dvsserver "intellix/dvs/price/server"
+	dvstypes "intellix/dvs/price/types"
+	processordvs "intellix/dvs/processor"
+	processordvsserver "intellix/dvs/processor/server"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	"intellix/pkg/pelldvs"
 	"intellix/sdk/baseapp"
-	"intellix/x/price/dvs"
-	dvsserver "intellix/x/price/dvs/server"
-	dvstypes "intellix/x/price/dvs/types"
-	processordvs "intellix/x/processor/dvs"
-	processordvsserver "intellix/x/processor/dvs/server"
 
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
 	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"

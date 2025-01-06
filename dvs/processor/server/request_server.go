@@ -4,8 +4,8 @@ import (
 	"bytes"
 	context "context"
 	"fmt"
+	"intellix/dvs/processor/types"
 	sdktypes "intellix/sdk/types"
-	"intellix/x/processor/dvs/types"
 	processortypes "intellix/x/processor/types"
 	"time"
 

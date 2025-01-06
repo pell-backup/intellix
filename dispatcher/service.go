@@ -4,9 +4,9 @@ import "C"
 import (
 	"context"
 	"fmt"
+	pricetypes "intellix/dvs/price/types"
+	processortypes "intellix/dvs/processor/types"
 	"intellix/pkg/dvs_msg_handler/tx"
-	pricetypes "intellix/x/price/dvs/types"
-	processortypes "intellix/x/processor/dvs/types"
 	"sync"
 
 	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
