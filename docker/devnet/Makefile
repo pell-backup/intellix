@@ -1,6 +1,12 @@
 default:
 	@echo "hello"
 
+build-pelldvs:
+	docker compose -p intellix-testnet -f ../docker-compose.build.yml build pelldvs
+
+build-operator:
+	docker compose -p intellix-testnet -f ../docker-compose.build.yml build operator
+
 dvs-up-all:
 	make dvs-up-dvs;
 	make dvs-up-gateway;
@@ -46,7 +52,7 @@ cosmos-down-abci:
 	docker compose -f docker-compose.cosmos.yml down abci -v
 
 cosmos-logs-abci:
-	docker compose --env-file .env-cosmos -f docker-compose.cosmos.yml logs abci -n 100 -f
+	docker compose --env-file .env -f docker-compose.cosmos.yml logs abci -n 100 -f
 
 
 # Operator dispatcher

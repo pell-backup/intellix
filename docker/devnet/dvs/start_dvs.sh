@@ -17,6 +17,7 @@ function load_defaults {
   export SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL:-https://bsc-testnet.blockpi.network/v1/rpc/public}
   export SERVICE_CHAIN_WS_URL=${SERVICE_CHAIN_WS_URL}
 
+  export PELL_DELEGATION_MNAGER=${PELL_DELEGATION_MNAGER}
   export REGISTRY_ROUTER_ADDRESS=${REGISTRY_ROUTER_ADDRESS}
 
   export AGGREGATOR_RPC_PORT=${AGGREGATOR_RPC_PORT:-26653}
@@ -35,7 +36,10 @@ function init_aggregator {
     VALUE="$2"
     sed -i "s|${KEY} = \".*\"|${KEY} = \"${VALUE}\"|" $PELLDVS_HOME/config/config.toml
   }
-  local PELL_DELEGATION_MNAGER=$(fetch_pell_address "delegation_manager_proxy")
+
+  if [ -z "$PELL_DELEGATION_MNAGER" ]; then
+    local PELL_DELEGATION_MNAGER=$(fetch_pell_address "delegation_manager_proxy")
+  fi
 
   if [ -z "$PELL_DELEGATION_MNAGER" ]; then
     echo "Pell Delegation Manager not found"

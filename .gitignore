@@ -24,3 +24,4 @@ lib/*
 docker/devnet/.intellix
 docker/devnet/.pelldvs
 docker/devnet/.operator
+docker/devnet/.dispatcher
