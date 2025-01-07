@@ -38,6 +38,7 @@ jobs:
       OPERATOR_HOST_SERVER_PORT: 37757
       OPERATOR_HOST_DEBUG_PORT: 33347
       OPERATOR_KEY: ${{ secrets.TESTNET_OPERATOR_KEY }}
+      OPERATOR_BLS_KEY: ${{ secrets.TESTNET_OPERATOR_BLS_KEY }}
       OPERATOR_KEY_MNEMONIC: ${{ secrets.TESTNET_OPERATOR_KEY_MNEMONIC }}
       OPERATOR_HOST_PELLDVS_HOME: /home/ubuntu/.intellix-homes/intellix-testnet/operator
       ETH_RPC_URL: https://pevm.pell.dev
