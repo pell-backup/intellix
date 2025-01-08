@@ -17,8 +17,8 @@ type ChainListenerIFace[E any, B any] interface {
 	Start() error
 	Stop()
 
-	QueryEvents() []EventData[E]
-	QueryBlocks(height int64) []BlockData[B]
+	QueryEvents(func(EventData[E]) bool) []EventData[E]
+	QueryBlocks(func(BlockData[B]) bool) []BlockData[B]
 
 	SubscribeEvents(maxQueueSize int) *EventChannel[E]
 	SubscribeBlocks(maxQueueSize int) *BlockChannel[B]
@@ -44,6 +44,7 @@ type ChainListener[E any, B any] struct {
 	eventHandler EventHandler[E] // new event handler
 	blockHandler BlockHandler[B] // new block handler
 
+	// maybe save to db OR add index query optimization
 	events     []EventData[E]
 	blocks     []BlockData[B]
 	maxHistory int // max event or block size
@@ -162,22 +163,34 @@ func (l *ChainListener[E, B]) startBlockScanner(ctx context.Context) {
 	}
 }
 
-func (l *ChainListener[E, B]) QueryEvents() []EventData[E] {
+func (l *ChainListener[E, B]) QueryEvents(f func(EventData[E]) bool) []EventData[E] {
 	l.RLock()
 	defer l.RUnlock()
 
-	result := make([]EventData[E], len(l.events))
-	copy(result, l.events)
+	if f == nil {
+		return l.events
+	}
+
+	var result []EventData[E]
+	for _, event := range l.events {
+		if f(event) {
+			result = append(result, event)
+		}
+	}
 	return result
 }
 
-func (l *ChainListener[E, B]) QueryBlocks(height int64) []BlockData[B] {
+func (l *ChainListener[E, B]) QueryBlocks(f func(BlockData[B]) bool) []BlockData[B] {
 	l.RLock()
 	defer l.RUnlock()
 
+	if f == nil {
+		return l.blocks
+	}
+
 	var results []BlockData[B]
 	for _, block := range l.blocks {
-		if block.Height >= height {
+		if f(block) {
 			results = append(results, block)
 		}
 	}
