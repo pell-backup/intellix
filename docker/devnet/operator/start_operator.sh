@@ -82,6 +82,11 @@ function init_pelldvs_config {
 
   ## FIXME: don't use absolute path for key
   update-config operator_bls_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.bls.key.json"
+  if ! grep -q "operator_ecdsa_private_key_store_path" "$PELLDVS_HOME/config/config.toml"; then
+    echo "operator_ecdsa_private_key_store_path = \"$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.ecdsa.key.json\"" >> $PELLDVS_HOME/config/config.toml
+  else
+    update-config operator_ecdsa_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.ecdsa.key.json"
+  fi
 }
 
 function gen_cosmos_key {

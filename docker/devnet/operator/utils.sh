@@ -4,6 +4,9 @@ function load_defaults {
   export PELLDVS_HOME=${PELLDVS_HOME:-/root/.pelldvs}
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
+  export NETWORK=${NETWORK:-bsc-testnet}
+  export CHAIN_ID=${CHAIN_ID:-97}
+  export HARDHAT_DVS_PATH="deployments/$NETWORK"
   export ROOT_ADDRESS=""
 }
 
@@ -55,6 +58,15 @@ function show_operator_registered {
   local PELL_DELEGATION_MNAGER=$(fetch_pell_address "delegation_manager_proxy")
   local IS_PELL_OPERATOR=$(cast call $PELL_DELEGATION_MNAGER "isOperator(address)" $ADDRESS)
   echo "Is pell operator: $IS_PELL_OPERATOR"
+}
+
+function show_dvs_operator_info {
+  local ADDRESS=$1
+  DVS_CENTRAL_SCHEDULER=$(fetch_dvs_address "$HARDHAT_DVS_PATH/CentralScheduler-Proxy.json")
+
+  ## Get operator info -> (operator_id, status),
+  ## status: 0 -> NEVER, 1 -> REGISTERED, 2 -> DEREGISTERED
+  cast call "$DVS_CENTRAL_SCHEDULER" "getOperator(address)((bytes32,uint8))" $ADDRESS --rpc-url $SERVICE_CHAIN_RPC_URL
 }
 
 load_defaults

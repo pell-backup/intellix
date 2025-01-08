@@ -1,4 +1,3 @@
-
 set -x
 
 function load_defaults {
@@ -9,12 +8,18 @@ function load_defaults {
 
 function setup_operator_key {
 
-  # if "$PELLDVS_HOME"/keys/operator.ecdsa.key.json not exists then import it
-  if [ ! -f "$PELLDVS_HOME"/keys/operator.ecdsa.key.json ]; then
-    echo -ne '\n\n' | pelldvs keys import --key-type ecdsa --insecure operator $OPERATOR_KEY --home $PELLDVS_HOME >/dev/null
+  # check if file "$PELLDVS_HOME"/keys/${OPERATOR_KEY_NAME}.ecdsa.key.json exists
+  # if not, import or create a new key
+  if [ ! -f "$PELLDVS_HOME"/keys/${OPERATOR_KEY_NAME}.ecdsa.key.json ]; then
+    if [ -z "$OPERATOR_KEY" ]; then
+      echo  -ne '\n\n' | pelldvs keys create ${OPERATOR_KEY_NAME} --key-type=ecdsa --insecure > /tmp/operator.key
+    else
+      echo -ne '\n\n' | pelldvs keys import --key-type ecdsa --insecure ${OPERATOR_KEY_NAME} $OPERATOR_KEY --home $PELLDVS_HOME >/dev/null
+    fi
   fi
 
-  export OPERATOR_ADDRESS=$(pelldvs keys show operator --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
+  export OPERATOR_ADDRESS=$(pelldvs keys show ${OPERATOR_KEY_NAME} --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
+  echo "Operator address: $OPERATOR_ADDRESS"
 
   ## To register operator in the DVS, we need the operator's BLS key with the same name
   if [ ! -f "$PELLDVS_HOME"/keys/${OPERATOR_KEY_NAME}.bls.key.json ]; then

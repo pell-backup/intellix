@@ -7,6 +7,12 @@ build-pelldvs:
 build-operator:
 	docker compose -p intellix-testnet -f ../docker-compose.build.yml build operator
 
+down-all:
+	make operator-down-operator;
+	make operator-down-dispatcher;
+	make cosmos-down-abci;
+	make dvs-down-all;
+
 dvs-up-all:
 	make dvs-up-dvs;
 	make dvs-up-gateway;
@@ -28,10 +34,10 @@ dvs-down-all:
 	@make dvs-down-gateway;
 
 dvs-down-dvs:
-	docker compose --env-file .env -f docker-compose.dvs.yml down -v dvs
+	docker compose -f docker-compose.dvs.yml down -v dvs
 
 dvs-down-gateway:
-	docker compose --env-file .env -f docker-compose.dvs.yml down -v gateway
+	docker compose -f docker-compose.dvs.yml down -v gateway
 
 dvs-shell-dvs:
 	docker compose --env-file .env -f docker-compose.dvs.yml exec -it dvs bash
@@ -60,7 +66,7 @@ operator-up-dispatcher:
 	docker compose --env-file .env -f docker-compose.yml up dispatcher -d
 
 operator-down-dispatcher:
-	docker compose --env-file .env -f docker-compose.yml down dispatcher -v
+	docker compose -f docker-compose.yml down dispatcher -v
 
 operator-rm-dispatcher:
 	docker compose --env-file .env -f docker-compose.yml rm dispatcher -f
@@ -79,7 +85,7 @@ operator-up-operator:
 	docker compose --env-file .env -f docker-compose.yml up operator -d
 
 operator-down-operator:
-	docker compose --env-file .env -f docker-compose.yml down operator -v
+	docker compose -f docker-compose.yml down operator -v
 
 operator-rm-operator:
 	docker compose --env-file .env -f docker-compose.yml rm operator -f
@@ -103,10 +109,10 @@ operator-up-all:
 	@make operator-up-operator02;
 
 operator-down-operator01:
-	docker compose --env-file .env -f docker-compose.yml down -v
+	docker compose -f docker-compose.yml down -v
 
 operator-down-operator02:
-	docker compose --env-file .env -f docker-compose.yml down -v
+	docker compose -f docker-compose.yml down -v
 
 operator-down-all:
 	@make operator-down-operator01;
