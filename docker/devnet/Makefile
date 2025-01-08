@@ -51,6 +51,16 @@ dvs-rm-dvs:
 dvs-rm-gateway:
 	docker compose --env-file .env -f docker-compose.dvs.yml rm gateway -f
 
+dvs-dvs-rerun:
+	make dvs-down-dvs;
+	make dvs-up-dvs;
+	make dvs-logs-dvs;
+
+dvs-gateway-rerun:
+	make dvs-down-gateway;
+	make dvs-up-gateway;
+	make dvs-logs-gateway;
+
 cosmos-up-abci:
 	docker compose --env-file .env -f docker-compose.cosmos.yml up abci -d
 
@@ -60,6 +70,10 @@ cosmos-down-abci:
 cosmos-logs-abci:
 	docker compose --env-file .env -f docker-compose.cosmos.yml logs abci -n 100 -f
 
+cosmos-abci-rerun:
+	make cosmos-down-abci;
+	make cosmos-up-abci;
+	make cosmos-logs-abci;
 
 # Operator dispatcher
 operator-up-dispatcher:

@@ -6,7 +6,7 @@ function load_defaults {
   export OPERATOR_KEY_NAME=${OPERATOR_KEY_NAME:-operator}
 }
 
-function setup_operator_key {
+function import_or_create_operator_key {
 
   # check if file "$PELLDVS_HOME"/keys/${OPERATOR_KEY_NAME}.ecdsa.key.json exists
   # if not, import or create a new key
@@ -33,5 +33,26 @@ function setup_operator_key {
 
 }
 
+# always import operator key, panic if OPERATOR_KEY or OPERATOR_BLS_KEY is not set
+function import_operator_key_always {
+  if [ -z "$OPERATOR_KEY" ]; then
+    echo "OPERATOR_KEY is not set"
+    exit 1
+  fi
+
+  if [ -z "$OPERATOR_BLS_KEY" ]; then
+    echo "OPERATOR_BLS_KEY is not set"
+    exit 1
+  fi
+
+  rm -rf $PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.ecdsa.key.json
+  rm -rf $PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.bls.key.json
+
+  echo -ne '\n\n' | pelldvs keys import --key-type ecdsa --insecure ${OPERATOR_KEY_NAME} $OPERATOR_KEY --home $PELLDVS_HOME >/dev/null
+  echo -ne '\n\n' | pelldvs keys import --key-type bls --insecure ${OPERATOR_KEY_NAME} $OPERATOR_BLS_KEY --home $PELLDVS_HOME >/dev/null
+
+  echo "Operator key imported"
+}
+
 load_defaults
-setup_operator_key
+import_operator_key_always

@@ -20,20 +20,20 @@ function setup_root_key {
 }
 
 function fetch_dvs_address() {
-  curl -H "Authorization: token $GITHUB_TOKEN" \
+  curl -s -H "Authorization: token $GITHUB_TOKEN" \
       -H "Accept: application/vnd.github.v3.raw" \
       https://api.github.com/repos/IntelliXLabs/price-oracle-dvs/contents/$1 | jq -r '.address'
 }
 
 function fetch_staking_address() {
-  curl -H "Authorization: token $GITHUB_TOKEN" \
+  curl -s -H "Authorization: token $GITHUB_TOKEN" \
       -H "Accept: application/vnd.github.v3.raw" \
       https://api.github.com/repos/0xPellNetwork/contracts/contents/$1 | jq -r '.address'
 }
 
 function fetch_pell_address {
   KEY=$1
-  curl https://raw.githubusercontent.com/0xPellNetwork/network-config/refs/heads/main/testnet/system_contract.json | jq -r ".$KEY"
+  curl -s https://raw.githubusercontent.com/0xPellNetwork/network-config/refs/heads/main/testnet/system_contract.json | jq -r ".$KEY"
 }
 
 function faucet {

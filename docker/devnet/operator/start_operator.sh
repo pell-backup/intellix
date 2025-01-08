@@ -20,6 +20,17 @@ function load_defaults {
   export OPERATOR_KEY=${OPERATOR_KEY}
   export OPERATOR_KEY_MNEMONIC=${OPERATOR_KEY_MNEMONIC}
   export AGGREGATOR_RPC_URL=${AGGREGATOR_RPC_URL:-dvs:26653}
+  export OPERATOR_RPC_SERVER=${OPERATOR_RPC_SERVER:-operator:26657}
+
+  export NETWORK=${NETWORK:-bsc-testnet}
+  export CHAIN_ID=${CHAIN_ID:-97}
+  export HARDHAT_DVS_PATH="deployments/$NETWORK"
+
+  export SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL:-https://bsc-testnet.blockpi.network/v1/rpc/public}
+  export SERVICE_CHAIN_WS_URL=${SERVICE_CHAIN_WS_URL}
+
+  export AGGREGATOR_INDEXER_START_HEIGHT=${AGGREGATOR_INDEXER_START_HEIGHT:-299527}
+  export AGGREGATOR_INDEXER_BATCH_SIZE=${AGGREGATOR_INDEXER_BATCH_SIZE:-100}
 
   export AGGREGATOR_RPC_SERVER=${AGGREGATOR_RPC_SERVER:-dvs:26653}
   export COSMOS_KEYRING_BACKEND=${COSMOS_KEYRING_BACKEND:-test}
@@ -87,6 +98,37 @@ function init_pelldvs_config {
   else
     update-config operator_ecdsa_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.ecdsa.key.json"
   fi
+
+  if ! grep -q "interfactor_config_path" "$PELLDVS_HOME/config/config.toml"; then
+    echo "interfactor_config_path = \"$PELLDVS_HOME/config/interfactor_config.json\"" >> $PELLDVS_HOME/config/config.toml
+  else
+    update-config interfactor_config_path "$PELLDVS_HOME/config/interfactor_config.json"
+  fi
+
+  DVS_OPERATOR_KEY_MANAGER=$(fetch_dvs_address "$HARDHAT_DVS_PATH/OperatorKeyManager-Proxy.json")
+  DVS_CENTRAL_SCHEDULER=$(fetch_dvs_address "$HARDHAT_DVS_PATH/CentralScheduler-Proxy.json")
+  DVS_OPERATOR_INFO_PROVIDER=$(fetch_dvs_address "$HARDHAT_DVS_PATH/OperatorInfoProvider.json")
+  DVS_OPERATOR_INDEX_MANAGER=$(fetch_dvs_address "$HARDHAT_DVS_PATH/OperatorIndexManager-Proxy.json")
+
+  cat <<EOF > $PELLDVS_HOME/config/interfactor_config.json
+{
+    "indexer_start_height": $AGGREGATOR_INDEXER_START_HEIGHT,
+    "indexer_batch_size": $AGGREGATOR_INDEXER_BATCH_SIZE,
+    "pell_rpc_url": "$ETH_RPC_URL",
+    "pell_delegation_manager_address": "$PELL_DELEGATION_MNAGER",
+    "pell_registry_router_address": "$REGISTRY_ROUTER_ADDRESS",
+    "chains": {
+      "$CHAIN_ID": {
+        "rpc_url": "$SERVICE_CHAIN_RPC_URL",
+        "operator_info_provider_address": "$DVS_OPERATOR_INFO_PROVIDER",
+        "operator_key_manager_address": "$DVS_OPERATOR_KEY_MANAGER",
+        "central_scheduler_address": "$DVS_CENTRAL_SCHEDULER",
+        "operator_index_manager_address": "$DVS_OPERATOR_INDEX_MANAGER"
+      }
+  }
+}
+EOF
+
 }
 
 function gen_cosmos_key {
@@ -98,6 +140,23 @@ function gen_cosmos_key {
 
   ## migrate to dvs logic after fix
   export OPERATOR_ADDRESS=$(pelldvs keys show $OPERATOR_KEY_NAME --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
+}
+
+function setup_dispatcher_config {
+  mkdir -p $PELLDVS_HOME/config
+  DATA_ORACLE_ADDRESS=$(fetch_dvs_address "$HARDHAT_DVS_PATH/DataOracle-Proxy.json")
+  cat <<EOF > $PELLDVS_HOME/config/dispatcher.config.json
+{
+  "dvs_address": "tcp://$OPERATOR_RPC_SERVER",
+  "chains": [
+    {
+      "chain_id": $CHAIN_ID,
+      "eth_url": "$SERVICE_CHAIN_WS_URL",
+      "contract_address": "$DATA_ORACLE_ADDRESS"
+    }
+  ]
+}
+EOF
 }
 
 function setup_operator_config {
@@ -135,8 +194,11 @@ source "$(dirname "$0")/setup_operator_key.sh"
 logt "Setup operator config"
 init_pelldvs_config
 
-setup_operator_config
+logt "setup dispatcher config"
+setup_dispatcher_config
 
+logt "Setup operator config"
+setup_operator_config
 
 logt "Starting operator..."
 start_operator
