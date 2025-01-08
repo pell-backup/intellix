@@ -75,6 +75,7 @@ require (
 	github.com/0xPellNetwork/pell-middleware-contracts v0.2.26 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.1 // indirect
+	github.com/AlecAivazis/survey/v2 v2.3.7 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/DataDog/datadog-go v3.2.0+incompatible // indirect
 	github.com/DataDog/zstd v1.5.5 // indirect
@@ -190,6 +191,7 @@ require (
 	github.com/jdx/go-netrc v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
+	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
@@ -200,6 +202,7 @@ require (
 	github.com/manifoldco/promptui v0.9.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/minio/highwayhash v1.0.3 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-testing-interface v1.14.1 // indirect
