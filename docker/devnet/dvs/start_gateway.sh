@@ -60,9 +60,15 @@ function setup_gateway_config {
 {
   "server_addr": "0.0.0.0:$GATEWAY_PORT",
   "sender_address": "$GATEWAY_ADDRESS",
-  "eth_endpoint": "$SERVICE_CHAIN_RPC_URL",
   "contract_address": "$DATA_ORACLE_ADDRESS",
-  "private_key_store_path": "$PELLDVS_HOME/keys/gateway.ecdsa.key.json"
+  "private_key_store_path": "$PELLDVS_HOME/keys/gateway.ecdsa.key.json",
+  "chains": {
+    "$CHAIN_ID": {
+      "eth_endpoint": "$SERVICE_CHAIN_RPC_URL",
+      "contract_address": "$DATA_ORACLE_ADDRESS",
+      "chain_id": $CHAIN_ID
+    }
+  }
 }
 EOF
 }
