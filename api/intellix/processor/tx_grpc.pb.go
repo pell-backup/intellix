@@ -19,8 +19,10 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Msg_UpdateParams_FullMethodName    = "/intellix.processor.Msg/UpdateParams"
-	Msg_CreateProcessor_FullMethodName = "/intellix.processor.Msg/CreateProcessor"
+	Msg_UpdateParams_FullMethodName          = "/intellix.processor.Msg/UpdateParams"
+	Msg_CreateProcessor_FullMethodName       = "/intellix.processor.Msg/CreateProcessor"
+	Msg_VoteRequestProcessor_FullMethodName  = "/intellix.processor.Msg/VoteRequestProcessor"
+	Msg_VoteResponseProcessor_FullMethodName = "/intellix.processor.Msg/VoteResponseProcessor"
 )
 
 // MsgClient is the client API for Msg service.
@@ -32,6 +34,10 @@ type MsgClient interface {
 	UpdateParams(ctx context.Context, in *MsgUpdateParams, opts ...grpc.CallOption) (*MsgUpdateParamsResponse, error)
 	// CreateProcessor creates a processor with given config and code.
 	CreateProcessor(ctx context.Context, in *MsgCreateProcessor, opts ...grpc.CallOption) (*MsgCreateProcessorResponse, error)
+	// VoteRequestProcessor votes for a request
+	VoteRequestProcessor(ctx context.Context, in *MsgVoteRequestProcessor, opts ...grpc.CallOption) (*MsgVoteRequestProcessorResponse, error)
+	// VoteResponseProcessor votes for a response
+	VoteResponseProcessor(ctx context.Context, in *MsgVoteResponseProcessor, opts ...grpc.CallOption) (*MsgVoteResponseProcessorResponse, error)
 }
 
 type msgClient struct {
@@ -60,8 +66,26 @@ func (c *msgClient) CreateProcessor(ctx context.Context, in *MsgCreateProcessor,
 	return out, nil
 }
 
+func (c *msgClient) VoteRequestProcessor(ctx context.Context, in *MsgVoteRequestProcessor, opts ...grpc.CallOption) (*MsgVoteRequestProcessorResponse, error) {
+	out := new(MsgVoteRequestProcessorResponse)
+	err := c.cc.Invoke(ctx, Msg_VoteRequestProcessor_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) VoteResponseProcessor(ctx context.Context, in *MsgVoteResponseProcessor, opts ...grpc.CallOption) (*MsgVoteResponseProcessorResponse, error) {
+	out := new(MsgVoteResponseProcessorResponse)
+	err := c.cc.Invoke(ctx, Msg_VoteResponseProcessor_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
-// All implementations must embed UnimplementedMsgServer
+// All implementations should embed UnimplementedMsgServer
 // for forward compatibility
 type MsgServer interface {
 	// UpdateParams defines a (governance) operation for updating the module
@@ -69,10 +93,13 @@ type MsgServer interface {
 	UpdateParams(context.Context, *MsgUpdateParams) (*MsgUpdateParamsResponse, error)
 	// CreateProcessor creates a processor with given config and code.
 	CreateProcessor(context.Context, *MsgCreateProcessor) (*MsgCreateProcessorResponse, error)
-	mustEmbedUnimplementedMsgServer()
+	// VoteRequestProcessor votes for a request
+	VoteRequestProcessor(context.Context, *MsgVoteRequestProcessor) (*MsgVoteRequestProcessorResponse, error)
+	// VoteResponseProcessor votes for a response
+	VoteResponseProcessor(context.Context, *MsgVoteResponseProcessor) (*MsgVoteResponseProcessorResponse, error)
 }
 
-// UnimplementedMsgServer must be embedded to have forward compatible implementations.
+// UnimplementedMsgServer should be embedded to have forward compatible implementations.
 type UnimplementedMsgServer struct {
 }
 
@@ -82,7 +109,12 @@ func (UnimplementedMsgServer) UpdateParams(context.Context, *MsgUpdateParams) (*
 func (UnimplementedMsgServer) CreateProcessor(context.Context, *MsgCreateProcessor) (*MsgCreateProcessorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateProcessor not implemented")
 }
-func (UnimplementedMsgServer) mustEmbedUnimplementedMsgServer() {}
+func (UnimplementedMsgServer) VoteRequestProcessor(context.Context, *MsgVoteRequestProcessor) (*MsgVoteRequestProcessorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VoteRequestProcessor not implemented")
+}
+func (UnimplementedMsgServer) VoteResponseProcessor(context.Context, *MsgVoteResponseProcessor) (*MsgVoteResponseProcessorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VoteResponseProcessor not implemented")
+}
 
 // UnsafeMsgServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to MsgServer will
@@ -131,6 +163,42 @@ func _Msg_CreateProcessor_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_VoteRequestProcessor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgVoteRequestProcessor)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).VoteRequestProcessor(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_VoteRequestProcessor_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).VoteRequestProcessor(ctx, req.(*MsgVoteRequestProcessor))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_VoteResponseProcessor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgVoteResponseProcessor)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).VoteResponseProcessor(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Msg_VoteResponseProcessor_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).VoteResponseProcessor(ctx, req.(*MsgVoteResponseProcessor))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Msg_ServiceDesc is the grpc.ServiceDesc for Msg service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -145,6 +213,14 @@ var Msg_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateProcessor",
 			Handler:    _Msg_CreateProcessor_Handler,
+		},
+		{
+			MethodName: "VoteRequestProcessor",
+			Handler:    _Msg_VoteRequestProcessor_Handler,
+		},
+		{
+			MethodName: "VoteResponseProcessor",
+			Handler:    _Msg_VoteResponseProcessor_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -11,6 +11,7 @@ import (
 	"github.com/0xPellNetwork/pelldvs/p2p"
 	"github.com/0xPellNetwork/pelldvs/privval"
 	"github.com/0xPellNetwork/pelldvs/proxy"
+	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"
 )
 
 type Node struct {
@@ -55,6 +56,7 @@ func NewNode(
 		privval.LoadOrGenFilePV(n.nodeCfg.PrivValidatorKeyFile(), n.nodeCfg.PrivValidatorStateFile()),
 		nodeKey,
 		proxy.NewLocalClientCreator(app),
+		config.DefaultDBProvider,
 		n.agg,
 		node.DefaultMetricsProvider(n.nodeCfg.Instrumentation),
 		logger,
@@ -64,4 +66,9 @@ func NewNode(
 		return nil, fmt.Errorf("failed to create node: %v", err)
 	}
 	return n, nil
+}
+
+func (n *Node) GetLocalClient() *rpclocal.Local {
+
+	return rpclocal.New(n.node)
 }

@@ -51,7 +51,7 @@ func (c *Client) reconnect() error {
 	return nil
 }
 
-func (c *Client) RespondToTask(req *RPCVoteFinalizedRequestPrice) error {
+func (c *Client) RespondToTask(req *RPCVoteFinalizedRequestIn) error {
 	resp := &RespondToTaskResponse{}
 
 	err := c.client.Call("TaskGateway.RespondToTask", req, resp)

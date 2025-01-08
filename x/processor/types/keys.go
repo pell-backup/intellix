@@ -1,5 +1,7 @@
 package types
 
+import "fmt"
+
 const (
 	// ModuleName defines the module name
 	ModuleName = "processor"
@@ -10,8 +12,13 @@ const (
 	// MemStoreKey defines the in-memory store key
 	MemStoreKey = "mem_processor"
 
-	ProcessorKey = "Processor/value/"
+	ProcessorKey      = "Processor/value/"
 	ProcessorCountKey = "Processor/count"
+
+	EventTypeVoteRequestProcessor  = "vote_request_processor"
+	EventTypeVoteResponseProcessor = "vote_response_processor"
+	AttributeKeyTaskIndex          = "task_index"
+	AttributeKeyRequestId          = "request_id"
 )
 
 var (
@@ -20,4 +27,22 @@ var (
 
 func KeyPrefix(p string) []byte {
 	return []byte(p)
+}
+
+func MsgVoteRequestProcessorKey(taskIndex uint32, requestId []byte) []byte {
+	return append(
+		append(
+			KeyPrefix(ProcessorKey+EventTypeVoteRequestProcessor),
+			[]byte(fmt.Sprintf("%d", taskIndex))...,
+		),
+		requestId...,
+	)
+}
+
+func MsgVoteResponseProcessorKey(taskIndex uint32, requestId []byte) []byte {
+	return append(
+		append(KeyPrefix(ProcessorCountKey+EventTypeVoteResponseProcessor),
+			[]byte(fmt.Sprintf("%d", taskIndex))...),
+		requestId...,
+	)
 }

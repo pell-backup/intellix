@@ -6,7 +6,7 @@ import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 
-option go_package = "intellix/x/price/dvs/types";
+option go_package = "intellix/dvs/price/types";
 
 message TaskRequest {
   uint32 task_index = 1;
@@ -22,6 +22,7 @@ message TaskRequest {
   uint32 task_created_block = 8;
   bytes quorum_numbers = 9;
   uint32 quorum_threshold_percentage = 10;
+  bool advance_decode = 11;
 }
 
 // PriceFeedParam defines the price feed parameters

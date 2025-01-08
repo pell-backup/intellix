@@ -24,6 +24,7 @@ function load_defaults {
 ## TODO: move operator config to seperated location
 function init_pelldvs_config {
   pelldvs init --home $PELLDVS_HOME
+  
   update-config() {
     KEY="$1"
     VALUE="$2"
@@ -42,6 +43,8 @@ function init_pelldvs_config {
   update-config pell_dvs_directory_address "$PELL_DVS_DIRECTORY"
   update-config pell_registry_router_address "$REGISTRY_ROUTER_ADDRESS"
   update-config aggregator_rpc_url "$AGGREGATOR_RPC_URL"
+  update-config interfactor_config_path "$PELLDVS_HOME/config/interfactor_config.json"
+
 
   ## FIXME: operator_bls_private_key_store_path should be in the config template. 
   ## FIXME: don't use absolute path for key
@@ -51,8 +54,27 @@ function init_pelldvs_config {
     update-config operator_bls_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.bls.key.json"
   fi
 
+  ## FIXME: operator_ecdsa_private_key_store_path should be in the config template.
+  ## FIXME: don't use absolute path for key
+  if ! grep -q "operator_ecdsa_private_key_store_path" "$PELLDVS_HOME/config/config.toml"; then
+    echo "operator_ecdsa_private_key_store_path = \"$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.ecdsa.key.json\"" >> $PELLDVS_HOME/config/config.toml
+  else
+    update-config operator_ecdsa_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.ecdsa.key.json"
+  fi
+
   ## FIXME: why should we use chain.detail.json?
   scp dvs://$PELLDVS_HOME/config/chain.detail.json $PELLDVS_HOME/config/chain.detail.json
+
+  cat <<EOF > $PELLDVS_HOME/config/interfactor_config.json
+{
+    "indexer_start_height": 0,
+    "indexer_batch_size": 100,
+    "pell_rpc_url": "$ETH_RPC_URL",
+    "pell_delegation_manager_address": "$PELL_DELEGATION_MNAGER",
+    "pell_registry_router_address": "$REGISTRY_ROUTER_ADDRESS",
+    "chains": $(cat $PELLDVS_HOME/config/chain.detail.json)
+}
+EOF
 }
 
 

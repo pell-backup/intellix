@@ -3,7 +3,6 @@ package taskdispatcher
 import (
 	"bytes"
 	"fmt"
-
 	cbor "github.com/fxamacker/cbor/v2"
 )
 
@@ -71,6 +70,51 @@ func ParsePriceFeed(data []byte) (*PriceFeedParam, error) {
 	return &PriceFeedParam{baseSymbol, quoteSymbol}, nil
 }
 
+type ScriptParam struct {
+	ScriptId uint64
+	Params   []byte
+}
+
+func ParseScript(data []byte) (*ScriptParam, error) {
+	// decode cbor
+	reader := bytes.NewReader(data)
+	decoder := cbor.NewDecoder(reader)
+
+	var key string
+	result := make(map[string]interface{})
+	for i := 0; ; i++ {
+		var item interface{}
+		err := decoder.Decode(&item)
+		if err != nil {
+			if err.Error() == "EOF" {
+				break
+			}
+			return nil, err
+		}
+
+		if i%2 == 0 {
+			// key
+			if str, ok := item.(string); ok {
+				key = str
+			}
+		} else {
+			// value
+			result[key] = item
+		}
+	}
+
+	var sp = &ScriptParam{}
+	if scriptId, ok := result["scriptId"]; ok {
+		sp.ScriptId = scriptId.(uint64)
+	}
+	if params, ok := result["params"]; ok {
+		sp.Params = params.([]byte)
+	}
+
+	return sp, nil
+}
+
 const (
-	TaskTypePrice int64 = 1
+	TaskTypePrice  int64 = 1
+	TaskTypeScript int64 = 3
 )

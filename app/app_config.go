@@ -55,7 +55,6 @@ import (
 
 	pricemodulev1 "intellix/api/intellix/price/module"
 	processormodulev1 "intellix/api/intellix/processor/module"
-	_ "intellix/x/price/dvs"    // import for side-effects
 	_ "intellix/x/price/module" // import for side-effects
 	pricemoduletypes "intellix/x/price/types"
 	_ "intellix/x/processor/module" // import for side-effects

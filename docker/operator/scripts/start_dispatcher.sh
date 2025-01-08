@@ -81,5 +81,5 @@ setup_dispatcher_config
 
 touch /root/dispatcher_initialized
 
-logt "Starting dispatcher..."
-start_dispatcher
+# logt "Starting dispatcher..."
+# start_dispatcher

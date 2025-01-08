@@ -7,6 +7,8 @@ import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "intellix/processor/params.proto";
 import "intellix/processor/processor.proto";
+import "intellix/processor/vote_request_processor.proto";
+import "intellix/processor/vote_response_processor.proto";
 
 option go_package = "intellix/x/processor/types";
 
@@ -19,6 +21,12 @@ service Msg {
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
   // CreateProcessor creates a processor with given config and code.
   rpc CreateProcessor(MsgCreateProcessor) returns (MsgCreateProcessorResponse);
+
+  // VoteRequestProcessor votes for a request
+  rpc VoteRequestProcessor(MsgVoteRequestProcessor) returns (MsgVoteRequestProcessorResponse);
+  // VoteResponseProcessor votes for a response
+  rpc VoteResponseProcessor(MsgVoteResponseProcessor) returns (MsgVoteResponseProcessorResponse);
+
 }
 
 // MsgUpdateParams is the Msg/UpdateParams request type.

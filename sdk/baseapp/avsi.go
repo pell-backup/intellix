@@ -2,10 +2,9 @@ package baseapp
 
 import (
 	"context"
-	"encoding/json"
-	pkgcontext "intellix/pkg/context"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	dvstypes "intellix/pkg/pelldvs/types"
+	sdktypes "intellix/sdk/types"
 
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
 )
@@ -25,12 +24,16 @@ func (app *BaseApp) Query(ctx context.Context, query *avsitypes.RequestQuery) (*
 
 func (app *BaseApp) ProcessDVSRequest(ctx context.Context, req *avsitypes.RequestProcessDVSRequest) (*avsitypes.ResponseProcessDVSRequest, error) {
 	// new SDK context
-	pkgCtx := pkgcontext.NewContext(ctx, nil)
-	pkgCtx = pkgCtx.WithBlockHeight(req.Request.Height)
-	pkgCtx = pkgCtx.WithChainID(req.Request.ChainId)
+	sdkCtx := sdktypes.NewContext(ctx)
+	sdkCtx = sdkCtx.WithChainID(req.Request.ChainId).
+		WithHeight(req.Request.Height).
+		WithGroupNumbers(req.Request.GroupNumbers).
+		WithRequestData(req.Request.Data).
+		WithGroupThresholdPercentages(req.Request.GroupThresholdPercentages).
+		WithOperator(req.Operator)
 
 	handlerSrc := dvsservermanager.GetProcessRequestHandlerSrc()
-	res, err := handlerSrc.InvokeRouterRawByData(pkgCtx, req.Request.Data)
+	res, err := handlerSrc.InvokeRouterRawByData(sdkCtx, req.Request.Data)
 	if err != nil {
 		app.logger.Error("process request error", "err", err)
 		return nil, err
@@ -44,15 +47,16 @@ func (app *BaseApp) ProcessDVSRequest(ctx context.Context, req *avsitypes.Reques
 
 func (app *BaseApp) ProcessDVSResponse(ctx context.Context, req *avsitypes.RequestProcessDVSResponse) (*avsitypes.ResponseProcessDVSResponse, error) {
 	// new SDK context
-	pkgCtx := pkgcontext.NewContext(ctx, nil)
-	pkgCtx = pkgCtx.WithBlockHeight(req.DvsRequest.Height)
-	pkgCtx = pkgCtx.WithChainID(req.DvsRequest.ChainId)
-
-	reqJs, _ := json.Marshal(req)
-	app.logger.Debug("AVSI.ProcessDVSResponse", "req", string(reqJs))
+	sdkCtx := sdktypes.NewContext(ctx)
+	sdkCtx = sdkCtx.WithChainID(req.DvsRequest.ChainId).
+		WithHeight(req.DvsRequest.Height).
+		WithGroupNumbers(req.DvsRequest.GroupNumbers).
+		WithRequestData(req.DvsRequest.Data).
+		WithGroupThresholdPercentages(req.DvsRequest.GroupThresholdPercentages).
+		WithValidatedResponse(dvstypes.NewValidatedResponse(req.DvsResponse))
 
 	handlerSrc := dvsservermanager.GetPostProcessRequestHandlerSrc()
-	_, err := handlerSrc.InvokeRouterRawByData(pkgCtx, req.DvsRequest.Data, dvstypes.NewValidatedResponse(req.DvsResponse))
+	_, err := handlerSrc.InvokeRouterRawByData(sdkCtx, req.DvsRequest.Data)
 	if err != nil {
 		app.logger.Error("post request error", "err", err)
 		return nil, err

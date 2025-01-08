@@ -3,17 +3,19 @@ package dvsservermanager
 import (
 	"context"
 	"fmt"
-	pkgcontext "intellix/pkg/context"
 	result "intellix/pkg/dvs_msg_handler/result_handler"
 	"intellix/pkg/dvs_msg_handler/tx"
 
+	sdktypes "intellix/sdk/types"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/ethereum/go-ethereum/log"
 	"google.golang.org/grpc"
 )
 
-type MsgHandler func(ctx pkgcontext.Context, msg sdk.Msg) (*result.Result, error)
+type MsgHandler func(ctx sdktypes.Context, msg sdk.Msg) (*result.Result, error)
 
 // MsgRouterMgr defines router for dvs server
 type MsgRouterMgr struct {
@@ -63,10 +65,10 @@ func (m *MsgRouterMgr) RegisterMsgHandler(sd *grpc.ServiceDesc, method grpc.Meth
 
 	// requestTypeName register check
 	if _, ok := m.Router[requestTypeName]; !ok {
-		m.Router[requestTypeName] = func(ctx pkgcontext.Context, msg sdk.Msg) (*result.Result, error) {
+		m.Router[requestTypeName] = func(ctx sdktypes.Context, msg sdk.Msg) (*result.Result, error) {
 			// ctx = ctx.WithEventManager(sdk.NewEventManager())
 			interceptor := func(goCtx context.Context, _ interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-				goCtx = context.WithValue(goCtx, pkgcontext.ContextKey, ctx)
+				goCtx = context.WithValue(goCtx, sdktypes.ContextKey, ctx)
 				return handler(goCtx, msg)
 			}
 
@@ -108,7 +110,7 @@ func (m *MsgRouterMgr) GetHandlerByData(data []byte) MsgHandler {
 	return nil
 }
 
-func (m *MsgRouterMgr) HandleByData(ctx pkgcontext.Context, data []byte) (*result.Result, error) {
+func (m *MsgRouterMgr) HandleByData(ctx sdktypes.Context, data []byte) (*result.Result, error) {
 	msgTx, err := m.encoder.Decode(data)
 	if err != nil {
 		return nil, err

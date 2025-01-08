@@ -2,7 +2,7 @@ name: intellix
 
 services:
   hardhat:
-    image: hardhat:${CONTRACT_VERSION:-v0.4.0}
+    image: hardhat:${CONTRACT_VERSION:-v0.4.3}
     environment:
       - LOCALHOST_URL=http://eth:8545
       - ETH_RPC_URL=http://eth:8545
@@ -57,29 +57,11 @@ services:
     volumes:
       - ./pelldvs/scripts:/root/scripts
 
-  dispatcher:
-    image: intellixlabs-intellix-operator:latest
-    environment:
-      - ETH_RPC_URL=http://eth:8545
-      - ETH_WS_URL=ws://eth:8545
-      - DEBUG_ENABLED=${DEBUG_ENABLED:-false}
-    depends_on:
-      gateway:
-        condition: service_started
-    entrypoint: [ "bash", "/root/scripts/start_dispatcher.sh" ]
-    ports:
-      - "3345:${DEBUG_PORT:-2345}"
-    volumes:
-      - ./operator/scripts:/root/scripts
-
   abci:
     image: intellixlabs-intellix-operator:latest
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
-    depends_on:
-      gateway:
-        condition: service_started
     entrypoint: [ "bash", "/root/scripts/start_abci.sh" ]
     volumes:
       - ./operator/scripts:/root/scripts
@@ -90,7 +72,7 @@ services:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
       - GATEWAY_ADDR=${GATEWAY_ADDR:-gateway:8949}
-      - DEBUG_ENABLED=${DEBUG_ENABLED:-false}
+      - DEBUG_ENABLED=${OPERATOR_DEBUG_ENABLED:-false}
     ports:
       - "3346:${DEBUG_PORT:-2345}"
     depends_on:
@@ -107,11 +89,11 @@ services:
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
-      - DEBUG_ENABLED=${DEBUG_ENABLED:-false}
-    depends_on:
-      dvs:
-        condition: service_started
+      - DEBUG_ENABLED=${GATEWAY_DEBUG_ENABLED:-false}
     entrypoint: [ "bash", "/root/scripts/start_gateway.sh" ]
+    depends_on:
+      hardhat:
+        condition: service_started
     ports:
       - "3347:${DEBUG_PORT:-2345}"
     volumes:
@@ -127,6 +109,6 @@ services:
     depends_on:
       operator:
         condition: service_started
-    entrypoint: [ "bash" ]
+    entrypoint: [ "bash", "/root/scripts/test.sh" ]
     volumes:
       - ./operator/scripts:/root/scripts

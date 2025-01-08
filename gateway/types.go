@@ -138,12 +138,12 @@ type RPCTaskRaw struct {
 	TaskCreatedBlock          uint32 `json:"task_created_block"`
 	QuorumNumbers             []byte `json:"quorum_numbers"`
 	QuorumThresholdPercentage uint32 `json:"quorum_threshold_percentage"`
+	AdvanceDecode             bool   `json:"advance_decode"`
 }
 
-// RPCPriceFeedResponse represents a serializable version of PriceFeedResponse
-type RPCPriceFeedResponse struct {
+type RPCTaskResponse struct {
 	ReferenceTaskIndex uint32 `json:"reference_task_index"`
-	Price              string `json:"price"`
+	Data               []byte `json:"data"`
 }
 
 type RPCValidatedData struct {
@@ -160,12 +160,11 @@ type RPCValidatedData struct {
 	NonSignerStakeIndices        [][]uint32 `json:"non_signer_stake_indices,omitempty"`
 }
 
-// RPCVoteFinalizedRequestPrice represents a serializable version of MsgVoteFinalizedRequestPrice
-type RPCVoteFinalizedRequestPrice struct {
-	ChainID           int64                 `json:"chain_id"`
-	TaskRaw           *RPCTaskRaw           `json:"task_raw"`
-	ValidatedData     *RPCValidatedData     `json:"validated_data"`
-	PriceFeedResponse *RPCPriceFeedResponse `json:"price_feed_response"`
+type RPCVoteFinalizedRequestIn struct {
+	ChainID        int64             `json:"chain_id"`
+	TaskRaw        *RPCTaskRaw       `json:"task_raw"`
+	ValidatedData  *RPCValidatedData `json:"validated_data"`
+	RespToTaskData []byte            `json:"resp_to_task_data"` // decoded data
 }
 
 func validateBLSComponents(data *RPCValidatedData) error {
@@ -197,3 +196,8 @@ func validateBLSComponents(data *RPCValidatedData) error {
 
 	return nil
 }
+
+const (
+	TaskTypePriceFeed int64 = 1
+	TaskTypeProcessor int64 = 3
+)

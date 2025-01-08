@@ -21,22 +21,6 @@ function load_defaults {
   export AGGREGATOR_RPC_SERVER=${AGGREGATOR_RPC_SERVER:-dvs:26653}
 }
 
-function dvs_healthcheck {
-  set +e
-  while true; do
-    curl -s $AGGREGATOR_RPC_SERVER >/dev/null
-    if [ $? -eq 52 ]; then
-      echo "DVS RPC port is ready, proceeding to the next step..."
-      break
-    fi
-    echo "DVS RPC port not ready, retrying in 2 seconds..."
-    sleep 2
-  done
-  ## Wait for aggregator to be ready
-  sleep 3
-  set -e
-}
-
 function setup_gateway_key {
   export GATEWAY_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
   if ! pelldvs keys show gateway --home "$PELLDVS_HOME" >/dev/null 2>&1; then
@@ -44,6 +28,21 @@ function setup_gateway_key {
   fi
 
   export GATEWAY_ADDRESS=$(pelldvs keys show gateway --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
+}
+
+function contract_healthcheck {
+  set +e
+  while true; do
+    DATA_ORACLE_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/DataOracle-Proxy.json" | jq -r .address)
+    if [ -z "$DATA_ORACLE_ADDRESS" ]; then
+      echo "DATA_ORACLE_ADDRESS is empty, waiting..."
+      sleep 5
+    else
+      echo "contract_address is ready"
+      break
+    fi
+  done
+  set -e
 }
 
 
@@ -79,8 +78,7 @@ function start_gateway {
 logt "Load Default Values for ENV Vars if not set."
 load_defaults
 
-logt "Check if DVS is ready"
-dvs_healthcheck
+contract_healthcheck
 
 logt "Setup gateway config"
 setup_gateway_config

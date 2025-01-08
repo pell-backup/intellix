@@ -24,6 +24,8 @@ function load_defaults {
   export COSMOS_KEYRING_BACKEND=${COSMOS_KEYRING_BACKEND:-test}
   export COSMOS_CHAIN_ID=${COSMOS_CHAIN_ID:-intellix}
   export COSMOS_NODE_URI=${COSMOS_NODE_URI:-http://abci:26657}
+  export OPERATOR_RPC_SERVER=${OPERATOR_RPC_SERVER:-operator:26657}
+
 }
 
 function dvs_healthcheck {
@@ -58,6 +60,23 @@ function gateway_healthcheck {
   set -e
 }
 
+function setup_dispatcher_config {
+  mkdir -p $PELLDVS_HOME/config
+  DATA_ORACLE_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/DataOracle-Proxy.json" | jq -r .address)
+  cat <<EOF > $PELLDVS_HOME/config/dispatcher.config.json
+{
+  "dvs_address": "tcp://$OPERATOR_RPC_SERVER",
+  "chains": [
+    {
+      "chain_id": 1337,
+      "eth_url": "$ETH_WS_URL",
+      "contract_address": "$DATA_ORACLE_ADDRESS"
+    }
+  ]
+}
+EOF
+}
+
 function gen_cosmos_key {
   # TODO: generate new key and use admin to faceut
   mkdir -p "$PELLDVS_HOME/keyring-test/"
@@ -88,6 +107,10 @@ function start_operator {
   fi
 }
 
+function upload_wasm_script {
+  ssh abci "intellixd tx processor create-processor 'Intellix' ./scripts/processor_data/mock_processor.wasm --from $OPERATOR_KEY_NAME --chain-id $COSMOS_CHAIN_ID --keyring-backend test --gas auto --fees 2000000stake -y"
+}
+
 ## start sshd
 /usr/sbin/sshd
 
@@ -104,12 +127,18 @@ if [ ! -f /root/operator_initialized ]; then
   logt "Init operator"
   source "$(dirname "$0")/init_operator.sh"
   gen_cosmos_key
+  upload_wasm_script
 
   touch /root/operator_initialized
 fi
 
 logt "Setup operator config"
 setup_operator_config
+
+logt "Setup dispatcher config"
+setup_dispatcher_config
+
+touch /root/dispatcher_initialized
 
 logt "Starting operator..."
 start_operator

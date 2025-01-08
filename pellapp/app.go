@@ -1,6 +1,8 @@
 package pellapp
 
 import (
+	dvs "intellix/dvs/price"
+	processordvstypes "intellix/dvs/processor/types"
 	"os"
 
 	"github.com/0xPellNetwork/pelldvs/libs/log"
@@ -12,15 +14,16 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 
+	dvsserver "intellix/dvs/price/server"
+	dvstypes "intellix/dvs/price/types"
+	processordvs "intellix/dvs/processor"
+	processordvsserver "intellix/dvs/processor/server"
 	dvsservermanager "intellix/pkg/dvs_msg_handler"
 	"intellix/pkg/pelldvs"
 	"intellix/sdk/baseapp"
-	"intellix/x/price/dvs"
-	dvsserver "intellix/x/price/dvs/server"
-	dvstypes "intellix/x/price/dvs/types"
-	processordvs "intellix/x/processor/dvs"
 
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
+	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"
 )
 
 const (
@@ -41,10 +44,18 @@ type App struct {
 	dvsNode *pelldvs.Node
 
 	DvsServer                dvsserver.Server
+	ProcessorDvsServer       processordvsserver.Server
 	ProcessRequestServer     grpc1.Server
 	PostProcessRequestServer grpc1.Server
 
 	logger log.Logger
+
+	DVSClient *rpclocal.Local
+}
+
+func (app *App) SetInterfaceRegistry(registry codectypes.InterfaceRegistry) codectypes.InterfaceRegistry {
+	app.interfaceRegistry = registry
+	return app.interfaceRegistry
 }
 
 func (app *App) InterfaceRegistry() codectypes.InterfaceRegistry {
@@ -54,9 +65,18 @@ func (app *App) InterfaceRegistry() codectypes.InterfaceRegistry {
 	return app.interfaceRegistry
 }
 
-func (app *App) registerInterface() {
+func (app *App) RegisterInterface() {
 	std.RegisterInterfaces(app.interfaceRegistry)
 	sdktypes.RegisterInterfaces(app.interfaceRegistry)
+}
+
+func (app *App) RegisterInterfaceByParam(p codectypes.InterfaceRegistry) {
+	std.RegisterInterfaces(p)
+	sdktypes.RegisterInterfaces(p)
+}
+
+func (app *App) SetAppCodec(codec codec.Codec) {
+	app.appCodec = codec
 }
 
 func (app *App) AppCodec() codec.Codec {
@@ -97,7 +117,7 @@ func NewApp(
 		logger:            logger,
 	}
 
-	app.registerInterface()
+	app.RegisterInterface()
 	app.appCodec = app.AppCodec()
 	var err error
 
@@ -114,6 +134,9 @@ func NewApp(
 		panic(err)
 	}
 
+	// TODO: use rpc/Client
+	app.DVSClient = app.dvsNode.GetLocalClient()
+
 	// cosmos network
 	kr, err := keyring.New(Name, keyring.BackendTest, config.RootDir, os.Stdin, app.appCodec)
 	if err != nil {
@@ -126,7 +149,6 @@ func NewApp(
 		panic(err)
 	}
 
-	//dvs server manager
 	app.DvsServer, err = dvsserver.NewServer(
 		app.logger, clientCtx, key, config.CosmosChainId,
 		config.GatewayAddr, config.OperatorAddr,
@@ -135,14 +157,28 @@ func NewApp(
 	if err != nil {
 		panic(err)
 	}
+
+	app.ProcessorDvsServer, err = processordvsserver.NewServer(
+		app.logger, clientCtx, key, config.CosmosChainId,
+		config.GatewayAddr, config.OperatorAddr,
+		config.WaitBlockCount, config.GasPrices, config.GasAdjustment,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	// init dvsservermanager
 	dvsservermanager.InitDvsMsgHelper(app.appCodec)
 	app.PostProcessRequestServer = dvsservermanager.GetPostProcessRequestHandler()
 	app.ProcessRequestServer = dvsservermanager.GetProcessRequestHandler()
+
+	//dvs server manager
 	dvs.NewAppModule(app.DvsServer).RegisterServices()
 	dvstypes.RegisterInterfaces(app.interfaceRegistry)
 
 	// processor server
-	processordvs.NewAppModule().RegisterServices()
+	processordvs.NewAppModule(app.ProcessorDvsServer).RegisterServices()
+	processordvstypes.RegisterInterfaces(app.interfaceRegistry)
 
 	return app
 }

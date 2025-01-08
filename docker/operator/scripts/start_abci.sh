@@ -11,7 +11,6 @@ function load_defaults {
   export HARDHAT_CONTRACTS_PATH="/app/price-oracle-dvs/lib/pell-middleware-contracts/lib/pell-contracts/deployments/localhost"
   export HARDHAT_DVS_PATH="/app/price-oracle-dvs/deployments/localhost"
 
-
   export INTELLIX_HOME=${INTELLIX_HOME:-/root/.intellix}
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
@@ -23,7 +22,6 @@ function load_defaults {
 
   export OPERATOR_KEY_NAME=${OPERATOR_KEY_NAME:-operator}
 }
-
 
 function init_genesis {
   intellixd init $COSMOS_NODE_NAME --chain-id $COSMOS_CHAIN_ID
@@ -47,7 +45,11 @@ function init_genesis {
 }
 
 function init_config {
-  dasel put -f $INTELLIX_HOME/config/config.toml -v 'tcp://0.0.0.0:26657' 'rpc.laddr' > $INTELLIX_HOME/config/config.toml
+  # max_body_bytes
+  dasel put -f $INTELLIX_HOME/config/config.toml -v 1000000 'rpc.max_body_bytes' >> $INTELLIX_HOME/config/config.toml
+  dasel put -f $INTELLIX_HOME/config/config.toml -v 'tcp://0.0.0.0:26657' 'rpc.laddr' >> $INTELLIX_HOME/config/config.toml
+  # api max body bytes
+  dasel put -f $INTELLIX_HOME/config/app.toml -v 1000000 'api.rpc-max-body-bytes' >> $INTELLIX_HOME/config/app.toml
 }
 
 function start_abci {
