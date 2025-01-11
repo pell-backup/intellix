@@ -9,7 +9,7 @@ build-operator:
 
 down-all:
 	make operator-down-operator;
-	make operator-down-dispatcher;
+	#make operator-down-dispatcher;
 	make cosmos-down-abci;
 	make dvs-down-all;
 
@@ -75,28 +75,28 @@ cosmos-abci-rerun:
 	make cosmos-up-abci;
 	make cosmos-logs-abci;
 
-# Operator dispatcher
-operator-up-dispatcher:
-	docker compose --env-file .env -f docker-compose.yml up dispatcher -d
-
-operator-down-dispatcher:
-	docker compose -f docker-compose.yml down dispatcher -v
-
-operator-rm-dispatcher:
-	docker compose --env-file .env -f docker-compose.yml rm dispatcher -f
-
-operator-logs-dispatcher:
-	docker compose --env-file .env -f docker-compose.yml logs dispatcher -n 100 -f
-
-operator-dispatcher-rerun:
-	make operator-down-dispatcher;
-	make operator-up-dispatcher;
-	make operator-logs-dispatcher;
+# # Operator dispatcher
+#operator-up-dispatcher:
+#	docker compose --env-file .env -f docker-compose.yml up dispatcher -d
+#
+#operator-down-dispatcher:
+#	docker compose -f docker-compose.yml down dispatcher -v
+#
+#operator-rm-dispatcher:
+#	docker compose --env-file .env -f docker-compose.yml rm dispatcher -f
+#
+#operator-logs-dispatcher:
+#	docker compose --env-file .env -f docker-compose.yml logs dispatcher -n 100 -f
+#
+#operator-dispatcher-rerun:
+#	make operator-down-dispatcher;
+#	make operator-up-dispatcher;
+#	make operator-logs-dispatcher;
 
 
 # Operator Operator
 operator-up-operator:
-	docker compose --env-file .env -f docker-compose.yml up operator -d
+	docker compose --env-file .env -e HTTP_PROXY=$HTTP_PROXY -e HTTPS_PROXY=$HTTPS -f docker-compose.yml up operator -d
 
 operator-down-operator:
 	docker compose -f docker-compose.yml down operator -v

@@ -1,19 +1,19 @@
 name: intellix
 
 services:
-  dispatcher:
-    image: intellix-testnet-operator:latest
-    environment:
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
-      - SERVICE_CHAIN_WS_URL=${SERVICE_CHAIN_WS_URL}
-      - NETWORK=${NETWORK}
-      - CHAIN_ID=${CHAIN_ID}
-    entrypoint: [ "bash", "/root/scripts/start_dispatcher.sh" ]
-    ports:
-      - "${HOST_DEBUG_PORT:-23345}:${DEBUG_PORT:-2345}"
-    volumes:
-      - "${HOST_PELLDVS_HOME:-./.dispatcher}:/root/.pelldvs"
-      - ./operator:/root/scripts
+#  dispatcher:
+#    image: intellix-testnet-operator:latest
+#    environment:
+#      - GITHUB_TOKEN=${GITHUB_TOKEN}
+#      - SERVICE_CHAIN_WS_URL=${SERVICE_CHAIN_WS_URL}
+#      - NETWORK=${NETWORK}
+#      - CHAIN_ID=${CHAIN_ID}
+#    entrypoint: [ "bash", "/root/scripts/start_dispatcher.sh" ]
+#    ports:
+#      - "${HOST_DEBUG_PORT:-23345}:${DEBUG_PORT:-2345}"
+#    volumes:
+#      - "${HOST_PELLDVS_HOME:-./.dispatcher}:/root/.pelldvs"
+#      - ./operator:/root/scripts
 
   operator:
     image: intellix-testnet-operator:latest
