@@ -96,7 +96,7 @@ cosmos-abci-rerun:
 
 # Operator Operator
 operator-up-operator:
-	docker compose --env-file .env -e HTTP_PROXY=$HTTP_PROXY -e HTTPS_PROXY=$HTTPS -f docker-compose.yml up operator -d
+	docker compose --env-file .env -f docker-compose.yml up operator -d
 
 operator-down-operator:
 	docker compose -f docker-compose.yml down operator -v

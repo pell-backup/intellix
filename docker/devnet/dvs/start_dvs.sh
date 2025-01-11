@@ -27,9 +27,7 @@ function load_defaults {
 }
 
 function init_aggregator {
-  if [ ! -d "$PELLDVS_HOME" ]; then
-    pelldvs init --home "$PELLDVS_HOME"
-  fi
+  pelldvs init --home "$PELLDVS_HOME"
 
   update-config() {
     KEY="$1"
