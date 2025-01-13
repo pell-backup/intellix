@@ -252,6 +252,12 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 	// set gas limit to 1000000 to bypass transaction pre-execution and force broadcast
 	// authOpts.GasLimit = 1000000
 
+	if conf, ok := tg.cfg.Chains[response.ChainID]; ok {
+		if conf.GasLimit > 0 {
+			authOpts.GasLimit = conf.GasLimit
+		}
+	}
+
 	transaction, err := chainConn.contractDataOracle.ResponseToTask(authOpts, task, taskResp, sign)
 	if err != nil {
 		tg.logger.Error("Error assembling RequestPrice tx",

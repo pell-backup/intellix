@@ -15,6 +15,7 @@ type ChainConfig struct {
 	EthEndpoint     string `mapstructure:"eth_endpoint"`
 	ContractAddress string `mapstructure:"contract_address"`
 	ChainID         int64  `mapstructure:"chain_id"`
+	GasLimit        uint64 `mapstructure:"gas_limit"`
 }
 
 type TaskGatewayCfg struct {
