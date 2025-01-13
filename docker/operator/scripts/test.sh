@@ -57,6 +57,10 @@ abci_healthcheck
 ADMIN_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/PriceOraclePayInNativeConsumer.json" | jq -r .address)
 
+## get current nonce
+CURRENT_NONCE=$(cast nonce ${ADMIN_KEY} --rpc-url "$ETH_RPC_URL")
+echo "Current nonce for admin account: $CURRENT_NONCE"
+
 ## create a new task
 cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "ETH" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
