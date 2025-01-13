@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	taskgateway "intellix/gateway"
-	pkglogger "intellix/pkg/logger"
+	pkglogger "intellix/sdk/logger"
 
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/spf13/cobra"

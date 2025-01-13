@@ -3,8 +3,8 @@ package dvsservermanager
 import (
 	"context"
 	"fmt"
-	result "intellix/pkg/dvs_msg_handler/result_handler"
-	"intellix/pkg/dvs_msg_handler/tx"
+	result "intellix/sdk/dvs_msg_handler/result_handler"
+	"intellix/sdk/dvs_msg_handler/tx"
 
 	sdktypes "intellix/sdk/types"
 
