@@ -60,7 +60,8 @@ function setup_gateway_config {
     "1337": {
       "eth_endpoint": "$ETH_WS_URL",
       "contract_address": "$DATA_ORACLE_ADDRESS",
-      "chain_id": 1337
+      "chain_id": 1337,
+      "gas_limit": 1000000
     }
   }
 }
