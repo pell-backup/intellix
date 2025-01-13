@@ -66,6 +66,7 @@ function setup_gateway_config {
     "$CHAIN_ID": {
       "eth_endpoint": "$SERVICE_CHAIN_RPC_URL",
       "contract_address": "$DATA_ORACLE_ADDRESS",
+      "gas_limit": 1000000,
       "chain_id": $CHAIN_ID
     }
   }
