@@ -27,6 +27,7 @@ type Server struct {
 	cosmosChainId string
 	key           *keyring.Record
 
+	wsEndpoint      string
 	operatorAddress string
 	gasPrices       string
 	gasAdjustment   float64
@@ -41,6 +42,7 @@ func NewServer(
 	key *keyring.Record,
 	cosmosChainId string,
 
+	wsEndpoint string,
 	gatewayAddr string,
 	operatorAddress string,
 	waitBlockCount int64,
@@ -64,6 +66,7 @@ func NewServer(
 		key:           key,
 		cosmosChainId: cosmosChainId,
 
+		wsEndpoint:      wsEndpoint,
 		operatorAddress: operatorAddress,
 		waitBlockCount:  waitBlockCount,
 		gasPrices:       gasPrices,

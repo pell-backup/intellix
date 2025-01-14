@@ -2,13 +2,14 @@ package tx_listener
 
 import (
 	"context"
+	"time"
+
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmttypes "github.com/cometbft/cometbft/types"
-	"time"
 )
 
-type EventHandler[T any] func(ctx context.Context, event abci.Event) (T, error)
-type BlockHandler[T any] func(ctx context.Context, block *cmttypes.Block) (T, error)
+type EventHandler[K comparable, T any] func(ctx context.Context, event abci.Event) (K, T, error)
+type BlockHandler[K comparable, T any] func(ctx context.Context, block *cmttypes.Block) (K, T, error)
 
 type EventData[T any] struct {
 	Height    int64
