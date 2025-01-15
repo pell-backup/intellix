@@ -7,9 +7,9 @@ import (
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 )
 
-func SignWithBLS(blsKeyPair *bls.KeyPair, msgBytes []byte) ([]byte, error) {
+func SignWithBLS(blsKeyPair *bls.KeyPair, msgBytes []byte) []byte {
 	if blsKeyPair == nil {
-		return nil, fmt.Errorf("bls key pair is empty")
+		return nil
 	}
 
 	hash := sha256.Sum256(msgBytes)
@@ -17,7 +17,7 @@ func SignWithBLS(blsKeyPair *bls.KeyPair, msgBytes []byte) ([]byte, error) {
 	copy(message[:], hash[:32])
 	signature := blsKeyPair.SignMessage(message)
 
-	return signature.G1Point.Serialize(), nil
+	return signature.G1Point.Serialize()
 }
 
 func VerifyBLSSignature(pubKey *avsitypes.OperatorPubkeys, msgBytes []byte, signature []byte) error {

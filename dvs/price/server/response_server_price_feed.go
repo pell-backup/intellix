@@ -68,7 +68,7 @@ func (d ResponseServer) sendVoteFinalizedRequestPriceTx(ctx sdktypes.Context, ra
 		Price:                     math.NewIntFromBigInt(new(big.Int).SetBytes(priceData.Data)),
 	}
 
-	if err := d.Server.SignAndBroadcastTx(ctx, msg); err != nil {
+	if _, err := d.Server.SignAndBroadcastTx(ctx, msg); err != nil {
 		return nil, err
 	}
 	return msg, nil

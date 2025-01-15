@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
@@ -39,7 +40,7 @@ func (d *RequestServer) PriceEventHandler(ctx context.Context, event abci.Event)
 	}, nil
 }
 
-func (d RequestServer) isVoteRequestPriceFeedTx(tx cmttypes.Tx) (*pricetypes.MsgVoteRequestPriceFeed, bool) {
+func (d *RequestServer) isVoteRequestPriceFeedTx(tx cmttypes.Tx) (*pricetypes.MsgVoteRequestPriceFeed, bool) {
 	// check tx is VoteRequestPriceFeed
 	decoder := d.clientCtx.TxConfig.TxDecoder()
 	data, err := decoder(tx)
@@ -97,5 +98,5 @@ func (d *RequestServer) PriceBlockHandler(ctx context.Context, block *cmttypes.B
 		}
 	}
 
-	return "", nil, nil
+	return "", nil, fmt.Errorf("no vote request price feed tx")
 }

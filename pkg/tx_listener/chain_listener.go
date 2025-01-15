@@ -343,10 +343,6 @@ func (l *ChainListener[K, E, B]) handleNewEvent(ctx context.Context, tmEvent tmc
 
 			key, eventData, err := l.eventHandler(ctx, event)
 			if err != nil {
-				l.logger.Error("event handler failed", "err", err)
-				continue
-			}
-			if eventData == nil {
 				continue
 			}
 
@@ -399,9 +395,6 @@ func (l *ChainListener[K, E, B]) handleNewBlock(ctx context.Context, block *cmtt
 	key, data, err := l.blockHandler(ctx, block)
 	if err != nil {
 		l.logger.Error("blockHandler", "error", err)
-		return
-	}
-	if data == nil {
 		return
 	}
 

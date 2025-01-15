@@ -91,11 +91,7 @@ func (d *RequestServer) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task
 		Timestamp:   time.Now().Unix(),
 		BlockHeight: uint64(ctx.Height()),
 	}
-	bls, err := utils.SignWithBLS(d.blsKeyPair, d.getMsgBytes(&msg))
-	if err != nil {
-		d.Logger().Error("broadcastVoteRequestPriceFeed signWithBLS error: " + err.Error())
-		return 0, err
-	}
+	bls := utils.SignWithBLS(d.blsKeyPair, d.getMsgBytes(&msg))
 	msg.BlsSignature = bls
 
 	height, err := d.Server.SignAndBroadcastTx(ctx, &msg)

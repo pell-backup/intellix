@@ -152,7 +152,8 @@ func NewApp(
 	app.DvsServer, err = dvsserver.NewServer(
 		app.logger, clientCtx, key, config.CosmosChainId,
 		config.CosmosWsEndpoint, config.GatewayAddr, config.OperatorAddr,
-		config.WaitBlockCount, config.GasPrices, config.GasAdjustment,
+		config.WaitBlockCount, config.GasPrices,
+		config.BlsKeyPath, config.BlsKeyPassword, config.GasAdjustment,
 	)
 	if err != nil {
 		panic(err)

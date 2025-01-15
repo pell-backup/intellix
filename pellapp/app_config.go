@@ -16,6 +16,9 @@ type AppConfig struct {
 	CosmosWsEndpoint string `mapstructure:"cosmos_ws_endpoint"`
 	CosmosChainId    string `mapstructure:"cosmos_chain_id"`
 
+	BlsKeyPath     string `mapstructure:"bls_key_path"`
+	BlsKeyPassword string `mapstructure:"bls_key_password"`
+
 	WaitBlockCount int64   `mapstructure:"wait_block_count"`
 	GasPrices      string  `mapstructure:"gas_prices"`
 	GasAdjustment  float64 `mapstructure:"gas_adjustment"`

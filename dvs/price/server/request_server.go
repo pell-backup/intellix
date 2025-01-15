@@ -38,4 +38,4 @@ func NewRequestServer(server Server) types.DVSRequestServer {
 	return s
 }
 
-var _ types.DVSRequestServer = RequestServer{}
+var _ types.DVSRequestServer = &RequestServer{}
