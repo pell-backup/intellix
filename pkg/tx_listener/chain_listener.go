@@ -24,6 +24,9 @@ type ChainListenerIFace[K comparable, E any, B any] interface {
 	SubscribeEvents(maxQueueSize int) *EventChannel[E]
 	SubscribeBlocks(maxQueueSize int) *BlockChannel[B]
 
+	UnsubscribeEvents(ch *EventChannel[E])
+	UnsubscribeBlocks(ch *BlockChannel[B])
+
 	ClearEvents()
 	ClearBlocks()
 
@@ -274,6 +277,36 @@ func (l *ChainListener[K, E, B]) SubscribeBlocks(maxQueueSize int) *BlockChannel
 	return channel
 }
 
+func (l *ChainListener[K, E, B]) UnsubscribeEvents(ch *EventChannel[E]) {
+	l.Lock()
+	defer l.Unlock()
+
+	close(ch.Done)
+	close(ch.Data)
+
+	for i, channel := range l.eventChannels {
+		if channel == ch {
+			l.eventChannels = append(l.eventChannels[:i], l.eventChannels[i+1:]...)
+			break
+		}
+	}
+}
+
+func (l *ChainListener[K, E, B]) UnsubscribeBlocks(ch *BlockChannel[B]) {
+	l.Lock()
+	defer l.Unlock()
+
+	close(ch.Done)
+	close(ch.Data)
+
+	for i, channel := range l.blockChannels {
+		if channel == ch {
+			l.blockChannels = append(l.blockChannels[:i], l.blockChannels[i+1:]...)
+			break
+		}
+	}
+}
+
 func (l *ChainListener[K, E, B]) ClearEvents() {
 	l.Lock()
 	l.events = make(map[K][]EventData[E])
@@ -350,8 +383,14 @@ func (l *ChainListener[K, E, B]) saveAndBroadcastEvent(key K, eventData EventDat
 
 	for _, channel := range l.eventChannels {
 		select {
-		case channel.Data <- eventData:
+		case <-channel.Done:
+			continue
 		default:
+			select {
+			case channel.Data <- eventData:
+			default:
+				// not block
+			}
 		}
 	}
 }
@@ -392,8 +431,14 @@ func (l *ChainListener[K, E, B]) handleNewBlock(ctx context.Context, block *cmtt
 
 	for _, channel := range l.blockChannels {
 		select {
-		case channel.Data <- blockData:
+		case <-channel.Done:
+			continue
 		default:
+			select {
+			case channel.Data <- blockData:
+			default:
+				// not block
+			}
 		}
 	}
 }
