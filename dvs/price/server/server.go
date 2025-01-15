@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 	taskgateway "intellix/gateway"
 	"intellix/x/price/types"
 
@@ -32,6 +33,7 @@ type Server struct {
 	gasPrices       string
 	gasAdjustment   float64
 	waitBlockCount  int64 // price feed wait block count
+	blsKeyPair      *bls.KeyPair
 
 	taskGatewayClient *taskgateway.Client
 }
@@ -46,6 +48,7 @@ func NewServer(
 	gatewayAddr string,
 	operatorAddress string,
 	waitBlockCount int64,
+	blsKeyPath, blsKeyPassword string,
 
 	gasPrices string,
 	gasAdjustment float64,
@@ -71,6 +74,14 @@ func NewServer(
 		waitBlockCount:  waitBlockCount,
 		gasPrices:       gasPrices,
 		gasAdjustment:   gasAdjustment,
+	}
+
+	if blsKeyPath != "" && blsKeyPassword != "" {
+		var err error
+		k.blsKeyPair, err = bls.ReadPrivateKeyFromFile(blsKeyPath, blsKeyPassword)
+		if err != nil {
+			return Server{}, fmt.Errorf("failed to load BLS key pair: %w", err)
+		}
 	}
 
 	if operatorAddress != "" {

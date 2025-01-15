@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
+	"github.com/cosmos/gogoproto/proto"
 	"intellix/dvs/price/types"
 	"intellix/pkg/tx_listener"
+	"intellix/pkg/utils"
 	sdktypes "intellix/sdk/types"
 	pricetypes "intellix/x/price/types"
 	"sync"
@@ -43,6 +45,22 @@ func (d *RequestServer) RequestPriceFeed(ctx context.Context, request *types.Req
 	return d.aggregatePrices(pkgContext, request.Task.TaskIndex, request.Task.RequestId, priceFeedTxs)
 }
 
+func (d *RequestServer) getMsgBytes(msg *pricetypes.MsgVoteRequestPriceFeed) []byte {
+	m := &pricetypes.MsgVoteRequestPriceFeed{
+		TaskIndex:   msg.TaskIndex,
+		OperatorId:  msg.OperatorId,
+		RequestId:   msg.RequestId,
+		BaseSymbol:  msg.BaseSymbol,
+		QuoteSymbol: msg.QuoteSymbol,
+		Price:       msg.Price,
+		Timestamp:   msg.Timestamp,
+		BlockHeight: msg.BlockHeight,
+		Sender:      msg.Sender,
+	}
+	b, _ := proto.Marshal(m)
+	return b
+}
+
 func (d *RequestServer) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task *types.RequestPriceFeedIn, priceFeed *types.PriceFeedParam, rawPrices map[string]math.LegacyDec) (int64, error) {
 	d.Logger().Info("broadcastVoteRequestPriceFeed",
 		"rawPrices", fmt.Sprintf("%+v", rawPrices),
@@ -73,6 +91,13 @@ func (d *RequestServer) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task
 		Timestamp:   time.Now().Unix(),
 		BlockHeight: uint64(ctx.Height()),
 	}
+	bls, err := utils.SignWithBLS(d.blsKeyPair, d.getMsgBytes(&msg))
+	if err != nil {
+		d.Logger().Error("broadcastVoteRequestPriceFeed signWithBLS error: " + err.Error())
+		return 0, err
+	}
+	msg.BlsSignature = bls
+
 	height, err := d.Server.SignAndBroadcastTx(ctx, &msg)
 	if err != nil {
 		d.Logger().Error("broadcastVoteRequestPriceFeed SignAndBroadcastTx error: " + err.Error())
@@ -156,7 +181,11 @@ func (d *RequestServer) verifyOperatorEvents(ctx sdktypes.Context, datas []tx_li
 	var out []*pricetypes.MsgVoteRequestPriceFeed
 	for _, v := range datas {
 		if operator, ok := operatorMaps[v.Data.OperatorId]; ok {
-			// TODO: verify operator's key
+			// verify operator's key
+			err := utils.VerifyBLSSignature(operator.Pubkeys, d.getMsgBytes(v.Data), v.Data.BlsSignature)
+			if err != nil {
+				continue
+			}
 			operatorVerifyMaps[string(operator.Id)] = true
 			out = append(out, v.Data)
 		}
@@ -183,6 +212,11 @@ func (d *RequestServer) checkAndChooseEnoughBlocks(ctx context.Context, currentB
 }
 
 func (d *RequestServer) collectEvents(ctx context.Context, operatorMaps map[string]*avsitypes.Operator, ch *tx_listener.EventChannel[*pricetypes.MsgVoteRequestPriceFeed], eventData []*pricetypes.MsgVoteRequestPriceFeed, waitChan chan struct{}) {
+	eventDataByOperatorId := make(map[string]*pricetypes.MsgVoteRequestPriceFeed)
+	for _, data := range eventData {
+		eventDataByOperatorId[data.OperatorId] = data
+	}
+
 	mu := sync.Mutex{}
 	select {
 	case <-ctx.Done():
@@ -193,12 +227,21 @@ func (d *RequestServer) collectEvents(ctx context.Context, operatorMaps map[stri
 		if !ok {
 			return
 		}
-		// TODO: verify operator sign
-
-		mu.Lock()
-		eventData = append(eventData, data.Data)
-		mu.Unlock()
-		if len(eventData) >= len(operatorMaps) {
+		// verify operator sign
+		operator, ok := operatorMaps[data.Data.OperatorId]
+		if ok && utils.VerifyBLSSignature(operator.Pubkeys, d.getMsgBytes(data.Data), data.Data.BlsSignature) == nil {
+			mu.Lock()
+			eventDataByOperatorId[data.Data.OperatorId] = data.Data
+			mu.Unlock()
+		}
+		if len(eventDataByOperatorId) >= len(operatorMaps) {
+			mu.Lock()
+			// distinct by operator
+			eventData = []*pricetypes.MsgVoteRequestPriceFeed{}
+			for _, data := range eventDataByOperatorId {
+				eventData = append(eventData, data)
+			}
+			mu.Unlock()
 			waitChan <- struct{}{}
 			return
 		}
