@@ -161,8 +161,9 @@ func NewApp(
 
 	app.ProcessorDvsServer, err = processordvsserver.NewServer(
 		app.logger, clientCtx, key, config.CosmosChainId,
-		config.GatewayAddr, config.OperatorAddr,
-		config.WaitBlockCount, config.GasPrices, config.GasAdjustment,
+		config.CosmosWsEndpoint, config.GatewayAddr, config.OperatorAddr,
+		config.WaitBlockCount, config.GasPrices,
+		config.BlsKeyPath, config.BlsKeyPassword, config.GasAdjustment,
 	)
 	if err != nil {
 		panic(err)

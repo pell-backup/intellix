@@ -118,14 +118,16 @@ func (d *RequestServer) PriceBlockHandler(ctx context.Context, block *cmttypes.B
 		//d.logger.Info("Processing transaction", "tx_hash", tx.Hash())
 		if msg, ok := d.isVoteRequestPriceFeedTx(tx); ok {
 			return string(msg.RequestId), &pricetypes.MsgVoteRequestPriceFeed{
-				TaskIndex:   msg.TaskIndex,
-				OperatorId:  msg.OperatorId,
-				RequestId:   msg.RequestId,
-				BaseSymbol:  msg.BaseSymbol,
-				QuoteSymbol: msg.QuoteSymbol,
-				Price:       msg.Price,
-				Timestamp:   msg.Timestamp,
-				BlockHeight: uint64(block.Header.Height),
+				TaskIndex:    msg.TaskIndex,
+				OperatorId:   msg.OperatorId,
+				RequestId:    msg.RequestId,
+				BaseSymbol:   msg.BaseSymbol,
+				QuoteSymbol:  msg.QuoteSymbol,
+				Price:        msg.Price,
+				Timestamp:    msg.Timestamp,
+				BlockHeight:  uint64(block.Header.Height),
+				BlsSignature: msg.BlsSignature,
+				Sender:       msg.Sender,
 			}, nil
 		}
 	}

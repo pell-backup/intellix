@@ -18,6 +18,7 @@ const (
 	EventTypeVoteRequestProcessor  = "vote_request_processor"
 	EventTypeVoteResponseProcessor = "vote_response_processor"
 	AttributeKeyTaskIndex          = "task_index"
+	AttributeKeyOperatorId         = "operator_id"
 	AttributeKeyRequestId          = "request_id"
 )
 
@@ -29,11 +30,11 @@ func KeyPrefix(p string) []byte {
 	return []byte(p)
 }
 
-func MsgVoteRequestProcessorKey(taskIndex uint32, requestId []byte) []byte {
+func MsgVoteRequestProcessorKey(requestId []byte, operatorId string) []byte {
 	return append(
 		append(
 			KeyPrefix(ProcessorKey+EventTypeVoteRequestProcessor),
-			[]byte(fmt.Sprintf("%d", taskIndex))...,
+			[]byte(operatorId)...,
 		),
 		requestId...,
 	)

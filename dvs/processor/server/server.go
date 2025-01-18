@@ -6,6 +6,7 @@ import (
 	taskgateway "intellix/gateway"
 	sdktypes "intellix/sdk/types"
 
+	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 	"github.com/0xPellNetwork/pelldvs/libs/log"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -26,10 +27,12 @@ type Server struct {
 
 	taskGatewayClient *taskgateway.Client
 
+	wsEndpoint      string
 	operatorAddress string
 	gasPrices       string
 	gasAdjustment   float64
 	waitBlockCount  int64 // price feed wait block count
+	blsKeyPair      *bls.KeyPair
 }
 
 func NewServer(
@@ -38,9 +41,11 @@ func NewServer(
 	key *keyring.Record,
 	cosmosChainId string,
 
+	wsEndpoint string,
 	gatewayAddr string,
 	operatorAddress string,
 	waitBlockCount int64,
+	blsKeyPath, blsKeyPassword string,
 
 	gasPrices string,
 	gasAdjustment float64,
@@ -61,10 +66,19 @@ func NewServer(
 		key:           key,
 		cosmosChainId: cosmosChainId,
 
+		wsEndpoint:      wsEndpoint,
 		operatorAddress: operatorAddress,
 		waitBlockCount:  waitBlockCount,
 		gasPrices:       gasPrices,
 		gasAdjustment:   gasAdjustment,
+	}
+
+	if blsKeyPath != "" && blsKeyPassword != "" {
+		var err error
+		k.blsKeyPair, err = bls.ReadPrivateKeyFromFile(blsKeyPath, blsKeyPassword)
+		if err != nil {
+			return Server{}, fmt.Errorf("failed to load BLS key pair: %w", err)
+		}
 	}
 
 	if operatorAddress != "" {

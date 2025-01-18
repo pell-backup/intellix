@@ -21,7 +21,7 @@ func NewRequestServer(server Server) types.DVSRequestServer {
 	s.PriceListener = tx_listener.NewChainListener(
 		server.logger, server.clientCtx,
 		server.wsEndpoint,
-		"tm.event='Tx' AND message.action='VoteRequestPriceFeed'", 1000,
+		"tm.event='Tx' AND eventType='finalized_price_feed'", 1000,
 		s.PriceEventHandler, s.PriceBlockHandler,
 	)
 

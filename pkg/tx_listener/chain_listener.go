@@ -103,7 +103,6 @@ func (l *ChainListener[K, E, B]) Start() {
 	go l.startWebsocketListener(l.ctx)
 	go l.startBlockScanner(l.ctx)
 	go l.startCleanupTask(l.ctx)
-	return
 }
 
 func (l *ChainListener[K, E, B]) Stop() {
@@ -136,7 +135,9 @@ func (l *ChainListener[K, E, B]) startWebsocketListener(ctx context.Context) {
 	if err := cli.Start(); err != nil {
 		return
 	}
-	defer cli.Stop()
+	defer func() {
+		_ = cli.Stop()
+	}()
 
 	eventCh, err := cli.Subscribe(ctx, "chain-listener", l.subscribeQuery)
 	if err != nil {
@@ -163,6 +164,9 @@ func (l *ChainListener[K, E, B]) startBlockScanner(ctx context.Context) {
 			return
 		case <-ticker.C:
 			node, err := l.clientCtx.GetNode()
+			if err != nil {
+				continue
+			}
 
 			block, err := node.Block(ctx, nil)
 			if err != nil {

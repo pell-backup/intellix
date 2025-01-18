@@ -110,12 +110,8 @@ func (d *RequestServer) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task
 }
 
 func (d *RequestServer) startCollectEnoughPriceFeedTxs(ctx sdktypes.Context, requestId []byte) ([]*pricetypes.MsgVoteRequestPriceFeed, error) {
-	key := string(requestId)
-
-	collectCtx, cancel := context.WithTimeout(ctx, 10*time.Minute)
-	defer cancel()
-
 	var (
+		key       = string(requestId)
 		eventData []*pricetypes.MsgVoteRequestPriceFeed
 		blockData []*pricetypes.MsgVoteRequestPriceFeed
 		ok        bool
@@ -144,27 +140,31 @@ func (d *RequestServer) startCollectEnoughPriceFeedTxs(ctx sdktypes.Context, req
 		return blockData, nil
 	}
 
-	var (
-		eventWaitChan = make(chan struct{})
-		blockWaitChan = make(chan struct{})
-		operatorMaps  = make(map[string]*avsitypes.Operator)
-	)
-	defer func() {
-		close(eventWaitChan)
-		close(blockWaitChan)
-	}()
+	// subscribe events and blocks
 
+	var (
+		eventWaitChan      = make(chan struct{})
+		blockWaitChan      = make(chan struct{})
+		eventCh            = d.PriceListener.SubscribeEvents(1000)
+		blockCh            = d.PriceListener.SubscribeBlocks(1000)
+		operatorMaps       = make(map[string]*avsitypes.Operator)
+		collectCtx, cancel = context.WithTimeout(ctx, 10*time.Minute)
+	)
 	for _, v := range ctx.Operators() {
 		operatorMaps[string(v.Id)] = v
 	}
 
-	var (
-		eventCh = d.PriceListener.SubscribeEvents(1000)
-		blockCh = d.PriceListener.SubscribeBlocks(1000)
-	)
 	defer func() {
+		cancel()
+
 		d.PriceListener.UnsubscribeEvents(eventCh)
 		d.PriceListener.UnsubscribeBlocks(blockCh)
+
+		close(eventWaitChan)
+		close(blockWaitChan)
+
+		d.PriceListener.ClearEventsByKey(key)
+		d.PriceListener.ClearBlocksByKey(key)
 	}()
 
 	go d.collectEvents(collectCtx, operatorMaps, eventCh, &eventData, eventWaitChan) // listen events
