@@ -43,8 +43,12 @@ function init_pelldvs_config {
   update-config pell_dvs_directory_address "$PELL_DVS_DIRECTORY"
   update-config pell_registry_router_address "$REGISTRY_ROUTER_ADDRESS"
   update-config aggregator_rpc_url "$AGGREGATOR_RPC_URL"
-  update-config interfactor_config_path "$PELLDVS_HOME/config/interfactor_config.json"
 
+  if ! grep -q "interfactor_config_path" "$PELLDVS_HOME/config/config.toml"; then
+    echo "interfactor_config_path = \"$PELLDVS_HOME/config/interfactor_config.json\"" >> $PELLDVS_HOME/config/config.toml
+  else
+    update-config interfactor_config_path "$PELLDVS_HOME/config/interfactor_config.json"
+  fi
 
   ## FIXME: operator_bls_private_key_store_path should be in the config template. 
   ## FIXME: don't use absolute path for key

@@ -346,6 +346,8 @@ func (l *ChainListener[K, E, B]) handleNewEvent(ctx context.Context, tmEvent tmc
 				continue
 			}
 
+			l.logger.Info("ChainListener.eventHandler", "key", key, "event", event, "eventData", eventData)
+
 			ed := EventData[E]{
 				Height:    txData.Height,
 				TxHash:    txData.Tx,
@@ -394,9 +396,11 @@ func (l *ChainListener[K, E, B]) saveAndBroadcastEvent(key K, eventData EventDat
 func (l *ChainListener[K, E, B]) handleNewBlock(ctx context.Context, block *cmttypes.Block) {
 	key, data, err := l.blockHandler(ctx, block)
 	if err != nil {
-		l.logger.Error("blockHandler", "error", err)
+		//l.logger.Error("blockHandler", "error", err)
 		return
 	}
+
+	l.logger.Info("ChainListener.blockHandler", "key", key, "data", data)
 
 	blockData := BlockData[B]{
 		Height:    block.Height,

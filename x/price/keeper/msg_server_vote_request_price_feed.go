@@ -57,7 +57,7 @@ func (k msgServer) savePriceFeedVote(ctx sdk.Context, msg *types.MsgVoteRequestP
 		return errorsmod.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
 
-	if err := store.Set(types.PriceFeedVoteKey(msg.TaskIndex, msg.OperatorId), data); err != nil {
+	if err := store.Set(types.PriceFeedVoteKey(msg.RequestId, msg.OperatorId), data); err != nil {
 		return errorsmod.Wrap(sdkerrors.ErrIO, err.Error())
 	}
 	return nil

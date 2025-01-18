@@ -3,8 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
-	"github.com/cosmos/gogoproto/proto"
 	"intellix/dvs/price/types"
 	"intellix/pkg/tx_listener"
 	"intellix/pkg/utils"
@@ -13,8 +11,12 @@ import (
 	"sync"
 	"time"
 
-	"cosmossdk.io/math"
+	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
+	"github.com/cosmos/gogoproto/proto"
+
 	"sort"
+
+	"cosmossdk.io/math"
 )
 
 func (d *RequestServer) RequestPriceFeed(ctx context.Context, request *types.RequestPriceFeedIn) (*types.RequestPriceFeedOut, error) {
@@ -29,16 +31,21 @@ func (d *RequestServer) RequestPriceFeed(ctx context.Context, request *types.Req
 	}
 
 	// sign data and broadcast VoteRequestPriceFeed
-	height, err := d.broadcastVoteRequestPriceFeed(pkgContext, request, request.GetPriceFeed(), rawPrices)
-	if err != nil {
+	if err := d.broadcastVoteRequestPriceFeed(pkgContext, request, request.GetPriceFeed(), rawPrices); err != nil {
+		d.logger.Error("ProcessRequestPriceFeed broadcastVoteRequestPriceFeed error: " + err.Error())
 		return nil, fmt.Errorf("failed to broadcast VoteRequestPriceFeed: %w", err)
 	}
 
-	priceFeedTxs, err := d.startCollectEnoughPriceFeedTxs(pkgContext, height, request.Task.RequestId)
+	priceFeedTxs, err := d.startCollectEnoughPriceFeedTxs(pkgContext, request.Task.RequestId)
 	// listen and collect [N-N+M] block
 	//priceFeedTxs, err := d.collectVoteRequestPriceFeedTxs(pkgContext, request.Task.RequestId)
 	if err != nil {
+		d.logger.Error("ProcessRequestPriceFeed collectVoteRequestPriceFeedTxs error: " + err.Error())
 		return nil, fmt.Errorf("failed to collect VoteRequestPriceFeed transactions: %w", err)
+	}
+	if len(priceFeedTxs) == 0 {
+		d.logger.Error("ProcessRequestPriceFeed collectVoteRequestPriceFeedTxs error: len(priceFeedTxs) == 0")
+		return nil, fmt.Errorf("failed to collect VoteRequestPriceFeed transactions, len(priceFeedTxs) == 0")
 	}
 
 	// aggregate [N-N+M] block prices
@@ -61,7 +68,7 @@ func (d *RequestServer) getMsgBytes(msg *pricetypes.MsgVoteRequestPriceFeed) []b
 	return b
 }
 
-func (d *RequestServer) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task *types.RequestPriceFeedIn, priceFeed *types.PriceFeedParam, rawPrices map[string]math.LegacyDec) (int64, error) {
+func (d *RequestServer) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task *types.RequestPriceFeedIn, priceFeed *types.PriceFeedParam, rawPrices map[string]math.LegacyDec) error {
 	d.Logger().Info("broadcastVoteRequestPriceFeed",
 		"rawPrices", fmt.Sprintf("%+v", rawPrices),
 		"task", fmt.Sprintf("%+v", task),
@@ -77,7 +84,7 @@ func (d *RequestServer) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task
 	}
 	addr, err := d.Server.SenderAddress()
 	if err != nil {
-		return 0, err
+		return fmt.Errorf("failed to broadcast VoteRequestPriceFeed for data error: %w", err)
 	}
 
 	msg := pricetypes.MsgVoteRequestPriceFeed{
@@ -94,16 +101,15 @@ func (d *RequestServer) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task
 	bls := utils.SignWithBLS(d.blsKeyPair, d.getMsgBytes(&msg))
 	msg.BlsSignature = bls
 
-	height, err := d.Server.SignAndBroadcastTx(ctx, &msg)
-	if err != nil {
+	if err := d.Server.SignAndBroadcastTx(ctx, &msg); err != nil {
 		d.Logger().Error("broadcastVoteRequestPriceFeed SignAndBroadcastTx error: " + err.Error())
-		return 0, fmt.Errorf("failed to broadcast VoteRequestPriceFeed for data error: %w", err)
+		return fmt.Errorf("failed to broadcast VoteRequestPriceFeed for data error: %w", err)
 	}
 
-	return height, nil
+	return nil
 }
 
-func (d *RequestServer) startCollectEnoughPriceFeedTxs(ctx sdktypes.Context, blockHeight int64, requestId []byte) ([]*pricetypes.MsgVoteRequestPriceFeed, error) {
+func (d *RequestServer) startCollectEnoughPriceFeedTxs(ctx sdktypes.Context, requestId []byte) ([]*pricetypes.MsgVoteRequestPriceFeed, error) {
 	key := string(requestId)
 
 	collectCtx, cancel := context.WithTimeout(ctx, 10*time.Minute)
@@ -122,6 +128,13 @@ func (d *RequestServer) startCollectEnoughPriceFeedTxs(ctx sdktypes.Context, blo
 		d.PriceListener.ClearEventsByKey(key)
 		return eventData, nil
 	}
+
+	// get block height
+	block, err := d.Server.GetLatestBlock(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get latest block: %w", err)
+	}
+	blockHeight := block.Height
 
 	// check if enough block height
 	blocks := d.PriceListener.QueryBlocks(key)
@@ -154,14 +167,14 @@ func (d *RequestServer) startCollectEnoughPriceFeedTxs(ctx sdktypes.Context, blo
 		d.PriceListener.UnsubscribeBlocks(blockCh)
 	}()
 
-	go d.collectEvents(collectCtx, operatorMaps, eventCh, eventData, eventWaitChan) // listen events
-	go d.collectBlocks(collectCtx, blockHeight, blockCh, blockData, blockWaitChan)  // listen blocks
+	go d.collectEvents(collectCtx, operatorMaps, eventCh, &eventData, eventWaitChan) // listen events
+	go d.collectBlocks(collectCtx, blockHeight, blockCh, &blockData, blockWaitChan)  // listen blocks
 
 	select {
 	case <-blockWaitChan:
 		return blockData, nil
 	case <-eventWaitChan:
-		return blockData, nil
+		return eventData, nil
 	case <-ctx.Done():
 		return nil, fmt.Errorf("failed to start collect enough price feed block timeout")
 	}
@@ -191,6 +204,9 @@ func (d *RequestServer) verifyOperatorEvents(ctx sdktypes.Context, datas []tx_li
 }
 
 func (d *RequestServer) checkAndChooseEnoughBlocks(ctx context.Context, currentBlockHeight int64, blockDatas []tx_listener.BlockData[*pricetypes.MsgVoteRequestPriceFeed]) ([]*pricetypes.MsgVoteRequestPriceFeed, bool) {
+	if len(blockDatas) == 0 {
+		return nil, false
+	}
 	var out []*pricetypes.MsgVoteRequestPriceFeed
 	sort.Slice(blockDatas, func(i, j int) bool {
 		return blockDatas[i].Data.BlockHeight > blockDatas[j].Data.BlockHeight
@@ -207,9 +223,9 @@ func (d *RequestServer) checkAndChooseEnoughBlocks(ctx context.Context, currentB
 	return out, maxHeightBlocks >= currentBlockHeight+d.waitBlockCount
 }
 
-func (d *RequestServer) collectEvents(ctx context.Context, operatorMaps map[string]*avsitypes.Operator, ch *tx_listener.EventChannel[*pricetypes.MsgVoteRequestPriceFeed], eventData []*pricetypes.MsgVoteRequestPriceFeed, waitChan chan struct{}) {
+func (d *RequestServer) collectEvents(ctx context.Context, operatorMaps map[string]*avsitypes.Operator, ch *tx_listener.EventChannel[*pricetypes.MsgVoteRequestPriceFeed], eventData *[]*pricetypes.MsgVoteRequestPriceFeed, waitChan chan struct{}) {
 	eventDataByOperatorId := make(map[string]*pricetypes.MsgVoteRequestPriceFeed)
-	for _, data := range eventData {
+	for _, data := range *eventData {
 		eventDataByOperatorId[data.OperatorId] = data
 	}
 
@@ -233,9 +249,9 @@ func (d *RequestServer) collectEvents(ctx context.Context, operatorMaps map[stri
 		if len(eventDataByOperatorId) >= len(operatorMaps) {
 			mu.Lock()
 			// distinct by operator
-			eventData = []*pricetypes.MsgVoteRequestPriceFeed{}
+			eventData = &[]*pricetypes.MsgVoteRequestPriceFeed{}
 			for _, data := range eventDataByOperatorId {
-				eventData = append(eventData, data)
+				*eventData = append(*eventData, data)
 			}
 			mu.Unlock()
 			waitChan <- struct{}{}
@@ -245,7 +261,7 @@ func (d *RequestServer) collectEvents(ctx context.Context, operatorMaps map[stri
 
 }
 
-func (d *RequestServer) collectBlocks(ctx context.Context, blockHeight int64, ch *tx_listener.BlockChannel[*pricetypes.MsgVoteRequestPriceFeed], blockData []*pricetypes.MsgVoteRequestPriceFeed, waitChan chan struct{}) {
+func (d *RequestServer) collectBlocks(ctx context.Context, blockHeight int64, ch *tx_listener.BlockChannel[*pricetypes.MsgVoteRequestPriceFeed], blockData *[]*pricetypes.MsgVoteRequestPriceFeed, waitChan chan struct{}) {
 	var mu = sync.Mutex{}
 	select {
 	case <-ctx.Done():
@@ -258,7 +274,7 @@ func (d *RequestServer) collectBlocks(ctx context.Context, blockHeight int64, ch
 		}
 		if data.Height > blockHeight {
 			mu.Lock()
-			blockData = append(blockData, data.Data)
+			*blockData = append(*blockData, data.Data)
 			mu.Unlock()
 		}
 		if data.Height >= blockHeight+d.waitBlockCount {

@@ -3,9 +3,10 @@ package server
 import (
 	"context"
 	"fmt"
-	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 	taskgateway "intellix/gateway"
 	"intellix/x/price/types"
+
+	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 
 	sdktypes "intellix/sdk/types"
 
@@ -150,43 +151,43 @@ func (k *Server) GetLatestBlock(ctx context.Context) (*cmttypes.Block, error) {
 }
 
 // SignAndBroadcastTx signs and broadcasts a transaction
-func (k *Server) SignAndBroadcastTx(ctx sdktypes.Context, msg sdk.Msg) (int64, error) {
+func (k *Server) SignAndBroadcastTx(ctx sdktypes.Context, msg sdk.Msg) error {
 	txf, err := k.prepareTxFactory(ctx)
 	if err != nil {
-		return 0, fmt.Errorf("failed to prepare tx factory: %w", err)
+		return fmt.Errorf("failed to prepare tx factory: %w", err)
 	}
 
 	address, err := k.key.GetAddress()
 	if err != nil {
-		return 0, err
+		return fmt.Errorf("failed to get address: %w", err)
 	}
 	execMsg := authz.NewMsgExec(address, []sdk.Msg{msg})
 
 	txBuilder, err := txf.BuildUnsignedTx(&execMsg)
 	if err != nil {
-		return 0, fmt.Errorf("failed to build unsigned tx: %w", err)
+		return fmt.Errorf("failed to build unsigned tx: %w", err)
 	}
 
 	err = tx.Sign(ctx, txf, k.clientCtx.GetFromName(), txBuilder, true)
 	if err != nil {
-		return 0, fmt.Errorf("failed to sign tx: %w", err)
+		return fmt.Errorf("failed to sign tx: %w", err)
 	}
 
 	txBytes, err := k.clientCtx.TxConfig.TxEncoder()(txBuilder.GetTx())
 	if err != nil {
-		return 0, fmt.Errorf("failed to encode tx: %w", err)
+		return fmt.Errorf("failed to encode tx: %w", err)
 	}
 
 	res, err := k.clientCtx.BroadcastTx(txBytes)
 	if err != nil {
-		return 0, fmt.Errorf("failed to broadcast tx: %w", err)
+		return fmt.Errorf("failed to broadcast tx: %w", err)
 	}
 
 	if res.Code != 0 {
-		return 0, fmt.Errorf("tx failed with code %d: %s", res.Code, res.RawLog)
+		return fmt.Errorf("tx failed with code %d: %s", res.Code, res.RawLog)
 	}
 
-	return res.Height, nil
+	return nil
 }
 
 // prepareTxFactory prepare tx factory

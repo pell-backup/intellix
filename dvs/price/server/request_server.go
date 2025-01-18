@@ -25,15 +25,7 @@ func NewRequestServer(server Server) types.DVSRequestServer {
 		s.PriceEventHandler, s.PriceBlockHandler,
 	)
 
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				s.logger.Error("PriceListener panic", "error", r)
-			}
-			s.PriceListener.Stop()
-		}()
-		s.PriceListener.Start()
-	}()
+	s.PriceListener.Start()
 
 	return s
 }

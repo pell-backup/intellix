@@ -235,8 +235,6 @@ github.com/0xPellNetwork/contracts v0.2.26 h1:PKUTBGSRjTEXBwD6N4VB5M2XYa8VGoNhzw
 github.com/0xPellNetwork/contracts v0.2.26/go.mod h1:eJZRJT/Mzea8LuhiFZXWy36tfIaDVt1oFmjN7Ux7gTw=
 github.com/0xPellNetwork/pell-middleware-contracts v0.2.26 h1:HZc5Sg7mNTtERSN7UWx/fniXubfJKi0TkPtsA81qKEE=
 github.com/0xPellNetwork/pell-middleware-contracts v0.2.26/go.mod h1:Qex0CyN926FuTONIfZfoMsbs+2UDCwMpkZg3QvRccvQ=
-github.com/0xPellNetwork/pelldvs v0.1.2-0.20241212131451-ccc4eee115e5 h1:z0uhsbH5s1HIVW6thyn4A+azgrgbHNiVhgCcGKNi1SQ=
-github.com/0xPellNetwork/pelldvs v0.1.2-0.20241212131451-ccc4eee115e5/go.mod h1:WpgsqtSa4B+YqukyMZriIZdiA3nThK0vPlLeDeLXguI=
 github.com/0xPellNetwork/pelldvs v0.1.10 h1:LhCvq7gioFwMltaiKoJuX2VJVykPvRMg0mk/9mCSgd0=
 github.com/0xPellNetwork/pelldvs v0.1.10/go.mod h1:bmYmveAvPHu9IWPdfegFkUktyTdUrRfiNZJWCEFJ4Io=
 github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 h1:/vQbFIOMbk2FiG/kXiLl8BRyzTWDw7gX/Hz7Dd5eDMs=

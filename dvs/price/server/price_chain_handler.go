@@ -3,23 +3,22 @@ package server
 import (
 	"context"
 	"fmt"
+	"intellix/x/price/types"
+	pricetypes "intellix/x/price/types"
+
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
-	pricetypes "intellix/x/price/types"
-	"strconv"
 )
 
 func (d *RequestServer) PriceEventHandler(ctx context.Context, event abci.Event) (string, *pricetypes.MsgVoteRequestPriceFeed, error) {
 	var (
-		taskIndex, operatorId, requestId string
+		operatorId, requestId string
 	)
 
 	if event.Type == "price.VoteRequestPriceFeed" {
 		for _, attr := range event.Attributes {
 			switch attr.Key {
-			case "task_index":
-				taskIndex = attr.Value
 			case "operator_id":
 				operatorId = attr.Value
 			case "request_id":
@@ -27,16 +26,49 @@ func (d *RequestServer) PriceEventHandler(ctx context.Context, event abci.Event)
 			}
 		}
 	}
-	// TODO: send cosmos query tx
 
-	taskIndexInt, err := strconv.ParseInt(taskIndex, 10, 32)
+	priceFeed, err := d.queryVoteRequestPriceFeed(ctx, []byte(requestId), operatorId)
 	if err != nil {
 		return "", nil, err
 	}
-	return requestId, &pricetypes.MsgVoteRequestPriceFeed{
-		TaskIndex:  uint32(taskIndexInt),
+
+	d.logger.Info("receive price feed event", "price feed", fmt.Sprintf("%+v", priceFeed))
+
+	return requestId, priceFeed, nil
+}
+
+func (d *RequestServer) queryVoteRequestPriceFeed(ctx context.Context, requestId []byte, operatorId string) (*pricetypes.MsgVoteRequestPriceFeed, error) {
+	conn := d.clientCtx.GRPCClient
+	queryClient := pricetypes.NewQueryClient(conn)
+
+	req := &types.QueryVoteRequestPriceFeedReq{
+		RequestId:  requestId,
 		OperatorId: operatorId,
-		RequestId:  []byte(requestId),
+	}
+
+	resp, err := queryClient.QueryVoteRequestPriceFeed(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	var price []*pricetypes.VoteRequestPriceFeed
+	for _, p := range resp.Price {
+		price = append(price, &pricetypes.VoteRequestPriceFeed{
+			Price:  p.Price,
+			Source: p.Source,
+		})
+	}
+
+	return &pricetypes.MsgVoteRequestPriceFeed{
+		TaskIndex:    resp.TaskIndex,
+		OperatorId:   resp.OperatorId,
+		RequestId:    resp.RequestId,
+		BaseSymbol:   resp.BaseSymbol,
+		QuoteSymbol:  resp.QuoteSymbol,
+		Price:        price,
+		Timestamp:    resp.Timestamp,
+		BlockHeight:  resp.BlockHeight,
+		Sender:       resp.Sender,
+		BlsSignature: resp.BlsSignature,
 	}, nil
 }
 
