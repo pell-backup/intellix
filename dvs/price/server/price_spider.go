@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 
 	"cosmossdk.io/math"
@@ -23,7 +24,21 @@ const (
 	dataSourceBinance  = "binance"
 )
 
-func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSymbol string) (map[string]math.LegacyDec, error) {
+type PriceTickConverter map[string]string
+type PriceTickConverterByDataSource map[string]PriceTickConverter
+
+func ToPriceTickConverterByDataSource(tickConverterConfig map[string]map[string]string) PriceTickConverterByDataSource {
+	var tickConverterByDataSource = make(PriceTickConverterByDataSource)
+	for dataSource, tickConverter := range tickConverterConfig {
+		for base, quote := range tickConverter {
+			tickConverter[strings.ToUpper(base)] = strings.ToUpper(quote)
+		}
+		tickConverterByDataSource[dataSource] = tickConverter
+	}
+	return tickConverterByDataSource
+}
+
+func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSymbol string, tickConverter PriceTickConverterByDataSource) (map[string]math.LegacyDec, error) {
 	var wg sync.WaitGroup
 
 	// TODO: configurable
@@ -33,8 +48,8 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 	}
 	priceChan := make(chan *PriceInfo, len(fetchPriceIfs))
 	wg.Add(2)
-	for _, fetchPriceIf := range fetchPriceIfs {
-		go fetchPriceIf.fetchCoinPrice(baseSymbol, quoteSymbol, &wg, priceChan)
+	for dataSource, fetchPriceIf := range fetchPriceIfs {
+		go fetchPriceIf.fetchCoinPrice(baseSymbol, quoteSymbol, tickConverter[dataSource], &wg, priceChan)
 	}
 	wg.Wait()
 
@@ -53,15 +68,25 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 }
 
 type FetchPriceServiceIF interface {
-	fetchCoinPrice(base, quote string, wg *sync.WaitGroup, priceChan chan<- *PriceInfo)
+	fetchCoinPrice(base, quote string, tickConverter PriceTickConverter, wg *sync.WaitGroup, priceChan chan<- *PriceInfo)
 }
 
 type CoinbaseFetchPriceService struct {
 	logger log.Logger
 }
 
-func (s *CoinbaseFetchPriceService) fetchCoinPrice(base, quote string, wg *sync.WaitGroup, priceChan chan<- *PriceInfo) {
+func (s *CoinbaseFetchPriceService) fetchCoinPrice(base, quote string, tickConverter PriceTickConverter, wg *sync.WaitGroup, priceChan chan<- *PriceInfo) {
 	defer wg.Done()
+
+	base = strings.ToUpper(base)
+	quote = strings.ToUpper(quote)
+
+	if tick, ok := tickConverter[base]; ok {
+		base = tick
+	}
+	if tick, ok := tickConverter[quote]; ok {
+		quote = tick
+	}
 
 	var url = fmt.Sprintf("https://api.coinbase.com/v2/prices/%s-%s/spot", base, quote)
 	resp, err := http.Get(url)
@@ -101,8 +126,18 @@ type BinanceFetchPriceService struct {
 	logger log.Logger
 }
 
-func (s *BinanceFetchPriceService) fetchCoinPrice(base, quote string, wg *sync.WaitGroup, priceChan chan<- *PriceInfo) {
+func (s *BinanceFetchPriceService) fetchCoinPrice(base, quote string, tickConverter PriceTickConverter, wg *sync.WaitGroup, priceChan chan<- *PriceInfo) {
 	defer wg.Done()
+
+	base = strings.ToUpper(base)
+	quote = strings.ToUpper(quote)
+
+	if tick, ok := tickConverter[base]; ok {
+		base = tick
+	}
+	if tick, ok := tickConverter[quote]; ok {
+		quote = tick
+	}
 
 	var url = fmt.Sprintf("https://api.binance.com/api/v3/ticker/price?symbol=%s%s", base, quote)
 	resp, err := http.Get(url)
@@ -123,7 +158,7 @@ func (s *BinanceFetchPriceService) fetchCoinPrice(base, quote string, wg *sync.W
 
 	price, err := strconv.ParseFloat(binanceResp.Price, 64)
 	if err != nil {
-		s.logger.Error("Error parsing price from Binance failed")
+		s.logger.Error("Error parsing price from Binance failed", "error", err)
 		return
 	}
 

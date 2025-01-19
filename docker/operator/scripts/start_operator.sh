@@ -92,7 +92,13 @@ function setup_operator_config {
   "operator_address": "$OPERATOR_ADDRESS",
   "gateway_addr": "$GATEWAY_ADDR",
   "cosmos_node_uri": "$COSMOS_NODE_URI",
-  "cosmos_chain_id": "$COSMOS_CHAIN_ID"
+  "cosmos_chain_id": "$COSMOS_CHAIN_ID",
+  "price_tick_converter_config": {
+    "binance": {
+      "USD": "USDT",
+      "USDT": "USD"
+    }
+  }
 }
 EOF
 }

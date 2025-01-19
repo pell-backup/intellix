@@ -32,7 +32,8 @@ type Server struct {
 	gasAdjustment   float64
 	waitBlockCount  int64 // price feed wait block count
 
-	taskGatewayClient *taskgateway.Client
+	taskGatewayClient   *taskgateway.Client
+	tickConverterConfig map[string]map[string]string
 }
 
 func NewServer(
@@ -47,6 +48,7 @@ func NewServer(
 
 	gasPrices string,
 	gasAdjustment float64,
+	tickConverterConfig map[string]map[string]string,
 ) (Server, error) {
 	if gasPrices == "" {
 		gasPrices = "1stake"
@@ -64,10 +66,11 @@ func NewServer(
 		key:           key,
 		cosmosChainId: cosmosChainId,
 
-		operatorAddress: operatorAddress,
-		waitBlockCount:  waitBlockCount,
-		gasPrices:       gasPrices,
-		gasAdjustment:   gasAdjustment,
+		operatorAddress:     operatorAddress,
+		waitBlockCount:      waitBlockCount,
+		gasPrices:           gasPrices,
+		gasAdjustment:       gasAdjustment,
+		tickConverterConfig: tickConverterConfig,
 	}
 
 	if operatorAddress != "" {
