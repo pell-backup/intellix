@@ -4,6 +4,8 @@ package intellix.processor;
 import "amino/amino.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "intellix/processor/params.proto";
 import "intellix/processor/processor.proto";
@@ -25,6 +27,12 @@ service Query {
   // ListProcessor lists processors.
   rpc ListProcessor(QueryListProcessorRequest) returns (QueryListProcessorResponse) {
     option (google.api.http).get = "/intellix/processor/processor";
+  }
+
+
+  // QueryVoteRequestProcessor shows a vote request processor.
+  rpc QueryVoteRequestProcessor(QueryVoteRequestProcessorRequest) returns (QueryVoteRequestProcessorResponse) {
+    option (google.api.http).get = "/intellix/processor/vote_request_processor";
   }
 }
 
@@ -55,4 +63,30 @@ message QueryListProcessorRequest {
 message QueryListProcessorResponse {
   repeated Processor processor = 1 [(gogoproto.nullable) = false];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryVoteRequestProcessorRequest {
+  bytes request_id = 1;
+  string operator_id = 2;
+}
+
+message QueryVoteRequestProcessorResponse {
+  uint32 task_index = 1;
+  bytes request_id = 2;
+  string fee_token = 3;
+  string payment = 4 [
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  bytes request_data = 5;
+  string callback_address = 6;
+  bytes callback_function_id = 7;
+  uint32 task_created_block = 8;
+  bytes quorum_numbers = 9;
+  uint32 quorum_threshold_percentage = 10;
+  uint64 script_id = 11;
+  bytes script_resp = 12;
+  string sender = 13 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string operator_id = 14;
+  bytes bls_signature = 15;
 }
