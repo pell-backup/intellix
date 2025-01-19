@@ -350,6 +350,11 @@ func (l *ChainListener[K, E, B]) handleNewEvent(ctx context.Context, tmEvent tmc
 				continue
 			}
 
+			var zero K
+			if key == zero {
+				continue
+			}
+
 			l.logger.Info("ChainListener.eventHandler", "key", key, "event", event, "eventData", eventData)
 
 			ed := EventData[E]{
@@ -401,6 +406,10 @@ func (l *ChainListener[K, E, B]) handleNewBlock(ctx context.Context, block *cmtt
 	key, data, err := l.blockHandler(ctx, block)
 	if err != nil {
 		//l.logger.Error("blockHandler", "error", err)
+		return
+	}
+	var zero K
+	if key == zero {
 		return
 	}
 
