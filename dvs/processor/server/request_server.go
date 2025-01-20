@@ -132,6 +132,14 @@ func (r *RequestServer) waitForEnoughOperateVote(ctx sdktypes.Context, in *types
 		ScriptId:                  in.ScriptId,
 		ScriptResp:                srcData,
 	}
+
+	// sign
+	sign := utils.SignWithBLS(r.Server.blsKeyPair, r.getMsgBytes(&voteIn))
+	if sign == nil {
+		return nil, fmt.Errorf("failed to sign VoteRequestProcessorIn")
+	}
+	voteIn.BlsSignature = sign
+
 	if err := r.Server.SignAndBroadcastTx(ctx, &voteIn); err != nil {
 		r.logger.Error("waitForEnoughOperateVote SignAndBroadcastTx error: " + err.Error())
 		return nil, fmt.Errorf("failed to broadcast VoteRequestProcessorIn for data error: %w", err)
