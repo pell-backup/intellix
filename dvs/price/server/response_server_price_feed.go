@@ -5,10 +5,10 @@ import (
 	"encoding/json"
 	"intellix/dvs/price/types"
 	taskgateway "intellix/gateway"
-	"intellix/pkg/pelldvs"
-	dvstypes "intellix/pkg/pelldvs/types"
-	"intellix/pkg/utils"
+	"intellix/sdk/pelldvs"
+	dvstypes "intellix/sdk/pelldvs/types"
 	sdktypes "intellix/sdk/types"
+	"intellix/sdk/utils"
 	pricetypes "intellix/x/price/types"
 	"math/big"
 

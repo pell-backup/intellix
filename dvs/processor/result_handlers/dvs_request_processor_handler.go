@@ -2,7 +2,7 @@ package result_handlers
 
 import (
 	"intellix/dvs/processor/types"
-	"intellix/pkg/utils"
+	"intellix/sdk/utils"
 
 	"github.com/cosmos/gogoproto/proto"
 )

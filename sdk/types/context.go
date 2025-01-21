@@ -2,7 +2,7 @@ package types
 
 import (
 	"context"
-	dvstypes "intellix/pkg/pelldvs/types"
+	dvstypes "intellix/sdk/pelldvs/types"
 	"time"
 
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"

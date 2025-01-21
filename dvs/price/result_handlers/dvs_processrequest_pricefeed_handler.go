@@ -2,7 +2,7 @@ package resulthandlers
 
 import (
 	"intellix/dvs/price/types"
-	"intellix/pkg/utils"
+	"intellix/sdk/utils"
 	"math/big"
 
 	"github.com/cosmos/gogoproto/proto"
