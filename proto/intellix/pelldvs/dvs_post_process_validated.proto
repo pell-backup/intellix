@@ -6,7 +6,7 @@ import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
 
-option go_package = "intellix/sdk/pelldvs/types";
+option go_package = "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types";
 
 message RequestPostRequestValidatedData {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";

@@ -4,11 +4,13 @@ import (
 	"context"
 	"intellix/dvs/processor/types"
 	taskgateway "intellix/gateway"
-	"intellix/sdk/pelldvs"
-	dvstypes "intellix/sdk/pelldvs/types"
-	sdktypes "intellix/sdk/types"
-	"intellix/sdk/utils"
 	processortypes "intellix/x/processor/types"
+
+	"intellix/sdk/utils"
+
+	"github.com/0xPellNetwork/pellapp-sdk/pelldvs"
+	dvstypes "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types"
+	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 )
 
 type ResponseServer struct {

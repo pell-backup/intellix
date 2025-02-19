@@ -2,8 +2,9 @@ package resulthandlers
 
 import (
 	"intellix/dvs/price/types"
-	"intellix/sdk/utils"
 	"math/big"
+
+	"intellix/sdk/utils"
 
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/ethereum/go-ethereum/accounts/abi"

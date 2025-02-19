@@ -1,7 +1,7 @@
 package types
 
 import (
-	dvstypes "intellix/sdk/pelldvs/types"
+	dvstypes "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types"
 
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"

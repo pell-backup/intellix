@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"intellix/dvs/price/types"
 	taskgateway "intellix/gateway"
-	"intellix/sdk/pelldvs"
-	dvstypes "intellix/sdk/pelldvs/types"
-	sdktypes "intellix/sdk/types"
-	"intellix/sdk/utils"
 	pricetypes "intellix/x/price/types"
 	"math/big"
+
+	"intellix/sdk/utils"
+
+	"github.com/0xPellNetwork/pellapp-sdk/pelldvs"
+	dvstypes "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types"
+	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 
 	"cosmossdk.io/math"
 	contractDataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"

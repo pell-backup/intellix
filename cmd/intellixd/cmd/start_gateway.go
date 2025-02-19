@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	taskgateway "intellix/gateway"
-	pkglogger "intellix/sdk/logger"
+
+	pkglogger "github.com/0xPellNetwork/pellapp-sdk/logger"
 
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/spf13/cobra"

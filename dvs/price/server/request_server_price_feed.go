@@ -5,9 +5,10 @@ import (
 	"context"
 	"fmt"
 	"intellix/dvs/price/types"
-	sdktypes "intellix/sdk/types"
 	pricetypes "intellix/x/price/types"
 	"time"
+
+	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 
 	"cosmossdk.io/math"
 	cmttypes "github.com/cometbft/cometbft/types"

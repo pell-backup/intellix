@@ -2,7 +2,6 @@ package pellapp
 
 import (
 	dvs "intellix/dvs/price"
-	processordvstypes "intellix/dvs/processor/types"
 	"os"
 
 	"github.com/0xPellNetwork/pelldvs/libs/log"
@@ -16,11 +15,11 @@ import (
 
 	dvsserver "intellix/dvs/price/server"
 	dvstypes "intellix/dvs/price/types"
-	processordvs "intellix/dvs/processor"
 	processordvsserver "intellix/dvs/processor/server"
-	"intellix/sdk/baseapp"
-	dvsservermanager "intellix/sdk/dvs_msg_handler"
-	"intellix/sdk/pelldvs"
+
+	"github.com/0xPellNetwork/pellapp-sdk/baseapp"
+	dvsservermanager "github.com/0xPellNetwork/pellapp-sdk/dvs_msg_handler"
+	"github.com/0xPellNetwork/pellapp-sdk/pelldvs"
 
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
 	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"
@@ -158,27 +157,27 @@ func NewApp(
 		panic(err)
 	}
 
-	app.ProcessorDvsServer, err = processordvsserver.NewServer(
-		app.logger, clientCtx, key, config.CosmosChainId,
-		config.GatewayAddr, config.OperatorAddr,
-		config.WaitBlockCount, config.GasPrices, config.GasAdjustment,
-	)
-	if err != nil {
-		panic(err)
-	}
+	// app.ProcessorDvsServer, err = processordvsserver.NewServer(
+	// 	app.logger, clientCtx, key, config.CosmosChainId,
+	// 	config.GatewayAddr, config.OperatorAddr,
+	// 	config.WaitBlockCount, config.GasPrices, config.GasAdjustment,
+	// )
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	// init dvsservermanager
 	dvsservermanager.InitDvsMsgHelper(app.appCodec)
-	app.PostProcessRequestServer = dvsservermanager.GetPostProcessRequestHandler()
-	app.ProcessRequestServer = dvsservermanager.GetProcessRequestHandler()
+	// app.PostProcessRequestServer = dvsservermanager.GetPostProcessRequestHandler()
+	// app.ProcessRequestServer = dvsservermanager.GetProcessRequestHandler()
 
 	//dvs server manager
 	dvs.NewAppModule(app.DvsServer).RegisterServices()
 	dvstypes.RegisterInterfaces(app.interfaceRegistry)
 
 	// processor server
-	processordvs.NewAppModule(app.ProcessorDvsServer).RegisterServices()
-	processordvstypes.RegisterInterfaces(app.interfaceRegistry)
+	// processordvs.NewAppModule(app.ProcessorDvsServer).RegisterServices()
+	// processordvstypes.RegisterInterfaces(app.interfaceRegistry)
 
 	return app
 }

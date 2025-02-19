@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	taskgateway "intellix/gateway"
-	sdktypes "intellix/sdk/types"
+
+	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 
 	"github.com/0xPellNetwork/pelldvs/libs/log"
 	cmttypes "github.com/cometbft/cometbft/types"

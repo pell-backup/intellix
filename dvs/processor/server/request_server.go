@@ -5,9 +5,10 @@ import (
 	context "context"
 	"fmt"
 	"intellix/dvs/processor/types"
-	sdktypes "intellix/sdk/types"
 	processortypes "intellix/x/processor/types"
 	"time"
+
+	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"

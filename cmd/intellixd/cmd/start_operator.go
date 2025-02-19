@@ -3,9 +3,10 @@ package cmd
 import (
 	"fmt"
 	taskdispatcher "intellix/dispatcher"
-	"intellix/sdk/logger"
-	pkglogger "intellix/sdk/logger"
 	"os"
+
+	"github.com/0xPellNetwork/pellapp-sdk/logger"
+	pkglogger "github.com/0xPellNetwork/pellapp-sdk/logger"
 
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
 
@@ -77,6 +78,7 @@ func pellAppCommand() *cobra.Command {
 				logger.NewDVSLogAdapter(serverCtx.Logger), pellAppConfig,
 			)
 
+			
 			config := serverCtx.Config
 			if configDispatcherFile == "" {
 				configDispatcherFile = home + "/config/dispatcher.config.json"

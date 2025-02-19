@@ -15,7 +15,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
-	_ "intellix/sdk/pelldvs/types"
+	_ "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types"
 	io "io"
 	math "math"
 	math_bits "math/bits"

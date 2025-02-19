@@ -4,7 +4,8 @@ import (
 	resulthandlers "intellix/dvs/processor/result_handlers"
 	"intellix/dvs/processor/server"
 	"intellix/dvs/processor/types"
-	dvsservermanager "intellix/sdk/dvs_msg_handler"
+
+	dvsservermanager "github.com/0xPellNetwork/pellapp-sdk/dvs_msg_handler"
 
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 )

@@ -6,7 +6,7 @@ import (
 	taskgateway "intellix/gateway"
 	"intellix/x/price/types"
 
-	sdktypes "intellix/sdk/types"
+	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"

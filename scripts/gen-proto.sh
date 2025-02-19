@@ -23,7 +23,7 @@ buf generate
 # Move proto files to the right places.
 cd ..
 cp -r proto/generate/cosmos/intellix/x/* ./x/
-cp -r proto/generate/cosmos/intellix/sdk/* ./sdk/
+cp -r proto/generate/cosmos/github.com/0xPellNetwork/pellapp-sdk/* ./sdk/
 cp -r proto/generate/cosmos/intellix/dvs/* ./dvs/
 
 # rm -rf proto/generate
