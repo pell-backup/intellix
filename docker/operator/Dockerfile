@@ -1,4 +1,4 @@
-FROM golang:1.22-bullseye AS build
+FROM golang:1.23 AS build
 
 ARG GITHUB_TOKEN
 ARG HTTP_PROXY
@@ -39,7 +39,7 @@ RUN --mount=type=cache,target="/go/pkg/mod" \
     fi
 
 ########## Setup runtime env ##########
-FROM golang:1.22-bullseye AS runtime
+FROM golang:1.23 AS runtime
 RUN apt-get update -yqq && apt-get install -yqq openssh-server curl jq less
 RUN mkdir -p /run/sshd && chmod 0755 /run/sshd
 
