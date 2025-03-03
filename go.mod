@@ -2,8 +2,6 @@ module intellix
 
 go 1.23
 
-toolchain go1.23.2
-
 replace (
 	// see:https://github.com/btcsuite/btcd/issues/2221
 	github.com/btcsuite/btcd/btcec/v2 => github.com/btcsuite/btcd/btcec/v2 v2.3.2
@@ -28,7 +26,7 @@ require (
 	cosmossdk.io/x/feegrant v0.1.1
 	cosmossdk.io/x/nft v0.1.0
 	cosmossdk.io/x/upgrade v0.1.4
-	github.com/0xPellNetwork/pelldvs v0.2.1
+	github.com/0xPellNetwork/pelldvs v0.2.2
 	github.com/0xPellNetwork/pelldvs-libs v0.2.0
 	github.com/IntelliXLabs/iwasm v0.0.6
 	github.com/IntelliXLabs/price-oracle-dvs v0.4.3
@@ -77,7 +75,7 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/0xPellNetwork/contracts v0.2.31 // indirect
 	github.com/0xPellNetwork/pell-middleware-contracts v0.2.32 // indirect
-	github.com/0xPellNetwork/pelldvs-interactor v0.0.9 // indirect
+	github.com/0xPellNetwork/pelldvs-interactor v0.0.10 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.1 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect

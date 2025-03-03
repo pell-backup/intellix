@@ -73,6 +73,9 @@ services:
       - ETH_WS_URL=ws://eth:8545
       - GATEWAY_ADDR=${GATEWAY_ADDR:-gateway:8949}
       - DEBUG_ENABLED=${OPERATOR_DEBUG_ENABLED:-false}
+      - HTTP_PROXY=$HTTP_PROXY
+      - HTTPS_PROXY=$HTTPS_PROXY
+      - NO_PROXY=$NO_PROXY
     ports:
       - "3346:${DEBUG_PORT:-2345}"
     depends_on:
