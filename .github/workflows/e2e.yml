@@ -41,12 +41,14 @@ jobs:
           git config --global url."https://${INTELLIX_GH_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
       - name: Build docker images
         run: make docker-build
+      - name: Stop services
+        run: make docker-all-down
       - name: Start services
-        run: make docker-up
+        run: make docker-operator-up
       - name: sleep 60 seconds
         run: sleep 60
       - name: Test services
         run: cd docker && docker compose run --rm test /root/scripts/test.sh
       - name: Stop services
-        run: make docker-down
+        run: make docker-all-down
         if: always()
