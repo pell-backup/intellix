@@ -40,7 +40,7 @@ jobs:
           git config --global url."https://${PELL_GH_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
           git config --global url."https://${INTELLIX_GH_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
       - name: Build docker images
-        run: make docker-build
+        run: make docker-build-all
       - name: Stop services
         run: make docker-all-down
       - name: Start services
