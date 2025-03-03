@@ -49,6 +49,9 @@ jobs:
         run: sleep 60
       - name: Test services
         run: cd docker && docker compose run --rm test /root/scripts/test.sh
+      - name: Print logs
+        run: make docker-all-logs-in-ci
+        if: always()
       - name: Stop services
         run: make docker-all-down
         if: always()

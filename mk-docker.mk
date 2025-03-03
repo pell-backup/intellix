@@ -114,3 +114,15 @@ docker-operator-rerun:
 
 docker-test:
 	@cd docker && docker compose run --rm test
+
+docker-all-logs-in-ci:
+	@cd docker && \
+		docker compose logs emulator -n 50 && \
+		echo "\n\n====================\n\n" && \
+		docker compose logs hardhat -n 50 && \
+		echo "\n\n====================\n\n" && \
+		docker compose logs dvs -n 50 && \
+		echo "\n\n====================\n\n" && \
+		docker compose logs gateway -n 50 && \
+		echo "\n\n====================\n\n" && \
+		docker compose logs operator -n 50
