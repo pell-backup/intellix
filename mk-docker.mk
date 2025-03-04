@@ -118,12 +118,12 @@ docker-test:
 docker-all-logs-in-ci:
 	@cd docker && \
 		docker compose logs emulator -n 50 && \
-		echo "\n\n==================== emulator logs end \n\n" && \
+		echo -e "\n\n\t==================== emulator logs end \n\n" && \
 		docker compose logs hardhat -n 50 && \
-		echo "\n\n==================== hardhat logs end \n\n" && \
+		echo -e "\n\n\t==================== hardhat logs end \n\n" && \
 		docker compose logs dvs -n 50 && \
-		echo "\n\n==================== dvs logs end \n\n" && \
+		echo -e "\n\n\t==================== dvs logs end \n\n" && \
 		docker compose logs gateway -n 50 && \
-		echo "\n\n==================== gateway logs end \n\n" && \
+		echo -e "\n\n\t==================== gateway logs end \n\n" && \
 		docker compose logs operator -n 50 && \
-		echo "\n\n==================== operator logs end \n\n"
+		echo -e "\n\n\t==================== operator logs end \n\n"
