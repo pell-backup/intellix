@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
-	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
+	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -61,13 +61,13 @@ func convertAddressToString(addrStr string) (*common.Address, error) {
 	return &addr, nil
 }
 
-func convertNonSignersPubkeysG1(pb [][]byte) []dataOracle.BN254G1Point {
-	list := make([]dataOracle.BN254G1Point, len(pb))
+func convertNonSignersPubkeysG1(pb [][]byte) []contractdataoracle.BN254G1Point {
+	list := make([]contractdataoracle.BN254G1Point, len(pb))
 	for i, p := range pb {
 		if len(p) < 64 {
 			continue // Skip invalid points
 		}
-		list[i] = dataOracle.BN254G1Point{
+		list[i] = contractdataoracle.BN254G1Point{
 			X: new(big.Int).SetBytes(p[:32]),
 			Y: new(big.Int).SetBytes(p[32:]),
 		}
@@ -75,22 +75,22 @@ func convertNonSignersPubkeysG1(pb [][]byte) []dataOracle.BN254G1Point {
 	return list
 }
 
-func convertToBN254G1Point(input *bls.G1Point) dataOracle.BN254G1Point {
+func convertToBN254G1Point(input *bls.G1Point) contractdataoracle.BN254G1Point {
 	if input == nil {
-		return dataOracle.BN254G1Point{
+		return contractdataoracle.BN254G1Point{
 			X: new(big.Int),
 			Y: new(big.Int),
 		}
 	}
-	output := dataOracle.BN254G1Point{
+	output := contractdataoracle.BN254G1Point{
 		X: input.X.BigInt(new(big.Int)),
 		Y: input.Y.BigInt(new(big.Int)),
 	}
 	return output
 }
 
-func convertQuorumApks(pb [][]byte) []dataOracle.BN254G1Point {
-	list := make([]dataOracle.BN254G1Point, 0, len(pb))
+func convertQuorumApks(pb [][]byte) []contractdataoracle.BN254G1Point {
+	list := make([]contractdataoracle.BN254G1Point, 0, len(pb))
 	for _, apk := range pb {
 		if len(apk) == 0 {
 			continue // Skip empty APKs
@@ -104,12 +104,12 @@ func convertQuorumApks(pb [][]byte) []dataOracle.BN254G1Point {
 	return list
 }
 
-func convertApkG2(pb []byte) dataOracle.BN254G2Point {
+func convertApkG2(pb []byte) contractdataoracle.BN254G2Point {
 	if len(pb) < 128 {
-		return dataOracle.BN254G2Point{}
+		return contractdataoracle.BN254G2Point{}
 	}
 
-	return dataOracle.BN254G2Point{
+	return contractdataoracle.BN254G2Point{
 		X: [2]*big.Int{
 			new(big.Int).SetBytes(pb[:32]),
 			new(big.Int).SetBytes(pb[32:64]),
@@ -121,12 +121,12 @@ func convertApkG2(pb []byte) dataOracle.BN254G2Point {
 	}
 }
 
-func convertSigma(pb []byte) dataOracle.BN254G1Point {
+func convertSigma(pb []byte) contractdataoracle.BN254G1Point {
 	if len(pb) < 64 {
-		return dataOracle.BN254G1Point{}
+		return contractdataoracle.BN254G1Point{}
 	}
 
-	return dataOracle.BN254G1Point{
+	return contractdataoracle.BN254G1Point{
 		X: new(big.Int).SetBytes(pb[:32]),
 		Y: new(big.Int).SetBytes(pb[32:]),
 	}
