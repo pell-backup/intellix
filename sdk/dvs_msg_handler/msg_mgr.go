@@ -3,16 +3,15 @@ package dvsservermanager
 import (
 	"context"
 	"fmt"
-	result "intellix/sdk/dvs_msg_handler/result_handler"
-	"intellix/sdk/dvs_msg_handler/tx"
-
-	sdktypes "intellix/sdk/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/ethereum/go-ethereum/log"
 	"google.golang.org/grpc"
+
+	result "intellix/sdk/dvs_msg_handler/result_handler"
+	"intellix/sdk/dvs_msg_handler/tx"
+	sdktypes "intellix/sdk/types"
 )
 
 type MsgHandler func(ctx sdktypes.Context, msg sdk.Msg) (*result.Result, error)

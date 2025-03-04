@@ -1,27 +1,28 @@
 package taskdispatcher
 
 import "C"
+
 import (
 	"context"
 	"fmt"
-	pricetypes "intellix/dvs/price/types"
-	processortypes "intellix/dvs/processor/types"
-	"intellix/sdk/dvs_msg_handler/tx"
 	"sync"
 
+	"cosmossdk.io/math"
 	dvslog "github.com/0xPellNetwork/pelldvs-libs/log"
+	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"
+	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
+	"github.com/cometbft/cometbft/libs/log"
+	"github.com/cometbft/cometbft/libs/service"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-
-	"cosmossdk.io/math"
-	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"
-	contractDataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
-	"github.com/cometbft/cometbft/libs/log"
-	"github.com/cometbft/cometbft/libs/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+
+	pricetypes "intellix/dvs/price/types"
+	processortypes "intellix/dvs/processor/types"
+	"intellix/sdk/dvs_msg_handler/tx"
 )
 
 type TaskDispatcher struct {
@@ -36,7 +37,7 @@ type TaskDispatcher struct {
 
 type chainWatcher struct {
 	chainID  uint64
-	contract *contractDataOracle.ContractDataOracle
+	contract *contractdataoracle.ContractDataOracle
 	client   *ethclient.Client
 }
 
@@ -80,7 +81,7 @@ func (td *TaskDispatcher) AddChain(config *ChainConfig) error {
 		return fmt.Errorf("failed to connect to Ethereum client: %w", err)
 	}
 
-	contract, err := contractDataOracle.NewContractDataOracle(common.HexToAddress(config.ContractAddress), ethClient)
+	contract, err := contractdataoracle.NewContractDataOracle(common.HexToAddress(config.ContractAddress), ethClient)
 	if err != nil {
 		return fmt.Errorf("failed to instantiate contract: %w", err)
 	}
@@ -103,7 +104,7 @@ func (td *TaskDispatcher) Start() error {
 
 func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
 	td.logger.Info("now listen for new tasks")
-	newTaskChan := make(chan *contractDataOracle.ContractDataOracleNewTaskCreated)
+	newTaskChan := make(chan *contractdataoracle.ContractDataOracleNewTaskCreated)
 	// TODO: add index by height
 	// TODO: add scan mode
 	sub, err := chain.contract.WatchNewTaskCreated(&bind.WatchOpts{}, newTaskChan, nil)
@@ -126,7 +127,7 @@ func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
 	}
 }
 
-func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractDataOracle.ContractDataOracleNewTaskCreated) {
+func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractdataoracle.ContractDataOracleNewTaskCreated) {
 	td.logger.Info("New task created", "chainID", chainID, "TaskIndex", newTask.TaskIndex, "RequestId", newTask.Task.RequestId, "TaskType", newTask.Task.TaskType)
 
 	taskData, err := td.serializeTask(chainID, newTask)
@@ -156,7 +157,7 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractDataOra
 	td.logger.Info("Task sent to PellDVS successfully", "chainID", chainID, "TaskIndex", newTask.TaskIndex)
 }
 
-func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractDataOracle.ContractDataOracleNewTaskCreated) ([]byte, error) {
+func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractdataoracle.ContractDataOracleNewTaskCreated) ([]byte, error) {
 	td.logger.Info("serializeTask",
 		"chainID", chainID,
 		"taskIndex", newTask.TaskIndex,

@@ -1,12 +1,13 @@
 package resulthandlers
 
 import (
-	"intellix/dvs/price/types"
-	"intellix/sdk/utils"
 	"math/big"
 
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/ethereum/go-ethereum/accounts/abi"
+
+	"intellix/dvs/price/types"
+	"intellix/sdk/utils"
 )
 
 type ProcessRequestPriceFeedResultHandler struct {

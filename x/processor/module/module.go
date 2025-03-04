@@ -18,8 +18,6 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
-	// this line is used by starport scaffolding # 1
-
 	modulev1 "intellix/api/intellix/processor/module"
 	"intellix/x/processor/keeper"
 	"intellix/x/processor/types"

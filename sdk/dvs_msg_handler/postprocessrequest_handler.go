@@ -1,13 +1,13 @@
 package dvsservermanager
 
 import (
-	result "intellix/sdk/dvs_msg_handler/result_handler"
-	"intellix/sdk/dvs_msg_handler/tx"
-	sdktypes "intellix/sdk/types"
-
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	"github.com/cosmos/gogoproto/proto"
 	"google.golang.org/grpc"
+
+	result "intellix/sdk/dvs_msg_handler/result_handler"
+	"intellix/sdk/dvs_msg_handler/tx"
+	sdktypes "intellix/sdk/types"
 )
 
 type PostProcessRequestHandler struct {

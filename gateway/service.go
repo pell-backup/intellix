@@ -9,20 +9,18 @@ import (
 	"net"
 	"net/rpc"
 	"os"
+	"sync"
 	"time"
 
 	"cosmossdk.io/math"
 	dvslog "github.com/0xPellNetwork/pelldvs-libs/log"
-	"github.com/ethereum/go-ethereum/accounts/keystore"
-	"github.com/ethereum/go-ethereum/core/types"
-
 	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-
-	"sync"
 )
 
 type ChainConnection struct {

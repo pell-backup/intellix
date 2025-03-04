@@ -1,12 +1,12 @@
 package dvs
 
 import (
+	grpc1 "github.com/cosmos/gogoproto/grpc"
+
 	resulthandlers "intellix/dvs/price/result_handlers"
 	"intellix/dvs/price/server"
 	"intellix/dvs/price/types"
 	dvsservermanager "intellix/sdk/dvs_msg_handler"
-
-	grpc1 "github.com/cosmos/gogoproto/grpc"
 )
 
 // AppModule implements an application module for the dvs module.

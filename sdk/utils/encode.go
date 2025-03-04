@@ -2,7 +2,8 @@ package utils
 
 import (
 	"fmt"
-	contractDataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
+
+	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"golang.org/x/crypto/sha3"
 )
@@ -26,7 +27,7 @@ func AbiEncodeResponseTaskParam(taskIndex uint32, data []byte) ([]byte, error) {
 			Type: taskResponseType,
 		},
 	}
-	bytes, err := arguments.Pack(&contractDataOracle.IDataOracleTaskResponse{
+	bytes, err := arguments.Pack(&contractdataoracle.IDataOracleTaskResponse{
 		ReferenceTaskIndex: taskIndex,
 		Data:               data,
 	})
@@ -46,7 +47,7 @@ func DigestKeccak256(data []byte) []byte {
 	return taskResponseDigest[:]
 }
 
-func AbiDecodeResponseTaskParam(data []byte) (*contractDataOracle.IDataOracleTaskResponse, error) {
+func AbiDecodeResponseTaskParam(data []byte) (*contractdataoracle.IDataOracleTaskResponse, error) {
 	taskResponseType, err := abi.NewType("tuple", "", []abi.ArgumentMarshaling{
 		{
 			Name: "referenceTaskIndex",
@@ -82,10 +83,10 @@ func AbiDecodeResponseTaskParam(data []byte) (*contractDataOracle.IDataOracleTas
 		Data               []byte `json:"data"`
 	})
 	if !ok {
-		return nil, fmt.Errorf("expected %T, got %T", &contractDataOracle.IDataOracleTaskResponse{}, values[0])
+		return nil, fmt.Errorf("expected %T, got %T", &contractdataoracle.IDataOracleTaskResponse{}, values[0])
 	}
 
-	return &contractDataOracle.IDataOracleTaskResponse{
+	return &contractdataoracle.IDataOracleTaskResponse{
 		ReferenceTaskIndex: r.ReferenceTaskIndex,
 		Data:               r.Data,
 	}, nil

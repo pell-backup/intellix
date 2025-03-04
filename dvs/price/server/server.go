@@ -3,22 +3,21 @@ package server
 import (
 	"context"
 	"fmt"
-	taskgateway "intellix/gateway"
-	"intellix/x/price/types"
-
-	sdktypes "intellix/sdk/types"
-
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/authz"
 
 	"github.com/0xPellNetwork/pelldvs-libs/log"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/spf13/pflag"
+
+	taskgateway "intellix/gateway"
+	sdktypes "intellix/sdk/types"
+	"intellix/x/price/types"
 )
 
 type Server struct {

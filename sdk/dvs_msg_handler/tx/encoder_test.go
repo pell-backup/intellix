@@ -1,13 +1,14 @@
 package tx
 
 import (
-	"intellix/dvs/price/types"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
+
+	"intellix/dvs/price/types"
 )
 
 func TestEncodeDecode(t *testing.T) {

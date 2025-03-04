@@ -3,11 +3,12 @@ package keeper
 import (
 	"context"
 	"fmt"
-	"intellix/x/price/types"
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	"intellix/x/price/types"
 )
 
 func (k msgServer) VoteRequestPriceFeed(ctx context.Context, msg *types.MsgVoteRequestPriceFeed) (*types.MsgVoteRequestPriceFeedResponse, error) {
