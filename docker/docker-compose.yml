@@ -83,6 +83,8 @@ services:
         condition: service_started
       abci:
         condition: service_started
+      dvs:
+        condition: service_started
     entrypoint: [ "bash", "/root/scripts/start_operator.sh" ]
     volumes:
       - ./operator/scripts:/root/scripts
