@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
+	dvslog "github.com/0xPellNetwork/pelldvs-libs/log"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/core/types"
 

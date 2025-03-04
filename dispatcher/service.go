@@ -6,10 +6,10 @@ import (
 	"fmt"
 	pricetypes "intellix/dvs/price/types"
 	processortypes "intellix/dvs/processor/types"
-	"intellix/pkg/dvs_msg_handler/tx"
+	"intellix/sdk/dvs_msg_handler/tx"
 	"sync"
 
-	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
+	dvslog "github.com/0xPellNetwork/pelldvs-libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"

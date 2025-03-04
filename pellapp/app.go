@@ -5,7 +5,7 @@ import (
 	processordvstypes "intellix/dvs/processor/types"
 	"os"
 
-	"github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/0xPellNetwork/pelldvs-libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
@@ -18,9 +18,9 @@ import (
 	dvstypes "intellix/dvs/price/types"
 	processordvs "intellix/dvs/processor"
 	processordvsserver "intellix/dvs/processor/server"
-	dvsservermanager "intellix/pkg/dvs_msg_handler"
-	"intellix/pkg/pelldvs"
 	"intellix/sdk/baseapp"
+	dvsservermanager "intellix/sdk/dvs_msg_handler"
+	"intellix/sdk/pelldvs"
 
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
 	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"

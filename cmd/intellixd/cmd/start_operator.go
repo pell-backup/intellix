@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 	taskdispatcher "intellix/dispatcher"
-	"intellix/pkg/logger"
-	pkglogger "intellix/pkg/logger"
+	"intellix/sdk/logger"
+	pkglogger "intellix/sdk/logger"
 	"os"
 
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
