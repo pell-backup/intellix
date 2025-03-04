@@ -9,7 +9,6 @@ import (
 	"sync"
 
 	"cosmossdk.io/math"
-
 	"github.com/0xPellNetwork/pelldvs-libs/log"
 )
 

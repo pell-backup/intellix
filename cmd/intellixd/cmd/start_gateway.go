@@ -3,13 +3,13 @@ package cmd
 import (
 	"context"
 	"fmt"
-	taskgateway "intellix/gateway"
-	pkglogger "intellix/sdk/logger"
 
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/spf13/cobra"
-
 	"github.com/spf13/viper"
+
+	taskgateway "intellix/gateway"
+	pkglogger "intellix/sdk/logger"
 )
 
 func taskGatewayCommand() *cobra.Command {

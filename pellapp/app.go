@@ -1,11 +1,11 @@
 package pellapp
 
 import (
-	dvs "intellix/dvs/price"
-	processordvstypes "intellix/dvs/processor/types"
 	"os"
 
 	"github.com/0xPellNetwork/pelldvs-libs/log"
+	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
+	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
@@ -14,16 +14,15 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 
+	dvs "intellix/dvs/price"
 	dvsserver "intellix/dvs/price/server"
 	dvstypes "intellix/dvs/price/types"
 	processordvs "intellix/dvs/processor"
 	processordvsserver "intellix/dvs/processor/server"
+	processordvstypes "intellix/dvs/processor/types"
 	"intellix/sdk/baseapp"
 	dvsservermanager "intellix/sdk/dvs_msg_handler"
 	"intellix/sdk/pelldvs"
-
-	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
-	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"
 )
 
 const (

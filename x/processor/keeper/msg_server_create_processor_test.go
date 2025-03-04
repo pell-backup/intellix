@@ -1,22 +1,23 @@
 package keeper_test
 
 import (
-	keepertest "intellix/testutil/keeper"
-	"intellix/x/processor/keeper"
-	"intellix/x/processor/types"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	keepertest "intellix/testutil/keeper"
+	"intellix/x/processor/keeper"
+	"intellix/x/processor/types"
 )
 
 func TestCreateProcessor(t *testing.T) {
 	k, ctx := keepertest.ProcessorKeeper(t)
 	msgServer := keeper.NewMsgServerImpl(k)
 	msg := types.MsgCreateProcessor{
-		Creator: "creator",
+		Creator:       "creator",
 		ProcessorType: types.ProcessorType_WASM,
-		Config: []byte("config"),
-		WasmCode: []byte("wasm code"),
+		Config:        []byte("config"),
+		WasmCode:      []byte("wasm code"),
 	}
 	res, err := msgServer.CreateProcessor(ctx, &msg)
 	require.NoError(t, err)

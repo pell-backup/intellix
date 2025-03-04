@@ -3,6 +3,7 @@ package taskdispatcher
 import (
 	"bytes"
 	"fmt"
+
 	cbor "github.com/fxamacker/cbor/v2"
 )
 

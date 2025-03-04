@@ -2,12 +2,13 @@ package keeper
 
 import (
 	"context"
-	"intellix/x/processor/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"intellix/x/processor/types"
 )
 
 func (k Keeper) ShowProcessor(goCtx context.Context, req *types.QueryShowProcessorRequest) (*types.QueryShowProcessorResponse, error) {

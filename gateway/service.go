@@ -9,25 +9,23 @@ import (
 	"net"
 	"net/rpc"
 	"os"
+	"sync"
 	"time"
 
 	"cosmossdk.io/math"
 	dvslog "github.com/0xPellNetwork/pelldvs-libs/log"
-	"github.com/ethereum/go-ethereum/accounts/keystore"
-	"github.com/ethereum/go-ethereum/core/types"
-
-	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
+	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-
-	"sync"
 )
 
 type ChainConnection struct {
 	ethClient          *ethclient.Client
-	contractDataOracle *dataOracle.ContractDataOracle
+	contractDataOracle *contractdataoracle.ContractDataOracle
 }
 
 type TaskGateway struct {
@@ -57,7 +55,7 @@ func NewTaskGateway(logger dvslog.Logger, ctx context.Context, cfg *TaskGatewayC
 			return nil, fmt.Errorf("failed to connect to chain %d: %v", chainID, err)
 		}
 
-		contract, err := dataOracle.NewContractDataOracle(common.HexToAddress(chainCfg.ContractAddress), ethClient)
+		contract, err := contractdataoracle.NewContractDataOracle(common.HexToAddress(chainCfg.ContractAddress), ethClient)
 		if err != nil {
 			return nil, fmt.Errorf("failed to create contract instance for chain %d: %v", chainID, err)
 		}
@@ -213,7 +211,7 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		tg.logger.Error("Error converting taskRaw payment", "payment", response.TaskRaw.Payment)
 		return fmt.Errorf("error converting taskRaw payment")
 	}
-	task := dataOracle.IDataOracleTask{
+	task := contractdataoracle.IDataOracleTask{
 		TaskType:                 math.NewInt(response.TaskRaw.TaskType).BigInt(),
 		RequestId:                [32]byte(response.TaskRaw.RequestID),
 		FeeToken:                 *feeTokenAddr,
@@ -227,7 +225,7 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		GroupThresholdPercentage: response.TaskRaw.QuorumThresholdPercentage,
 	}
 
-	sign := dataOracle.IBLSSignatureVerifierNonSignerStakesAndSignature{
+	sign := contractdataoracle.IBLSSignatureVerifierNonSignerStakesAndSignature{
 		NonSignerGroupBitmapIndices: response.ValidatedData.NonSignerQuorumBitmapIndices,
 		NonSignerPubkeys:            convertNonSignersPubkeysG1(response.ValidatedData.NonSignersPubkeysG1),
 		GroupApks:                   convertQuorumApks(response.ValidatedData.QuorumApksG1),
@@ -238,7 +236,7 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		NonSignerStakeIndices:       response.ValidatedData.NonSignerStakeIndices,
 	}
 
-	taskResp := dataOracle.IDataOracleTaskResponse{
+	taskResp := contractdataoracle.IDataOracleTaskResponse{
 		ReferenceTaskIndex: response.TaskRaw.TaskIndex,
 		Data:               response.RespToTaskData,
 	}

@@ -1,6 +1,9 @@
 package pellapp
 
 import (
+	"os"
+	"strings"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/config"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -11,8 +14,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"os"
-	"strings"
 )
 
 func NewClientContext(

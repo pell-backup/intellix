@@ -3,11 +3,12 @@ package keeper
 import (
 	"encoding/binary"
 	"errors"
-	"intellix/x/processor/types"
 
 	"cosmossdk.io/store/prefix"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	"intellix/x/processor/types"
 )
 
 func (k Keeper) AppendProcessor(ctx sdk.Context, processor types.Processor) (uint64, error) {
