@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -x
 set -e
 
 logt() {
@@ -12,40 +13,35 @@ function load_defaults {
 
   export PELLDVS_HOME=${PELLDVS_HOME:-/root/.pelldvs}
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
+  export SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
 
+  export AGGREGATOR_INDEXER_START_HEIGHT=${AGGREGATOR_INDEXER_START_HEIGHT:-0}
+  export AGGREGATOR_INDEXER_BATCH_SIZE=${AGGREGATOR_INDEXER_BATCH_SIZE:-1000}
+  export CHAIN_ID=${CHAIN_ID:-1337}
+
   export AGGREGATOR_RPC_LADDR=${AGGREGATOR_RPC_LADDR:-0.0.0.0:26653}
+	export DEBUG_PORT=${DEBUG_PORT:-2345}
 }
 
 function init_aggregator {
-  mkdir -p $PELLDVS_HOME/config
-  REGISTRY_ROUTER_ADDRESS=$(ssh emulator "cat /root/RegistryRouterAddress.json" | jq -r .address)
   cat <<EOF > $PELLDVS_HOME/config/aggregator.json
 {
     "aggregator_rpc_server": "$AGGREGATOR_RPC_LADDR",
-    "operator_response_timeout": "10s",
-    "pell_registry_router_address": "$REGISTRY_ROUTER_ADDRESS",
-    "chain_config_path": "$PELLDVS_HOME/config/chain.detail.json"
-}
-EOF
-
-  DVS_OPERATOR_KEY_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorKeyManager-Proxy.json" | jq -r .address)
-  DVS_CENTRAL_SCHEDULER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/CentralScheduler-Proxy.json" | jq -r .address)
-  DVS_OPERATOR_INFO_PROVIDER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorInfoProvider.json" | jq -r .address)
-  cat <<EOF > $PELLDVS_HOME/config/chain.detail.json
-{
-  "1337": {
-    "rpc_url": "$ETH_WS_URL",
-    "operator_info_provider_address": "$DVS_OPERATOR_INFO_PROVIDER",
-    "operator_key_manager_address": "$DVS_OPERATOR_KEY_MANAGER",
-    "central_scheduler_address": "$DVS_CENTRAL_SCHEDULER"
-  }
+    "operator_response_timeout": "10s"
 }
 EOF
 }
 
 function start_aggregator {
-  pelldvs start-aggregator --home "$PELLDVS_HOME"
+  if [ "$DEBUG_ENABLED" = "true" ]; then
+    dlv exec /usr/bin/pelldvs \
+      --listen=:$DEBUG_PORT --headless=true --api-version=2 --accept-multiclient\
+      --log --log-output=debugger \
+      -- start-aggregator --home $PELLDVS_HOME
+  else
+		pelldvs start-aggregator --home $PELLDVS_HOME
+  fi
 }
 
 logt "Load Default Values for ENV Vars if not set."

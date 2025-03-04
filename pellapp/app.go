@@ -5,7 +5,7 @@ import (
 	processordvstypes "intellix/dvs/processor/types"
 	"os"
 
-	"github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/0xPellNetwork/pelldvs-libs/log"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
