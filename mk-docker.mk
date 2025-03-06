@@ -9,6 +9,13 @@ check-env-gh-token:
 docker-build-all: check-env-gh-token
 	@cd docker && docker compose -f docker-compose.build.yml build
 
+DOCKER_TAG ?= latest
+
+docker-build-release-local: check-env-gh-token
+	docker build -f ./Dockerfile-local -t pellnetwork/intellix:${DOCKER_TAG} . \
+	--build-arg GITHUB_TOKEN=$${GITHUB_TOKEN} \
+	--build-arg PELLDVS_VERSION=v0.2.2
+
 docker-build-contracts: check-env-gh-token
 	@cd docker && docker compose -f docker-compose.build.yml build hardhat
 

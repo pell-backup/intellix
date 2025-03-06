@@ -14,4 +14,4 @@ test/local/logs/
 test/local/data/
 operatorsync/testdata/
 test/local/test-node-*/data/
-
+.git

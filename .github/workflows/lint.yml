@@ -13,7 +13,7 @@ on:
   pull_request:
   push:
     branches:
-      - master
+      - main
 
 concurrency: 
   group: lint-${{ github.head_ref || github.run_id }}
@@ -49,14 +49,10 @@ jobs:
 #            go.sum
       - name: setup go private modules
         env:
-          PELL_GH_TOKEN: ${{ secrets.PELL_GH_TOKEN }}
-          INTELLIX_GH_TOKEN: ${{ secrets.INTELLIX_GH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          go env -w GOPRIVATE=github.com/0xPellNetwork,github.com/IntelliXLabs
-          go env -w GONOSUMDB=github.com/0xPellNetwork,github.com/IntelliXLabs
-          git config --global url."https://${PELL_GH_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
-          git config --global url."https://${INTELLIX_GH_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
+          git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
+          git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
       - name: download go modules
         run: go mod download
         working-directory: ${{ env.NEW_WORK_DIR }}
