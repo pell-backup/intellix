@@ -32,12 +32,10 @@ jobs:
             go.sum
       - name: setup go private modules
         env:
-          PELL_GH_TOKEN: ${{ secrets.PELL_GH_TOKEN }}
-          INTELLIX_GH_TOKEN: ${{ secrets.INTELLIX_GH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          git config --global url."https://${PELL_GH_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
-          git config --global url."https://${INTELLIX_GH_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
+          git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
+          git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
       - name: Build docker images
         run: make docker-build-all
       - name: Stop services
@@ -47,7 +45,7 @@ jobs:
       - name: sleep 60 seconds
         run: sleep 60
       - name: Test services
-        run: cd docker && docker compose run --rm test /root/scripts/test.sh
+        run: make docker-test
       - name: Print logs
         run: make docker-all-logs-in-ci
         if: always()
