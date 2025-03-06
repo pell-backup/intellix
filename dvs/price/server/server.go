@@ -48,7 +48,7 @@ func NewServer(
 	gasAdjustment float64,
 ) (Server, error) {
 	if gasPrices == "" {
-		gasPrices = "1stake"
+		gasPrices = "1uitlx"
 	}
 	if gasAdjustment == 0 {
 		gasAdjustment = 1.5

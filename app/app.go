@@ -83,8 +83,7 @@ import (
 )
 
 const (
-	AccountAddressPrefix = "cosmos"
-	Name                 = "intellix"
+	Name = "intellix"
 )
 
 var (
