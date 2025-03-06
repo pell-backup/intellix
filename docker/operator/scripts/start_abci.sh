@@ -55,7 +55,7 @@ function init_config {
 
 function start_abci {
   intellixd start \
-    --minimum-gas-prices=0.01uitlx \
+    --minimum-gas-prices=1uitlx \
     --api.enable=true \
     --api.address="tcp://0.0.0.0:1317" \
     --grpc.enable=true \
