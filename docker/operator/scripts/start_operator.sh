@@ -95,8 +95,7 @@ function setup_operator_config {
   "cosmos_chain_id": "$COSMOS_CHAIN_ID",
   "price_tick_converter_config": {
     "binance": {
-      "USD": "USDT",
-      "USDT": "USD"
+      "USD": "USDT"
     }
   }
 }
