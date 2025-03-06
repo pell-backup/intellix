@@ -33,7 +33,6 @@ COPY --from=build /app/intellixd/build/intellixd /usr/bin/intellixd
 COPY --from=build /app/pelldvs/build/pelldvs /usr/bin/pelldvs
 COPY --from=build /app/intellixd/lib/* /usr/local/lib/
 RUN ldconfig /usr/local/lib
-COPY scripts/docker-entrypoint.sh /root/scripts/docker-entrypoint.sh
 
 WORKDIR /root
 
@@ -42,4 +41,4 @@ VOLUME [ "$PELLDVS_HOME" ]
 
 EXPOSE 26657
 
-ENTRYPOINT [ "/root/scripts/docker-entrypoint.sh" ]
+ENTRYPOINT ["intellixd"]
