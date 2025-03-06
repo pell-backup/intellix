@@ -273,6 +273,9 @@ func New(
 		return nil, err
 	}
 
+	// register the upgrade handlers
+	app.RegisterUpgradeHandlers()
+
 	/****  Module Options ****/
 
 	app.ModuleManager.RegisterInvariants(app.CrisisKeeper)
