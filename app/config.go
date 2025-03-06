@@ -34,10 +34,10 @@ var (
 
 func init() {
 	SetAddressPrefixes()
-	RegisterDenoms()
+	RegisterDisplayDenom()
 }
 
-func RegisterDenoms() {
+func RegisterDisplayDenom() {
 	err := sdk.RegisterDenom(HumanDenomUnit, math.LegacyOneDec())
 	if err != nil {
 		panic(err)
