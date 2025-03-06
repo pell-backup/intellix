@@ -9,11 +9,11 @@ import (
 )
 
 const (
-	HumanCoinUnit = "itlx"
-	BaseCoinUnit  = "uitlx"
-	ItlxExponent  = 6
+	HumanDenomUnit = "itlx"
+	BaseDenomUnit  = "uitlx"
+	ItlxExponent   = 6
 
-	DefaultBondDenom = BaseCoinUnit
+	DefaultBondDenom = BaseDenomUnit
 
 	// Bech32PrefixAccAddr defines the Bech32 prefix of an account's address.
 	Bech32PrefixAccAddr = "itlx"
@@ -38,11 +38,11 @@ func init() {
 }
 
 func RegisterDenoms() {
-	err := sdk.RegisterDenom(HumanCoinUnit, math.LegacyOneDec())
+	err := sdk.RegisterDenom(HumanDenomUnit, math.LegacyOneDec())
 	if err != nil {
 		panic(err)
 	}
-	err = sdk.RegisterDenom(BaseCoinUnit, math.LegacyNewDecWithPrec(1, ItlxExponent))
+	err = sdk.RegisterDenom(BaseDenomUnit, math.LegacyNewDecWithPrec(1, ItlxExponent))
 	if err != nil {
 		panic(err)
 	}
