@@ -165,6 +165,12 @@ lint-fix-typo:
 
 DESTINATION = ./index.html.md
 
+# Run goimports-reviser to lint and format imports
+lint-imports:
+	@echo "--> Running goimports-reviser"
+	@find . -name "*.go" -not -path "./vendor/*" -not -path "./.git/*" -not -name "tools.go" | while read -r file; do \
+		goimports-reviser -rm-unused -format "$$file"; \
+	done
 
 ###############################################################################
 ###                           Documentation                                 ###

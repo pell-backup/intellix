@@ -2,7 +2,8 @@ package pelldvs
 
 import (
 	"fmt"
-	dvstypes "intellix/pkg/pelldvs/types"
+
+	dvstypes "intellix/sdk/pelldvs/types"
 	sdktypes "intellix/sdk/types"
 )
 

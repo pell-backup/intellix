@@ -10,8 +10,7 @@ import (
 	"sync"
 
 	"cosmossdk.io/math"
-
-	"github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/0xPellNetwork/pelldvs-libs/log"
 )
 
 type PriceInfo struct {

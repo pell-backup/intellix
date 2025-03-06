@@ -4,16 +4,16 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"intellix/dvs/price/types"
-	sdktypes "intellix/sdk/types"
-	pricetypes "intellix/x/price/types"
+	"sort"
 	"time"
 
 	"cosmossdk.io/math"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 
-	"sort"
+	"intellix/dvs/price/types"
+	sdktypes "intellix/sdk/types"
+	pricetypes "intellix/x/price/types"
 )
 
 func (server RequestServer) RequestPriceFeed(ctx context.Context, request *types.RequestPriceFeedIn) (*types.RequestPriceFeedOut, error) {

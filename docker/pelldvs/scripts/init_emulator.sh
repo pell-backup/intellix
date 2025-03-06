@@ -21,53 +21,53 @@ function hardhat_healthcheck {
   set -e
 }
 
+export REGISTRY_ROUTER_ADDRESS_FILE="/root/RegistryRouterAddress.json"
 
 function load_defaults {
+  export HARDHAT_PROJ_ROOT="/app/price-oracle-dvs"
   export HARDHAT_CONTRACTS_PATH="/app/price-oracle-dvs/lib/pell-middleware-contracts/lib/pell-contracts/deployments/localhost"
   export HARDHAT_DVS_PATH="/app/price-oracle-dvs/deployments/localhost"
+
+  export AGGREGATOR_INDEXER_START_HEIGHT=${AGGREGATOR_INDEXER_START_HEIGHT:-0}
+  export AGGREGATOR_INDEXER_BATCH_SIZE=${AGGREGATOR_INDEXER_BATCH_SIZE:-1000}
 
   export PELLDVS_HOME=${PELLDVS_HOME:-/root/.pelldvs}
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
+  export SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL:-http://eth:8545}
   export ADMIN_KEY_FILE="$PELLDVS_HOME/keys/admin.ecdsa.key.json"
+  export CHAIN_ID=${CHAIN_ID:-1337}
+
+  export PELLEMULATOR_HOME=${PELLEMULATOR_HOME:-/root/.pell-emulator}
+  export PELLEMULATOR_SERVER_PORT=${PELLEMULATOR_SERVER_PORT:-9090}
 }
 
 
 function setup_admin_key {
-  ## create admin key
-  # echo  -ne '\n\n' | pelldvs keys create admin --key-type=ecdsa --insecure > /tmp/admin.key
-  # ADMIN_KEY=$(cat /tmp/admin.key | sed -n 's/.*\/\/[[:space:]]*\([0-9a-f]\{64\}\)[[:space:]]*\/\/.*/\1/p')
-
   ## For development purposes, we use a predefined admin key from Hardhat's first account
   ## This key is used to deploy contracts in the contract template repo
   ADMIN_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
-  if ! pelldvs keys show admin --home "$PELLDVS_HOME" >/dev/null 2>&1; then
-    echo -ne '\n\n' | pelldvs keys import --key-type ecdsa --insecure admin $ADMIN_KEY --home $PELLDVS_HOME >/dev/null
-  fi
-
+  echo -ne '\n\n' | pelldvs keys import --key-type ecdsa --insecure admin $ADMIN_KEY --home $PELLDVS_HOME >/dev/null
 
   export ADMIN_ADDRESS=$(pelldvs keys show admin --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | jq -r .address)
-}
-
-function update_pelldvs_config {
-  pelldvs init --home $PELLDVS_HOME
-  ## Update config
-  REGISTRY_ROUTER_FACTORY_ADDRESS=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellRegistryRouterFactory.json" | jq -r .address)
-  update-config() {
-    KEY="$1"
-    VALUE="$2"
-    sed -i "s|${KEY} = \".*\"|${KEY} = \"${VALUE}\"|" $PELLDVS_HOME/config/config.toml
-  }
-  update-config rpc_url "$ETH_RPC_URL"
-  update-config pell_registry_router_factory_address "$REGISTRY_ROUTER_FACTORY_ADDRESS"
 }
 
 function create_registry_router {
   ## Create registry router
   REGISTRY_ROUTER_ADDRESS_FILE="/root/RegistryRouterAddress.json"
+  REGISTRY_ROUTER_FACTORY_ADDRESS=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellRegistryRouterFactory.json" | jq -r .address)
+
+  # required registry router factory address
+  if [ -z "$REGISTRY_ROUTER_FACTORY_ADDRESS" ]; then
+    echo "REGISTRY_ROUTER_FACTORY_ADDRESS is required"
+    exit 1
+  fi
+
   pelldvs client dvs create-registry-router \
     --home $PELLDVS_HOME \
+    --rpc-url $ETH_RPC_URL \
     --from admin \
+    --registry-router-factory $REGISTRY_ROUTER_FACTORY_ADDRESS \
     --initial-owner $ADMIN_ADDRESS \
     --dvs-chain-approver $ADMIN_ADDRESS \
     --churn-approver $ADMIN_ADDRESS \
@@ -83,10 +83,11 @@ function create_registry_router {
 }
 
 function init_pell_emulator {
-  ## Initialize emulator and config will be written in /root/.pelldvs/pell_emulator/contract.address.json
-  pelldvs emulator init --home $PELLDVS_HOME
+  ## Initialize emulator and config will be written in $PELLEMULATOR_HOME/config/config.json
+  pell-emulator init --home $PELLEMULATOR_HOME
+  export EMULATOR_CONFIG_FILE="$PELLEMULATOR_HOME/config/config.json"
 
-  ## Get contracts addresses from Hardhat
+#  ## Get contracts addresses from Hardhat
   PELL_DELEGATION_MNAGER=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellDelegationManager-Proxy.json" | jq -r .address)
   PELL_DVS_DIRECTORY=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellDVSDirectory-Proxy.json" | jq -r .address)
   PELL_STRATEGY_MANAGER=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellStrategyManager-Proxy.json" | jq -r .address)
@@ -95,59 +96,42 @@ function init_pell_emulator {
   STAKING_DELEGATION_MANAGER=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/DelegationManager-Proxy.json" | jq -r .address)
   SERVICE_OMNI_OPERATOR_SHARES_MANAGER=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/OmniOperatorSharesManager-Proxy.json" | jq -r .address)
 
-  DVS_OPERATOR_KEY_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorKeyManager-Proxy.json" | jq -r .address)
   DVS_CENTRAL_SCHEDULER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/CentralScheduler-Proxy.json" | jq -r .address)
-  DVS_OPERATOR_INDEX_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorIndexManager-Proxy.json" | jq -r .address)
   DVS_OPERATOR_STAKE_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorStakeManager-Proxy.json" | jq -r .address)
 
   ## Update emulator contracts addresses
-  update-emulator-address() {
+  update-emulator-config() {
     JQ_EXPR="$1"
-    jq "$JQ_EXPR" $PELLDVS_HOME/pell_emulator/contract.address.json >/tmp/tmp.json &&
-      mv /tmp/tmp.json $PELLDVS_HOME/pell_emulator/contract.address.json
+    jq "$JQ_EXPR" "$EMULATOR_CONFIG_FILE" >/tmp/tmp.json &&
+      mv /tmp/tmp.json "$EMULATOR_CONFIG_FILE"
   }
 
-  update-emulator-address '.PellDelegationManager = "'$PELL_DELEGATION_MNAGER'"'
-  update-emulator-address '.PellDVSDirectory = "'$PELL_DVS_DIRECTORY'"'
-  update-emulator-address '.PellStrategyManager = "'$PELL_STRATEGY_MANAGER'"'
-  update-emulator-address '.PellRegistryInteractor = "'$PELL_REGISTRY_INTERACTOR'"'
-  update-emulator-address '.PellRegistryRouter = "'$PELL_REGISTRY_ROUTER'"'
-  update-emulator-address '.StakingStrategyManager = "'$STAKING_STRATEGY_MANAGER'"'
-  update-emulator-address '.StakingDelegationManager = "'$STAKING_DELEGATION_MANAGER'"'
-  update-emulator-address '.ServiceOmniOperatorSharesManager = "'$SERVICE_OMNI_OPERATOR_SHARES_MANAGER'"'
+  update-emulator-config '.contract_address.PellDelegationManager = "'$PELL_DELEGATION_MNAGER'"'
+  update-emulator-config '.contract_address.PellDVSDirectory = "'$PELL_DVS_DIRECTORY'"'
+  update-emulator-config '.contract_address.PellStrategyManager = "'$PELL_STRATEGY_MANAGER'"'
+  update-emulator-config '.contract_address.PellRegistryRouter = "'$PELL_REGISTRY_ROUTER'"'
+  update-emulator-config '.contract_address.StakingStrategyManager = "'$STAKING_STRATEGY_MANAGER'"'
+  update-emulator-config '.contract_address.StakingDelegationManager = "'$STAKING_DELEGATION_MANAGER'"'
+  update-emulator-config '.contract_address.ServiceOmniOperatorSharesManager = "'$SERVICE_OMNI_OPERATOR_SHARES_MANAGER'"'
+  update-emulator-config '.contract_address.PellRegistryInteractor = "'$PELL_REGISTRY_INTERACTOR'"'
 
-  update-emulator-address '.DVSOperatorKeyManager = "'$DVS_OPERATOR_KEY_MANAGER'"'
-  update-emulator-address '.DVSCentralScheduler = "'$DVS_CENTRAL_SCHEDULER'"'
-  update-emulator-address '.DVSOperatorIndexManager = "'$DVS_OPERATOR_INDEX_MANAGER'"'
-  update-emulator-address '.DVSOperatorStakeManager = "'$DVS_OPERATOR_STAKE_MANAGER'"'
+  update-emulator-config '.contract_address.DVSCentralScheduler = "'$DVS_CENTRAL_SCHEDULER'"'
+  update-emulator-config '.contract_address.DVSOperatorStakeManager = "'$DVS_OPERATOR_STAKE_MANAGER'"'
 
-	# local registry_router_address=$(cat $REGISTRY_ROUTER_ADDRESS_FILE | jq -r .address)
+  update-emulator-config ".port = $PELLEMULATOR_SERVER_PORT"
+  update-emulator-config '.rpc_url = "'$ETH_RPC_URL'"'
+  update-emulator-config '.ws_url = "'$ETH_WS_URL'"'
+  update-emulator-config '.auto_update_connector = true'
+  update-emulator-config '.deployer_key_file = "'$ADMIN_KEY_FILE'"'
 
-	# mkdir -p "$PELLDVS_HOME"/pell_emulator
-
-	# pelldvs emulator adjust-address \
-	# 	--src-pell /tmp/contracts-address-pell.json \
-	# 	--src-dvs /tmp/contracts-address-dvs.json \
-	# 	--registry-router $registry_router_address \
-	# 	--contract-address-file "$PELLDVS_HOME"/pell_emulator/contract.address.json \
-	# 	--dest-config "$PELLDVS_HOME"/config/config.toml
-
-  # cat "$PELLDVS_HOME"/pell_emulator/contract.address.json | jq
+  cat "$EMULATOR_CONFIG_FILE" | jq
 
 }
 
 function start_pell_emulator {
   ## start emulator
-  pelldvs emulator start \
-    --home "$PELLDVS_HOME" \
-    --rpc-url "$ETH_RPC_URL" \
-    --ws-url "$ETH_WS_URL" \
-    --auto-update-connector true \
-    --deployer-key-file "$ADMIN_KEY_FILE"
+  pell-emulator start --home "$PELLEMULATOR_HOME"
 }
-
-echo "check pelldvs version"
-pelldvs version
 
 # start sshd
 /usr/sbin/sshd &
@@ -158,15 +142,16 @@ load_defaults
 logt "Wait for Hardhat to be ready"
 hardhat_healthcheck
 
-logt "Update PellDVS Config"
-update_pelldvs_config
-
 if [ ! -f /root/emulator_initialized ]; then
   logt "Setup Admin Key"
   setup_admin_key
 
+  tail -n 30 $PELLDVS_HOME/config/config.toml
+
   logt "Create Registry Router"
   create_registry_router
+
+  cat $REGISTRY_ROUTER_ADDRESS_FILE
 
   logt "Initialize Pell Emulator"
   init_pell_emulator

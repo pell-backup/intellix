@@ -1,11 +1,12 @@
 package keeper_test
 
 import (
-	keepertest "intellix/testutil/keeper"
-	"intellix/x/processor/types"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	keepertest "intellix/testutil/keeper"
+	"intellix/x/processor/types"
 )
 
 func TestShowProcessor(t *testing.T) {
@@ -15,7 +16,7 @@ func TestShowProcessor(t *testing.T) {
 	_, err = k.ShowProcessor(ctx, &types.QueryShowProcessorRequest{Id: 0})
 	require.Error(t, err)
 	id, err := k.AppendProcessor(ctx, types.Processor{
-		Creator:      "creator",
+		Creator:       "creator",
 		ProcessorType: types.ProcessorType_WASM,
 		Config:        []byte("config"),
 		WasmCode:      []byte("wasm code"),

@@ -1,11 +1,11 @@
 package resulthandler
 
 import (
-	sdktypes "intellix/sdk/types"
-
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/proto"
+
+	sdktypes "intellix/sdk/types"
 )
 
 type ResultCustomizedMgr struct {

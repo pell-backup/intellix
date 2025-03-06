@@ -1,11 +1,12 @@
 package keeper_test
 
 import (
-	keepertest "intellix/testutil/keeper"
-	"intellix/x/processor/types"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
+	keepertest "intellix/testutil/keeper"
+	"intellix/x/processor/types"
 )
 
 func TestGetProcessorCount(t *testing.T) {
@@ -22,9 +23,9 @@ func TestSetProcessorCount(t *testing.T) {
 func processor() types.Processor {
 	return types.Processor{
 		ProcessorType: types.ProcessorType_WASM,
-		Config: []byte("config"),
-		WasmCode: []byte("wasm code"),
-		Creator: "creator",
+		Config:        []byte("config"),
+		WasmCode:      []byte("wasm code"),
+		Creator:       "creator",
 	}
 }
 

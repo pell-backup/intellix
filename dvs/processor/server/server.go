@@ -3,10 +3,8 @@ package server
 import (
 	"context"
 	"fmt"
-	taskgateway "intellix/gateway"
-	sdktypes "intellix/sdk/types"
 
-	"github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/0xPellNetwork/pelldvs-libs/log"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -16,6 +14,9 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/spf13/pflag"
+
+	taskgateway "intellix/gateway"
+	sdktypes "intellix/sdk/types"
 )
 
 type Server struct {

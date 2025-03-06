@@ -4,15 +4,15 @@ import (
 	"bytes"
 	context "context"
 	"fmt"
-	"intellix/dvs/processor/types"
-	sdktypes "intellix/sdk/types"
-	processortypes "intellix/x/processor/types"
 	"time"
 
+	"github.com/IntelliXLabs/iwasm/api"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 
-	"github.com/IntelliXLabs/iwasm/api"
+	"intellix/dvs/processor/types"
+	sdktypes "intellix/sdk/types"
+	processortypes "intellix/x/processor/types"
 )
 
 type RequestServer struct {

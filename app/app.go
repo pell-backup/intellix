@@ -3,12 +3,11 @@ package app
 import (
 	"io"
 
-	"cosmossdk.io/store"
-
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
 	clienthelpers "cosmossdk.io/client/v2/helpers"
 	"cosmossdk.io/depinject"
 	"cosmossdk.io/log"
+	"cosmossdk.io/store"
 	storemetrics "cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
 	_ "cosmossdk.io/x/circuit" // import for side-effects
@@ -78,12 +77,9 @@ import (
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
-	pricemodulekeeper "intellix/x/price/keeper"
-
-	processormodulekeeper "intellix/x/processor/keeper"
-	// this line is used by starport scaffolding # stargate/app/moduleImport
-
 	"intellix/docs"
+	pricemodulekeeper "intellix/x/price/keeper"
+	processormodulekeeper "intellix/x/processor/keeper"
 )
 
 const (
@@ -276,6 +272,9 @@ func New(
 	if err := app.RegisterStreamingServices(appOpts, app.kvStoreKeys()); err != nil {
 		return nil, err
 	}
+
+	// register the upgrade handlers
+	app.RegisterUpgradeHandlers()
 
 	/****  Module Options ****/
 

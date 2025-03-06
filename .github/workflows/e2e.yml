@@ -6,15 +6,16 @@ on:
   pull_request:
   push:
     branches:
-      - master
+      - main
 concurrency: 
   group: e2e-test-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
 jobs:
   e2e-test:
+#    runs-on: [ "self-hosted", "Linux", "X64", "ci" ]
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       TAG: ${{ github.event.pull_request.head.sha || github.workflow_sha }}
@@ -31,22 +32,23 @@ jobs:
             go.sum
       - name: setup go private modules
         env:
-          PELL_GH_TOKEN: ${{ secrets.PELL_GH_TOKEN }}
-          INTELLIX_GH_TOKEN: ${{ secrets.INTELLIX_GH_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          go env -w GOPRIVATE=github.com/0xPellNetwork,github.com/IntelliXLabs
-          go env -w GONOSUMDB=github.com/0xPellNetwork,github.com/IntelliXLabs
-          git config --global url."https://${PELL_GH_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
-          git config --global url."https://${INTELLIX_GH_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
+          git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
+          git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
       - name: Build docker images
-        run: make docker-build
+        run: make docker-build-all
+      - name: Stop services
+        run: make docker-all-down
       - name: Start services
-        run: make docker-up
+        run: make docker-operator-up
       - name: sleep 60 seconds
         run: sleep 60
       - name: Test services
-        run: cd docker && docker compose run --rm test /root/scripts/test.sh
+        run: make docker-test
+      - name: Print logs
+        run: make docker-all-logs-in-ci
+        if: always()
       - name: Stop services
-        run: make docker-down
+        run: make docker-all-down
         if: always()

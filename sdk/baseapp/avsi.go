@@ -2,11 +2,12 @@ package baseapp
 
 import (
 	"context"
-	dvsservermanager "intellix/pkg/dvs_msg_handler"
-	dvstypes "intellix/pkg/pelldvs/types"
-	sdktypes "intellix/sdk/types"
 
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
+
+	dvsservermanager "intellix/sdk/dvs_msg_handler"
+	dvstypes "intellix/sdk/pelldvs/types"
+	sdktypes "intellix/sdk/types"
 )
 
 func (app *BaseApp) Info(ctx context.Context, info *avsitypes.RequestInfo) (*avsitypes.ResponseInfo, error) {

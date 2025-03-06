@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/rpc"
 
-	"github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/0xPellNetwork/pelldvs-libs/log"
 )
 
 // Client represents RPC client

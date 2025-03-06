@@ -2,7 +2,7 @@ package logger
 
 import (
 	sdklog "cosmossdk.io/log"
-	"github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/0xPellNetwork/pelldvs-libs/log"
 )
 
 type DVSLogAdapter struct {
@@ -27,4 +27,8 @@ func (a *DVSLogAdapter) Error(msg string, keyVals ...interface{}) {
 
 func (a *DVSLogAdapter) With(keyVals ...interface{}) log.Logger {
 	return &DVSLogAdapter{sdkLogger: a.sdkLogger.With(keyVals...)}
+}
+
+func (a *DVSLogAdapter) Impl() interface{} {
+	return a.sdkLogger
 }

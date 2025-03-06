@@ -59,7 +59,6 @@ import (
 	pricemoduletypes "intellix/x/price/types"
 	_ "intellix/x/processor/module" // import for side-effects
 	processormoduletypes "intellix/x/processor/types"
-	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
 var (

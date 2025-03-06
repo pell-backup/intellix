@@ -2,13 +2,14 @@ package dvsservermanager
 
 import (
 	"fmt"
-	result "intellix/pkg/dvs_msg_handler/result_handler"
-	"intellix/pkg/dvs_msg_handler/tx"
 	"sync"
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
+
+	result "intellix/sdk/dvs_msg_handler/result_handler"
+	"intellix/sdk/dvs_msg_handler/tx"
 )
 
 type dvsMsgHelper struct {

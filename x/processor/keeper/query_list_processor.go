@@ -13,27 +13,27 @@ import (
 )
 
 func (k Keeper) ListProcessor(ctx context.Context, req *types.QueryListProcessorRequest) (*types.QueryListProcessorResponse, error) {
-    if req == nil {
-        return nil, status.Error(codes.InvalidArgument, "invalid request")
-    }
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid request")
+	}
 
-    storeAdapter := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
-    store := prefix.NewStore(storeAdapter, types.KeyPrefix(types.ProcessorKey))
+	storeAdapter := runtime.KVStoreAdapter(k.storeService.OpenKVStore(ctx))
+	store := prefix.NewStore(storeAdapter, types.KeyPrefix(types.ProcessorKey))
 
-    var processors []types.Processor
-    pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
-        var processor types.Processor
-        if err := k.cdc.Unmarshal(value, &processor); err != nil {
-            return err
-        }
+	var processors []types.Processor
+	pageRes, err := query.Paginate(store, req.Pagination, func(key []byte, value []byte) error {
+		var processor types.Processor
+		if err := k.cdc.Unmarshal(value, &processor); err != nil {
+			return err
+		}
 
-        processors = append(processors, processor)
-        return nil
-    })
+		processors = append(processors, processor)
+		return nil
+	})
 
-    if err != nil {
-        return nil, status.Error(codes.Internal, err.Error())
-    }
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 
-    return &types.QueryListProcessorResponse{Processor: processors, Pagination: pageRes}, nil
+	return &types.QueryListProcessorResponse{Processor: processors, Pagination: pageRes}, nil
 }
