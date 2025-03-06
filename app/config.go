@@ -11,7 +11,7 @@ import (
 const (
 	HumanCoinUnit = "itlx"
 	BaseCoinUnit  = "uitlx"
-	BbnExponent   = 6
+	ItlxExponent  = 6
 
 	DefaultBondDenom = BaseCoinUnit
 
@@ -42,7 +42,7 @@ func RegisterDenoms() {
 	if err != nil {
 		panic(err)
 	}
-	err = sdk.RegisterDenom(BaseCoinUnit, math.LegacyNewDecWithPrec(1, BbnExponent))
+	err = sdk.RegisterDenom(BaseCoinUnit, math.LegacyNewDecWithPrec(1, ItlxExponent))
 	if err != nil {
 		panic(err)
 	}
