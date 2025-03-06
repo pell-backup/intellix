@@ -6,7 +6,7 @@ on:
   pull_request:
   push:
     branches:
-      - master
+      - main
 concurrency: 
   group: e2e-test-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
