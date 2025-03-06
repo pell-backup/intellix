@@ -6,9 +6,9 @@ import (
 )
 
 const (
-	HumanDenom   = "itlx"
-	BaseDenom    = "uitlx"
-	ItlxExponent = 6
+	HumanDenom    = "itlx"
+	BaseDenom     = "uitlx"
+	BaseDenomUnit = 6
 
 	// Bech32PrefixAccAddr defines the Bech32 prefix of an account's address.
 	Bech32PrefixAccAddr = "itlx"
@@ -37,7 +37,7 @@ func RegisterDisplayDenom() {
 	if err != nil {
 		panic(err)
 	}
-	err = sdk.RegisterDenom(BaseDenom, math.LegacyNewDecWithPrec(1, ItlxExponent))
+	err = sdk.RegisterDenom(BaseDenom, math.LegacyNewDecWithPrec(1, BaseDenomUnit))
 	if err != nil {
 		panic(err)
 	}
@@ -48,4 +48,5 @@ func SetAddressPrefixes() {
 	config.SetBech32PrefixForAccount(Bech32PrefixAccAddr, Bech32PrefixAccPub)
 	config.SetBech32PrefixForValidator(Bech32PrefixValAddr, Bech32PrefixValPub)
 	config.SetBech32PrefixForConsensusNode(Bech32PrefixConsAddr, Bech32PrefixConsPub)
+	config.Seal()
 }
