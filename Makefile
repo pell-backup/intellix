@@ -90,7 +90,7 @@ build-debug: install-lib
 
 #? install: Install Intellixd to GOBIN
 install:
-	CGO_ENABLED=$(CGO_ENABLED) go install $(BUILD_FLAGS) -tags $(BUILD_TAGS) ./cmd/intellixd
+	CGO_ENABLED=$(CGO_ENABLED) CGO_LDFLAGS=-L$(PWD)/lib go install $(BUILD_FLAGS) -tags $(BUILD_TAGS) ./cmd/intellixd
 .PHONY: install
 
 install-lib:
