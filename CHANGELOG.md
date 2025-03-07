@@ -50,4 +50,6 @@ After some time in development, we are now releasing version v1.0.0. This versio
 
 (app) [#46](https://github.com/IntelliXLabs/intellix/pull/46) feat: update default denom to uitlx  
 
+(app) [#47](https://github.com/IntelliXLabs/intellix/pull/47) chore: change denom from ITLX to IXN
+
 ### Bug Fixes

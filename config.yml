@@ -4,11 +4,11 @@ accounts:
 - name: alice
   coins:
   - 20000token
-  - 200000000uitlx
+  - 200000000uixn
 - name: bob
   coins:
   - 10000token
-  - 100000000uitlx
+  - 100000000uixn
 client:
   openapi:
     path: docs/static/openapi.yml
@@ -16,10 +16,10 @@ faucet:
   name: bob
   coins:
   - 5token
-  - 100000uitlx
+  - 100000uixn
 validators:
 - name: alice
-  bonded: 100000000uitlx
+  bonded: 100000000uixn
 
 operator:
   operator_addr: '0x0000000000000000000000000000000000000001'
