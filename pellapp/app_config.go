@@ -18,6 +18,8 @@ type AppConfig struct {
 	WaitBlockCount int64   `mapstructure:"wait_block_count"`
 	GasPrices      string  `mapstructure:"gas_prices"`
 	GasAdjustment  float64 `mapstructure:"gas_adjustment"`
+
+	PriceTickConverterConfig map[string]map[string]string `mapstructure:"price_tick_converter_config"`
 }
 
 func (p AppConfig) Validate() error {
