@@ -111,6 +111,9 @@ services:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
       - TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-30}
+      - HTTP_PROXY=$HTTP_PROXY
+      - HTTPS_PROXY=$HTTPS_PROXY
+      - NO_PROXY=${NO_PROXY:-localhost,127.0.0.1,eth,dvs,hardhat,emulator,abci,gateway}
     depends_on:
       operator:
         condition: service_started

@@ -60,7 +60,7 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 		})
 	}
 	if err := g.Wait(); err != nil {
-		return nil, fmt.Errorf("failed to fetch prices: %w", err)
+		logger.Error("fetching coin price failed", "error", err)
 	}
 
 	close(priceChan)
