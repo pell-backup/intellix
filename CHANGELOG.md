@@ -52,4 +52,6 @@ After some time in development, we are now releasing version v1.0.0. This versio
 
 (app) [#47](https://github.com/IntelliXLabs/intellix/pull/47) chore: change denom from ITLX to IXN
 
+(makefile) [#48](https://github.com/IntelliXLabs/intellix/pull/48) fix: correct LD_FLAGS path in Makefile install target
+
 ### Bug Fixes
