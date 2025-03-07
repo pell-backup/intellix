@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+
 	"cosmossdk.io/math"
 	"github.com/0xPellNetwork/pelldvs-libs/log"
 	"golang.org/x/sync/errgroup"
@@ -46,7 +47,7 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 	}
 
 	priceChan := make(chan *PriceInfo, len(fetchPriceIfs))
-	g, ctx := errgroup.WithContext(ctx)
+	g, _ := errgroup.WithContext(ctx)
 
 	for dataSource, fetchPriceIf := range fetchPriceIfs {
 		g.Go(func() error {
