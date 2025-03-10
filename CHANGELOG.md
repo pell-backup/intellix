@@ -36,6 +36,9 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
+## Unreleased
+- (test) [#50](https://github.com/IntelliXLabs/intellix/pull/50 ): e2e: correct interactor config for e2e tests
+
 ## [Released v1.0.0]
 
 After some time in development, we are now releasing version v1.0.0. This version features a price oracle that works with DVS. It also includes the launch of the public testnet.  
