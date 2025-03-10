@@ -36,7 +36,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
-## [WIP v1.0.1]
+## Unreleased
 
 ### Improvements
 
