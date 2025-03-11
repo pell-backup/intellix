@@ -5270,7 +5270,7 @@ paths:
                       minimum that must be met when making a deposit.
 
                       Default value: 0.01. Meaning that for a chain with a
-                      min_deposit of 100stake, a deposit of 1stake would be
+                      min_deposit of 100uixn, a deposit of 1uixn would be
 
                       required.
 
@@ -18885,7 +18885,7 @@ definitions:
               that must be met when making a deposit.
 
               Default value: 0.01. Meaning that for a chain with a min_deposit
-              of 100stake, a deposit of 1stake would be
+              of 100uixn, a deposit of 1uixn would be
 
               required.
 
@@ -19080,7 +19080,7 @@ definitions:
           that must be met when making a deposit.
 
           Default value: 0.01. Meaning that for a chain with a min_deposit of
-          100stake, a deposit of 1stake would be
+          100uixn, a deposit of 1uixn would be
 
           required.
 

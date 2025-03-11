@@ -92,7 +92,12 @@ function setup_operator_config {
   "operator_address": "$OPERATOR_ADDRESS",
   "gateway_addr": "$GATEWAY_ADDR",
   "cosmos_node_uri": "$COSMOS_NODE_URI",
-  "cosmos_chain_id": "$COSMOS_CHAIN_ID"
+  "cosmos_chain_id": "$COSMOS_CHAIN_ID",
+  "price_tick_converter_config": {
+    "binance": {
+      "USD": "USDT"
+    }
+  }
 }
 EOF
 }
@@ -108,7 +113,7 @@ function start_operator {
 }
 
 function upload_wasm_script {
-  ssh abci "intellixd tx processor create-processor 'Intellix' ./scripts/processor_data/mock_processor.wasm --from $OPERATOR_KEY_NAME --chain-id $COSMOS_CHAIN_ID --keyring-backend test --gas auto --fees 2000000stake -y"
+  ssh abci "intellixd tx processor create-processor 'Intellix' ./scripts/processor_data/mock_processor.wasm --from $OPERATOR_KEY_NAME --chain-id $COSMOS_CHAIN_ID --keyring-backend test --gas auto --fees 2000000uixn -y"
 }
 
 ## start sshd

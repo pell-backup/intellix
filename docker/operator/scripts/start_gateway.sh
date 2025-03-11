@@ -55,9 +55,15 @@ function setup_gateway_config {
 {
   "server_addr": "0.0.0.0:$GATEWAY_PORT",
   "sender_address": "$GATEWAY_ADDRESS",
-  "eth_endpoint": "$ETH_WS_URL",
-  "contract_address": "$DATA_ORACLE_ADDRESS",
-  "private_key_store_path": "$PELLDVS_HOME/keys/gateway.ecdsa.key.json"
+  "private_key_store_path": "$PELLDVS_HOME/keys/gateway.ecdsa.key.json",
+  "chains": {
+    "1337": {
+      "eth_endpoint": "$ETH_WS_URL",
+      "contract_address": "$DATA_ORACLE_ADDRESS",
+      "chain_id": 1337,
+      "gas_limit": 1000000
+    }
+  }
 }
 EOF
 }

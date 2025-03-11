@@ -3,17 +3,18 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"intellix/dvs/price/types"
-	taskgateway "intellix/gateway"
-	"intellix/pkg/pelldvs"
-	dvstypes "intellix/pkg/pelldvs/types"
-	"intellix/pkg/utils"
-	sdktypes "intellix/sdk/types"
-	pricetypes "intellix/x/price/types"
 	"math/big"
 
 	"cosmossdk.io/math"
-	contractDataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
+	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
+
+	"intellix/dvs/price/types"
+	taskgateway "intellix/gateway"
+	"intellix/sdk/pelldvs"
+	dvstypes "intellix/sdk/pelldvs/types"
+	sdktypes "intellix/sdk/types"
+	"intellix/sdk/utils"
+	pricetypes "intellix/x/price/types"
 )
 
 func (d ResponseServer) ResponsePriceFeed(ctx context.Context, in *types.RequestPriceFeedIn) (*types.ResponsePriceFeedOut, error) {
@@ -46,7 +47,7 @@ func (d ResponseServer) ResponsePriceFeed(ctx context.Context, in *types.Request
 	return &types.ResponsePriceFeedOut{}, nil
 }
 
-func (d ResponseServer) sendVoteFinalizedRequestPriceTx(ctx sdktypes.Context, raw *types.RequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractDataOracle.IDataOracleTaskResponse) (*pricetypes.MsgVoteFinalizedRequestPrice, error) {
+func (d ResponseServer) sendVoteFinalizedRequestPriceTx(ctx sdktypes.Context, raw *types.RequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractdataoracle.IDataOracleTaskResponse) (*pricetypes.MsgVoteFinalizedRequestPrice, error) {
 	addr, err := d.Server.SenderAddress()
 	if err != nil {
 		return nil, err
@@ -74,7 +75,7 @@ func (d ResponseServer) sendVoteFinalizedRequestPriceTx(ctx sdktypes.Context, ra
 	return msg, nil
 }
 
-func (d ResponseServer) sendResponseToGateway(ctx sdktypes.Context, raw *types.RequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractDataOracle.IDataOracleTaskResponse) error {
+func (d ResponseServer) sendResponseToGateway(ctx sdktypes.Context, raw *types.RequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractdataoracle.IDataOracleTaskResponse) error {
 
 	nonSignerStakeIndices := make([][]uint32, len(validatedData.NonSignerStakeIndices))
 	for i, indices := range validatedData.NonSignerStakeIndices {

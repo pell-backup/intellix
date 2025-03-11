@@ -9,7 +9,7 @@ services:
         - HTTP_PROXY=$HTTP_PROXY
         - HTTPS_PROXY=$HTTPS_PROXY
         - GITHUB_TOKEN=$GITHUB_TOKEN
-        - CONTRACT_VERSION=${CONTRACT_VERSION:-v0.4.2}
+        - CONTRACT_VERSION=${CONTRACT_VERSION:-v0.4.4}
       tags:
         - hardhat:${CONTRACT_VERSION:-v0.4.3}
 
@@ -21,7 +21,8 @@ services:
         - HTTP_PROXY=$HTTP_PROXY
         - HTTPS_PROXY=$HTTPS_PROXY
         - GITHUB_TOKEN=$GITHUB_TOKEN
-        - PELLDVS_VERSION=${PELLDVS_VERSION:-v0.1.10}
+        - PELLDVS_VERSION=${PELLDVS_VERSION:-v0.2.2}
+        - EMULATOR_VERSION=${EMULATOR_VERSION:-v0.1.1}
 
   operator:
     build:
@@ -31,5 +32,5 @@ services:
         - HTTP_PROXY=$HTTP_PROXY
         - HTTPS_PROXY=$HTTPS_PROXY
         - GITHUB_TOKEN=$GITHUB_TOKEN
-        - PELLDVS_VERSION=${PELLDVS_VERSION:-v0.1.10}
+        - PELLDVS_VERSION=${PELLDVS_VERSION:-v0.2.2}
         - DEBUG_ENABLED=${DEBUG_ENABLED:-false}

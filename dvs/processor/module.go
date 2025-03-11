@@ -1,12 +1,12 @@
 package dvs
 
 import (
+	grpc1 "github.com/cosmos/gogoproto/grpc"
+
 	resulthandlers "intellix/dvs/processor/result_handlers"
 	"intellix/dvs/processor/server"
 	"intellix/dvs/processor/types"
-	dvsservermanager "intellix/pkg/dvs_msg_handler"
-
-	grpc1 "github.com/cosmos/gogoproto/grpc"
+	dvsservermanager "intellix/sdk/dvs_msg_handler"
 )
 
 type AppModule struct {

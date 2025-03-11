@@ -2,19 +2,17 @@ package cmd
 
 import (
 	"fmt"
-	taskdispatcher "intellix/dispatcher"
-	"intellix/pkg/logger"
-	pkglogger "intellix/pkg/logger"
 	"os"
 
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
-
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/spf13/cobra"
-
 	"github.com/spf13/viper"
 
+	taskdispatcher "intellix/dispatcher"
 	app "intellix/pellapp"
+	"intellix/sdk/logger"
+	pkglogger "intellix/sdk/logger"
 )
 
 var configDispatcherFile string

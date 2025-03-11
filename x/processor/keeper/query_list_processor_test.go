@@ -1,12 +1,13 @@
 package keeper_test
 
 import (
-	keepertest "intellix/testutil/keeper"
-	"intellix/x/processor/types"
 	"testing"
 
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/require"
+
+	keepertest "intellix/testutil/keeper"
+	"intellix/x/processor/types"
 )
 
 func TestListProcessor(t *testing.T) {
@@ -17,7 +18,7 @@ func TestListProcessor(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, list.Processor, 0)
 	id, err := k.AppendProcessor(ctx, types.Processor{
-		Creator:      "creator",
+		Creator:       "creator",
 		ProcessorType: types.ProcessorType_WASM,
 		Config:        []byte("config"),
 		WasmCode:      []byte("wasm code"),

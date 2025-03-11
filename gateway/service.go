@@ -2,27 +2,31 @@ package taskgateway
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"encoding/json"
 	"errors"
 	"fmt"
-	dvslog "github.com/0xPellNetwork/pelldvs/libs/log"
-	"github.com/ethereum/go-ethereum/accounts/keystore"
-	"github.com/ethereum/go-ethereum/core/types"
 	"math/big"
 	"net"
 	"net/rpc"
 	"os"
+	"sync"
 	"time"
 
-	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
+	"cosmossdk.io/math"
+	dvslog "github.com/0xPellNetwork/pelldvs-libs/log"
+	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-
-	"sync"
 )
+
+type ChainConnection struct {
+	ethClient          *ethclient.Client
+	contractDataOracle *contractdataoracle.ContractDataOracle
+}
 
 type TaskGateway struct {
 	service.BaseService
@@ -35,23 +39,31 @@ type TaskGateway struct {
 	ctx context.Context
 
 	logger     dvslog.Logger
-	ethClient  *ethclient.Client
 	privateKey *keystore.Key
 
-	contractDataOracle *dataOracle.ContractDataOracle
-	taskMap            sync.Map
-	nonceMap           sync.Map
+	chainConnections map[int64]*ChainConnection
+	taskMap          sync.Map
+	nonceMap         sync.Map
 }
 
 func NewTaskGateway(logger dvslog.Logger, ctx context.Context, cfg *TaskGatewayCfg) (*TaskGateway, error) {
-	ethClient, err := ethclient.Dial(cfg.EthEndpoint)
-	if err != nil {
-		return nil, err
-	}
+	chainConns := make(map[int64]*ChainConnection)
 
-	contract, err := dataOracle.NewContractDataOracle(common.HexToAddress(cfg.ContractAddress), ethClient)
-	if err != nil {
-		return nil, err
+	for chainID, chainCfg := range cfg.Chains {
+		ethClient, err := ethclient.Dial(chainCfg.EthEndpoint)
+		if err != nil {
+			return nil, fmt.Errorf("failed to connect to chain %d: %v", chainID, err)
+		}
+
+		contract, err := contractdataoracle.NewContractDataOracle(common.HexToAddress(chainCfg.ContractAddress), ethClient)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create contract instance for chain %d: %v", chainID, err)
+		}
+
+		chainConns[chainID] = &ChainConnection{
+			ethClient:          ethClient,
+			contractDataOracle: contract,
+		}
 	}
 
 	// Read private key
@@ -69,16 +81,15 @@ func NewTaskGateway(logger dvslog.Logger, ctx context.Context, cfg *TaskGatewayC
 
 	server := rpc.NewServer()
 	tg := &TaskGateway{
-		server:             server,
-		cfg:                cfg,
-		ctx:                ctx,
-		logger:             logger,
-		ethClient:          ethClient,
-		privateKey:         key,
-		serverAddr:         cfg.ServerAddr,
-		contractDataOracle: contract,
-		taskMap:            sync.Map{},
-		nonceMap:           sync.Map{},
+		server:           server,
+		cfg:              cfg,
+		ctx:              ctx,
+		logger:           logger,
+		privateKey:       key,
+		serverAddr:       cfg.ServerAddr,
+		chainConnections: chainConns,
+		taskMap:          sync.Map{},
+		nonceMap:         sync.Map{},
 	}
 	if err := server.Register(tg); err != nil {
 		logger.Error("Failed to register RPC server", "error", err)
@@ -102,7 +113,10 @@ func (tg *TaskGateway) OnStart() error {
 }
 
 func (tg *TaskGateway) OnStop() {
-	tg.ethClient.Close()
+	for chainID, conn := range tg.chainConnections {
+		conn.ethClient.Close()
+		tg.logger.Info("Closed connection", "chainID", chainID)
+	}
 	if tg.listener != nil {
 		tg.listener.Close()
 	}
@@ -167,6 +181,11 @@ func (tg *TaskGateway) wrapSubmitToChain(ctx context.Context, request *RPCVoteFi
 }
 
 func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinalizedRequestIn) error {
+	chainConn, ok := tg.chainConnections[response.ChainID]
+	if !ok {
+		return fmt.Errorf("no connection found for chain ID %d", response.ChainID)
+	}
+
 	jsData, _ := json.Marshal(response)
 	tg.logger.Info("TaskGateway.submitToChain request", "data", string(jsData))
 
@@ -192,7 +211,7 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		tg.logger.Error("Error converting taskRaw payment", "payment", response.TaskRaw.Payment)
 		return fmt.Errorf("error converting taskRaw payment")
 	}
-	task := dataOracle.IDataOracleTask{
+	task := contractdataoracle.IDataOracleTask{
 		TaskType:                 math.NewInt(response.TaskRaw.TaskType).BigInt(),
 		RequestId:                [32]byte(response.TaskRaw.RequestID),
 		FeeToken:                 *feeTokenAddr,
@@ -206,7 +225,7 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		GroupThresholdPercentage: response.TaskRaw.QuorumThresholdPercentage,
 	}
 
-	sign := dataOracle.IBLSSignatureVerifierNonSignerStakesAndSignature{
+	sign := contractdataoracle.IBLSSignatureVerifierNonSignerStakesAndSignature{
 		NonSignerGroupBitmapIndices: response.ValidatedData.NonSignerQuorumBitmapIndices,
 		NonSignerPubkeys:            convertNonSignersPubkeysG1(response.ValidatedData.NonSignersPubkeysG1),
 		GroupApks:                   convertQuorumApks(response.ValidatedData.QuorumApksG1),
@@ -217,7 +236,7 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 		NonSignerStakeIndices:       response.ValidatedData.NonSignerStakeIndices,
 	}
 
-	taskResp := dataOracle.IDataOracleTaskResponse{
+	taskResp := contractdataoracle.IDataOracleTaskResponse{
 		ReferenceTaskIndex: response.TaskRaw.TaskIndex,
 		Data:               response.RespToTaskData,
 	}
@@ -231,10 +250,16 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 	// set gas limit to 1000000 to bypass transaction pre-execution and force broadcast
 	// authOpts.GasLimit = 1000000
 
-	transaction, err := tg.contractDataOracle.ResponseToTask(authOpts, task, taskResp, sign)
+	if conf, ok := tg.cfg.Chains[response.ChainID]; ok {
+		if conf.GasLimit > 0 {
+			authOpts.GasLimit = conf.GasLimit
+		}
+	}
+
+	transaction, err := chainConn.contractDataOracle.ResponseToTask(authOpts, task, taskResp, sign)
 	if err != nil {
-		// Try to get the failed transaction receipt
 		tg.logger.Error("Error assembling RequestPrice tx",
+			"chainID", response.ChainID,
 			"err", err,
 			"task", fmt.Sprintf("%+v", task),
 			"taskResp", fmt.Sprintf("%+v", taskResp),
@@ -243,19 +268,22 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 	}
 
 	if transaction != nil {
-		_ = tg.queryTransaction(ctx, transaction)
+		err = tg.queryTransaction(ctx, transaction, chainConn.ethClient)
+		if err != nil {
+			return fmt.Errorf("chain %d: %v", response.ChainID, err)
+		}
 	}
 
 	return nil
 }
 
-func (tg *TaskGateway) queryTransaction(ctx context.Context, tx *types.Transaction) error {
+func (tg *TaskGateway) queryTransaction(ctx context.Context, tx *types.Transaction, ethClient *ethclient.Client) error {
 	tg.logger.Info("Transaction submitted", "txHash", tx.Hash().Hex())
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
-	receipt, err := bind.WaitMined(timeoutCtx, tg.ethClient, tx)
+	receipt, err := bind.WaitMined(timeoutCtx, ethClient, tx)
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			tg.logger.Error("Transaction confirmation timeout",

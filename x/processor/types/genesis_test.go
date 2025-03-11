@@ -3,9 +3,9 @@ package types_test
 import (
 	"testing"
 
-	"intellix/x/processor/types"
-
 	"github.com/stretchr/testify/require"
+
+	"intellix/x/processor/types"
 )
 
 func TestGenesisState_Validate(t *testing.T) {

@@ -8,14 +8,16 @@ import (
 
 type RequestServer struct {
 	Server
-	PriceListener tx_listener.ChainListenerIFace[string, *pricetypes.MsgVoteRequestPriceFeed, *pricetypes.MsgVoteRequestPriceFeed]
+	PriceListener       tx_listener.ChainListenerIFace[string, *pricetypes.MsgVoteRequestPriceFeed, *pricetypes.MsgVoteRequestPriceFeed]
+	tickConverterConfig map[string]map[string]string
 }
 
 // NewDvsProcessRequestServer returns an implementation of the DvsProcessRequestServer interface
 // for the provided Server.
 func NewRequestServer(server Server) types.DVSRequestServer {
 	s := &RequestServer{
-		Server: server,
+		Server:              server,
+		tickConverterConfig: server.tickConverterConfig,
 	}
 
 	s.PriceListener = tx_listener.NewChainListener(

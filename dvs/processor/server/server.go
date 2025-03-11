@@ -3,11 +3,9 @@ package server
 import (
 	"context"
 	"fmt"
-	taskgateway "intellix/gateway"
-	sdktypes "intellix/sdk/types"
 
+	"github.com/0xPellNetwork/pelldvs-libs/log"
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
-	"github.com/0xPellNetwork/pelldvs/libs/log"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -17,6 +15,9 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/spf13/pflag"
+
+	taskgateway "intellix/gateway"
+	sdktypes "intellix/sdk/types"
 )
 
 type Server struct {
@@ -51,7 +52,7 @@ func NewServer(
 	gasAdjustment float64,
 ) (Server, error) {
 	if gasPrices == "" {
-		gasPrices = "1stake"
+		gasPrices = "1uixn"
 	}
 	if gasAdjustment == 0 {
 		gasAdjustment = 1.5

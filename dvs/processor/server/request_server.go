@@ -13,9 +13,12 @@ import (
 	"time"
 
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
+	"github.com/IntelliXLabs/iwasm/api"
 	"github.com/cosmos/gogoproto/proto"
 
-	"github.com/IntelliXLabs/iwasm/api"
+	"intellix/dvs/processor/types"
+	sdktypes "intellix/sdk/types"
+	processortypes "intellix/x/processor/types"
 )
 
 type RequestServer struct {

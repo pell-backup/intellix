@@ -7,25 +7,25 @@ import (
 	"os"
 
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
-	dataOracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
+	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/ethereum/go-ethereum/common"
 )
 
+type ChainConfig struct {
+	EthEndpoint     string `mapstructure:"eth_endpoint"`
+	ContractAddress string `mapstructure:"contract_address"`
+	ChainID         int64  `mapstructure:"chain_id"`
+	GasLimit        uint64 `mapstructure:"gas_limit"`
+}
+
 type TaskGatewayCfg struct {
-	ServerAddr          string `mapstructure:"server_addr"`
-	EthEndpoint         string `mapstructure:"eth_endpoint"`
-	SenderAddress       string `mapstructure:"sender_address"`
-	ContractAddress     string `mapstructure:"contract_address"`
-	PrivateKeyStorePath string `mapstructure:"private_key_store_path"`
+	ServerAddr          string                `mapstructure:"server_addr"`
+	SenderAddress       string                `mapstructure:"sender_address"`
+	PrivateKeyStorePath string                `mapstructure:"private_key_store_path"`
+	Chains              map[int64]ChainConfig `mapstructure:"chains"`
 }
 
 func (t TaskGatewayCfg) Validate() error {
-	if t.EthEndpoint == "" {
-		return fmt.Errorf("eth endpoint cannot be empty")
-	}
-	if t.ContractAddress == "" {
-		return fmt.Errorf("contract address cannot be empty")
-	}
 	if t.SenderAddress == "" {
 		return fmt.Errorf("sender address cannot be empty")
 	}
@@ -37,6 +37,17 @@ func (t TaskGatewayCfg) Validate() error {
 	}
 	if _, err := os.Stat(t.PrivateKeyStorePath); errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("key_store_path does not exist")
+	}
+	if len(t.Chains) == 0 {
+		return fmt.Errorf("no chain configs provided")
+	}
+	for chainID, cfg := range t.Chains {
+		if cfg.EthEndpoint == "" {
+			return fmt.Errorf("eth endpoint for chain %d cannot be empty", chainID)
+		}
+		if cfg.ContractAddress == "" {
+			return fmt.Errorf("contract address for chain %d cannot be empty", chainID)
+		}
 	}
 	return nil
 }
@@ -50,13 +61,13 @@ func convertAddressToString(addrStr string) (*common.Address, error) {
 	return &addr, nil
 }
 
-func convertNonSignersPubkeysG1(pb [][]byte) []dataOracle.BN254G1Point {
-	list := make([]dataOracle.BN254G1Point, len(pb))
+func convertNonSignersPubkeysG1(pb [][]byte) []contractdataoracle.BN254G1Point {
+	list := make([]contractdataoracle.BN254G1Point, len(pb))
 	for i, p := range pb {
 		if len(p) < 64 {
 			continue // Skip invalid points
 		}
-		list[i] = dataOracle.BN254G1Point{
+		list[i] = contractdataoracle.BN254G1Point{
 			X: new(big.Int).SetBytes(p[:32]),
 			Y: new(big.Int).SetBytes(p[32:]),
 		}
@@ -64,22 +75,22 @@ func convertNonSignersPubkeysG1(pb [][]byte) []dataOracle.BN254G1Point {
 	return list
 }
 
-func convertToBN254G1Point(input *bls.G1Point) dataOracle.BN254G1Point {
+func convertToBN254G1Point(input *bls.G1Point) contractdataoracle.BN254G1Point {
 	if input == nil {
-		return dataOracle.BN254G1Point{
+		return contractdataoracle.BN254G1Point{
 			X: new(big.Int),
 			Y: new(big.Int),
 		}
 	}
-	output := dataOracle.BN254G1Point{
+	output := contractdataoracle.BN254G1Point{
 		X: input.X.BigInt(new(big.Int)),
 		Y: input.Y.BigInt(new(big.Int)),
 	}
 	return output
 }
 
-func convertQuorumApks(pb [][]byte) []dataOracle.BN254G1Point {
-	list := make([]dataOracle.BN254G1Point, 0, len(pb))
+func convertQuorumApks(pb [][]byte) []contractdataoracle.BN254G1Point {
+	list := make([]contractdataoracle.BN254G1Point, 0, len(pb))
 	for _, apk := range pb {
 		if len(apk) == 0 {
 			continue // Skip empty APKs
@@ -93,12 +104,12 @@ func convertQuorumApks(pb [][]byte) []dataOracle.BN254G1Point {
 	return list
 }
 
-func convertApkG2(pb []byte) dataOracle.BN254G2Point {
+func convertApkG2(pb []byte) contractdataoracle.BN254G2Point {
 	if len(pb) < 128 {
-		return dataOracle.BN254G2Point{}
+		return contractdataoracle.BN254G2Point{}
 	}
 
-	return dataOracle.BN254G2Point{
+	return contractdataoracle.BN254G2Point{
 		X: [2]*big.Int{
 			new(big.Int).SetBytes(pb[:32]),
 			new(big.Int).SetBytes(pb[32:64]),
@@ -110,12 +121,12 @@ func convertApkG2(pb []byte) dataOracle.BN254G2Point {
 	}
 }
 
-func convertSigma(pb []byte) dataOracle.BN254G1Point {
+func convertSigma(pb []byte) contractdataoracle.BN254G1Point {
 	if len(pb) < 64 {
-		return dataOracle.BN254G1Point{}
+		return contractdataoracle.BN254G1Point{}
 	}
 
-	return dataOracle.BN254G1Point{
+	return contractdataoracle.BN254G1Point{
 		X: new(big.Int).SetBytes(pb[:32]),
 		Y: new(big.Int).SetBytes(pb[32:]),
 	}

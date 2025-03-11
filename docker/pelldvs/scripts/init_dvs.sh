@@ -11,26 +11,67 @@ function load_defaults {
   export HARDHAT_DVS_PATH="/app/price-oracle-dvs/deployments/localhost"
 
   export PELLDVS_HOME=${PELLDVS_HOME:-/root/.pelldvs}
+
+  export AGGREGATOR_INDEXER_START_HEIGHT=${AGGREGATOR_INDEXER_START_HEIGHT:-0}
+  export AGGREGATOR_INDEXER_BATCH_SIZE=${AGGREGATOR_INDEXER_BATCH_SIZE:-1000}
+  export CHAIN_ID=${CHAIN_ID:-1337}
   export ETH_RPC_URL=${ETH_RPC_URL:-http://eth:8545}
   export ETH_WS_URL=${ETH_WS_URL:-ws://eth:8545}
+
+  export SERVICE_CHAIN_ID=${SERVICE_CHAIN_ID:-1337}
+  export SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL:-http://eth:8545}
+  export SERVICE_CHAIN_WS_URL=${SERVICE_CHAIN_WS_URL:-ws://eth:8545}
 }
 
 function update_pelldvs_config {
   pelldvs init --home "$PELLDVS_HOME"
 
   ## Update config
+  PELL_DVS_DIRECTORY=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellDVSDirectory-Proxy.json" | jq -r .address)
+  PELL_DELEGATION_MNAGER=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellDelegationManager-Proxy.json" | jq -r .address)
   REGISTRY_ROUTER_FACTORY_ADDRESS=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellRegistryRouterFactory.json" | jq -r .address)
-
-  # TODO: should get address from contract
   REGISTRY_ROUTER_ADDRESS=$(ssh emulator "cat /root/RegistryRouterAddress.json" | jq -r .address)
+
   update-config() {
     KEY="$1"
     VALUE="$2"
-    sed -i "s|${KEY} = \".*\"|${KEY} = \"${VALUE}\"|" ~/.pelldvs/config/config.toml
+    sed -i "s|${KEY} = \".*\"|${KEY} = \"${VALUE}\"|" $PELLDVS_HOME/config/config.toml
   }
-  update-config rpc_url "$ETH_RPC_URL"
-  update-config registry_router_factory_address "$REGISTRY_ROUTER_FACTORY_ADDRESS"
-  update-config registry_router_address "$REGISTRY_ROUTER_ADDRESS"
+	update-config interactor_config_path "$PELLDVS_HOME/config/interactor_config.json"
+
+  DVS_OPERATOR_KEY_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorKeyManager-Proxy.json" | jq -r .address)
+  DVS_CENTRAL_SCHEDULER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/CentralScheduler-Proxy.json" | jq -r .address)
+  DVS_OPERATOR_INFO_PROVIDER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorInfoProvider.json" | jq -r .address)
+  DVS_OPERATOR_INDEX_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorIndexManager-Proxy.json" | jq -r .address)
+
+  cat <<EOF > $PELLDVS_HOME/config/interactor_config.json
+{
+    "rpc_url": "$ETH_RPC_URL",
+    "chain_id": $CHAIN_ID,
+    "contract_config": {
+      "indexer_start_height": $AGGREGATOR_INDEXER_START_HEIGHT,
+      "indexer_batch_size": $AGGREGATOR_INDEXER_BATCH_SIZE,
+      "pell_registry_router_factory": "$REGISTRY_ROUTER_FACTORY_ADDRESS",
+      "pell_dvs_directory": "$PELL_DVS_DIRECTORY",
+      "pell_delegation_manager": "$PELL_DELEGATION_MNAGER",
+      "pell_registry_router": "$REGISTRY_ROUTER_ADDRESS",
+      "dvs_configs": {
+        "$SERVICE_CHAIN_ID": {
+          "chain_id": $SERVICE_CHAIN_ID,
+          "rpc_url": "$SERVICE_CHAIN_RPC_URL",
+          "ws_url": "$SERVICE_CHAIN_WS_URL",
+          "operator_info_provider": "$DVS_OPERATOR_INFO_PROVIDER",
+          "operator_key_manager": "$DVS_OPERATOR_KEY_MANAGER",
+          "central_scheduler": "$DVS_CENTRAL_SCHEDULER",
+          "operator_index_manager": "$DVS_OPERATOR_INDEX_MANAGER"
+        }
+      }
+    }
+}
+EOF
+
+cat $PELLDVS_HOME/config/interactor_config.json
+
 }
 
 function setup_admin_key {
@@ -46,6 +87,33 @@ function setup_admin_key {
   fi
 
   export ADMIN_ADDRESS=$(pelldvs keys show admin --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
+}
+
+function register_chain_to_pell() {
+  set -x
+
+  REGISTRY_ROUTER_ADDRESS=$(ssh emulator "cat /root/RegistryRouterAddress.json" | jq -r .address)
+  DVS_CENTRAL_SCHEDULER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/CentralScheduler-Proxy.json" | jq -r .address)
+
+  pelldvs client dvs register-chain-to-pell \
+      --home $PELLDVS_HOME \
+      --rpc-url $ETH_RPC_URL \
+      --registry-router "$REGISTRY_ROUTER_ADDRESS" \
+      --central-scheduler "$DVS_CENTRAL_SCHEDULER" \
+      --dvs-rpc-url $ETH_RPC_URL \
+      --dvs-from admin \
+      --approver-key-name admin
+}
+
+function show_supported_chain() {
+	logt ""
+  REGISTRY_ROUTER_ADDRESS=$(ssh emulator "cat /root/RegistryRouterAddress.json" | jq -r .address)
+  SUPPORTED_CHAIN_RESULT=$(cast call $REGISTRY_ROUTER_ADDRESS "supportedChainInfos(uint256)(uint256,address,address,address)" 0 \
+    --rpc-url $ETH_RPC_URL \
+    --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80)
+
+  logt "Supported Chain Info: $SUPPORTED_CHAIN_RESULT"
+  logt ""
 }
 
 function create_group {
@@ -77,6 +145,8 @@ EOF
   pelldvs client dvs create-group \
     --home $PELLDVS_HOME \
     --from admin \
+    --rpc-url $ETH_RPC_URL \
+    --registry-router $REGISTRY_ROUTER_ADDRESS \
     --config ./group-0-config.json
 }
 
@@ -86,7 +156,7 @@ function show_group {
 
   DVS_CENTRAL_SCHEDULER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/CentralScheduler-Proxy.json" | jq -r .address)
   GROUP_COUNT=$(cast call "$DVS_CENTRAL_SCHEDULER" "groupCount()" --rpc-url "$ETH_RPC_URL")
-  logt "Group Count From Registry Coordinator in Service EVM: $GROUP_COUNT"
+  logt "Group Count From Registry CentralScheduler in Service EVM: $GROUP_COUNT"
 }
 
 logt "Load Default Values for ENV Vars if not set."
@@ -98,6 +168,20 @@ update_pelldvs_config
 logt "Setup Admin Key"
 setup_admin_key
 
+logt "Register Chain to Pell"
+register_chain_to_pell
+
+sleep 2
+
+logt "show supported chain"
+show_supported_chain
+
+logt "show group before create"
+show_group
+
 logt "Create Group"
+sleep 1
 create_group
+
+logt "show group after create"
 show_group

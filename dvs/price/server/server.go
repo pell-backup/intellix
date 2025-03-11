@@ -14,13 +14,20 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 
-	"github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/0xPellNetwork/pelldvs-libs/log"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
+	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/spf13/pflag"
+
+	taskgateway "intellix/gateway"
+	sdktypes "intellix/sdk/types"
+	"intellix/x/price/types"
 )
 
 type Server struct {
@@ -36,7 +43,8 @@ type Server struct {
 	waitBlockCount  int64 // price feed wait block count
 	blsKeyPair      *bls.KeyPair
 
-	taskGatewayClient *taskgateway.Client
+	taskGatewayClient   *taskgateway.Client
+	tickConverterConfig map[string]map[string]string
 }
 
 func NewServer(
@@ -53,9 +61,10 @@ func NewServer(
 
 	gasPrices string,
 	gasAdjustment float64,
+	tickConverterConfig map[string]map[string]string,
 ) (Server, error) {
 	if gasPrices == "" {
-		gasPrices = "1stake"
+		gasPrices = "1uixn"
 	}
 	if gasAdjustment == 0 {
 		gasAdjustment = 1.5
@@ -70,11 +79,12 @@ func NewServer(
 		key:           key,
 		cosmosChainId: cosmosChainId,
 
-		wsEndpoint:      wsEndpoint,
-		operatorAddress: operatorAddress,
-		waitBlockCount:  waitBlockCount,
-		gasPrices:       gasPrices,
-		gasAdjustment:   gasAdjustment,
+		wsEndpoint:          wsEndpoint,
+		operatorAddress:     operatorAddress,
+		waitBlockCount:      waitBlockCount,
+		gasPrices:           gasPrices,
+		gasAdjustment:       gasAdjustment,
+		tickConverterConfig: tickConverterConfig,
 	}
 
 	if blsKeyPath != "" && blsKeyPassword != "" {

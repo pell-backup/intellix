@@ -3,12 +3,12 @@ package processor_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	keepertest "intellix/testutil/keeper"
 	"intellix/testutil/nullify"
 	processor "intellix/x/processor/module"
 	"intellix/x/processor/types"
-
-	"github.com/stretchr/testify/require"
 )
 
 func TestGenesis(t *testing.T) {
