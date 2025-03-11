@@ -9,6 +9,7 @@ import (
 )
 
 type EventHandler[K comparable, T any] func(ctx context.Context, event abci.Event) (K, T, error)
+
 type BlockHandler[K comparable, T any] func(ctx context.Context, block *cmttypes.Block) (K, T, error)
 
 type EventData[T any] struct {

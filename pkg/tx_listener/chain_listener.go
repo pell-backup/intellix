@@ -6,12 +6,10 @@ import (
 	"time"
 
 	"github.com/0xPellNetwork/pelldvs-libs/log"
-	"github.com/cosmos/cosmos-sdk/client"
-
-	cmttypes "github.com/cometbft/cometbft/types"
-
 	tmclient "github.com/cometbft/cometbft/rpc/client/http"
 	tmctypes "github.com/cometbft/cometbft/rpc/core/types"
+	cmttypes "github.com/cometbft/cometbft/types"
+	"github.com/cosmos/cosmos-sdk/client"
 )
 
 type ChainListenerIFace[K comparable, E any, B any] interface {

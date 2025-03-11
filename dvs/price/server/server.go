@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/0xPellNetwork/pelldvs/crypto/bls"
-
 	"github.com/0xPellNetwork/pelldvs-libs/log"
+	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"

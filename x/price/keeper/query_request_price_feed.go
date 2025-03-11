@@ -2,11 +2,12 @@ package keeper
 
 import (
 	"context"
-	"intellix/x/price/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"intellix/x/price/types"
 )
 
 func (k Keeper) QueryVoteRequestPriceFeed(goCtx context.Context, req *types.QueryVoteRequestPriceFeedReq) (*types.QueryVoteRequestPriceFeedResp, error) {

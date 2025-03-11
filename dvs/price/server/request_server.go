@@ -12,7 +12,7 @@ type RequestServer struct {
 	tickConverterConfig map[string]map[string]string
 }
 
-// NewDvsProcessRequestServer returns an implementation of the DvsProcessRequestServer interface
+// NewRequestServer returns an implementation of the DvsProcessRequestServer interface
 // for the provided Server.
 func NewRequestServer(server Server) types.DVSRequestServer {
 	s := &RequestServer{

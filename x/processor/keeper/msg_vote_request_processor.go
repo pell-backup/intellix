@@ -2,13 +2,13 @@ package keeper
 
 import (
 	"context"
-	"intellix/x/processor/types"
-
 	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+
+	"intellix/x/processor/types"
 )
 
 func (k msgServer) VoteRequestProcessor(goCtx context.Context, req *types.MsgVoteRequestProcessor) (*types.MsgVoteRequestProcessorResponse, error) {

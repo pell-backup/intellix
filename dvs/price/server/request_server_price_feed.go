@@ -3,20 +3,19 @@ package server
 import (
 	"context"
 	"fmt"
-	"intellix/pkg/tx_listener"
-	"intellix/sdk/utils"
 	"sort"
 	"sync"
 	"time"
 
+	"cosmossdk.io/math"
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
 	"github.com/cosmos/gogoproto/proto"
 
 	"intellix/dvs/price/types"
+	"intellix/pkg/tx_listener"
 	sdktypes "intellix/sdk/types"
+	"intellix/sdk/utils"
 	pricetypes "intellix/x/price/types"
-
-	"cosmossdk.io/math"
 )
 
 func (d *RequestServer) RequestPriceFeed(ctx context.Context, request *types.RequestPriceFeedIn) (*types.RequestPriceFeedOut, error) {
@@ -36,9 +35,8 @@ func (d *RequestServer) RequestPriceFeed(ctx context.Context, request *types.Req
 		return nil, fmt.Errorf("failed to broadcast VoteRequestPriceFeed: %w", err)
 	}
 
-	priceFeedTxs, err := d.startCollectEnoughPriceFeedTxs(pkgContext, request.Task.RequestId)
 	// listen and collect [N-N+M] block
-	//priceFeedTxs, err := d.collectVoteRequestPriceFeedTxs(pkgContext, request.Task.RequestId)
+	priceFeedTxs, err := d.startCollectEnoughPriceFeedTxs(pkgContext, request.Task.RequestId)
 	if err != nil {
 		d.logger.Error("ProcessRequestPriceFeed collectVoteRequestPriceFeedTxs error: " + err.Error())
 		return nil, fmt.Errorf("failed to collect VoteRequestPriceFeed transactions: %w", err)
@@ -47,6 +45,7 @@ func (d *RequestServer) RequestPriceFeed(ctx context.Context, request *types.Req
 		d.logger.Error("ProcessRequestPriceFeed collectVoteRequestPriceFeedTxs error: len(priceFeedTxs) == 0")
 		return nil, fmt.Errorf("failed to collect VoteRequestPriceFeed transactions, len(priceFeedTxs) == 0")
 	}
+	d.logger.Info("ProcessRequestPriceFeed collectVoteRequestPriceFeedTxs success", "lengeth", len(priceFeedTxs), "priceFeedTxs", fmt.Sprintf("%+v", priceFeedTxs))
 
 	// aggregate [N-N+M] block prices
 	return d.aggregatePrices(pkgContext, request.Task.TaskIndex, request.Task.RequestId, priceFeedTxs)
@@ -120,6 +119,8 @@ func (d *RequestServer) startCollectEnoughPriceFeedTxs(ctx sdktypes.Context, req
 	// check if enough events
 	events := d.PriceListener.QueryEvents(key)
 	eventData, ok = d.verifyOperatorEvents(ctx, events)
+	d.logger.Info("verifyOperatorEvents", "eventData", fmt.Sprintf("%+v", eventData), "ok", ok,
+		"events length", len(events), "key", key)
 	if ok {
 		d.PriceListener.ClearEventsByKey(key)
 		return eventData, nil
@@ -135,6 +136,8 @@ func (d *RequestServer) startCollectEnoughPriceFeedTxs(ctx sdktypes.Context, req
 	// check if enough block height
 	blocks := d.PriceListener.QueryBlocks(key)
 	blockData, ok = d.checkAndChooseEnoughBlocks(ctx, blockHeight, blocks)
+	d.logger.Info("checkAndChooseEnoughBlocks", "blockData", fmt.Sprintf("%+v", blockData), "ok", ok,
+		"blockHeight", blockHeight, "blocks length", len(blocks), "key", key)
 	if ok {
 		d.PriceListener.ClearBlocksByKey(key)
 		return blockData, nil

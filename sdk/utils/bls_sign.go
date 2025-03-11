@@ -3,6 +3,7 @@ package utils
 import (
 	"crypto/sha256"
 	"fmt"
+
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 )

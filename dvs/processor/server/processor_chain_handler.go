@@ -3,11 +3,12 @@ package server
 import (
 	context "context"
 	"fmt"
-	processortypes "intellix/x/processor/types"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
+
+	processortypes "intellix/x/processor/types"
 )
 
 func (r *RequestServer) ProcessorEventHandler(ctx context.Context, event abci.Event) (string, *processortypes.MsgVoteRequestProcessor, error) {

@@ -3,12 +3,13 @@ package server
 import (
 	"context"
 	"fmt"
-	"intellix/x/price/types"
-	pricetypes "intellix/x/price/types"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
+
+	"intellix/x/price/types"
+	pricetypes "intellix/x/price/types"
 )
 
 func (d *RequestServer) PriceEventHandler(ctx context.Context, event abci.Event) (string, *pricetypes.MsgVoteRequestPriceFeed, error) {

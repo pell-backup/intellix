@@ -3,8 +3,6 @@ package server
 import (
 	context "context"
 	"fmt"
-	"intellix/pkg/tx_listener"
-	"intellix/sdk/utils"
 	"sort"
 	"sync"
 	"time"
@@ -14,7 +12,9 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 
 	"intellix/dvs/processor/types"
+	"intellix/pkg/tx_listener"
 	sdktypes "intellix/sdk/types"
+	"intellix/sdk/utils"
 	processortypes "intellix/x/processor/types"
 )
 

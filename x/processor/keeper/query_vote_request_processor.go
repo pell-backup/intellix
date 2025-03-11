@@ -2,11 +2,12 @@ package keeper
 
 import (
 	"context"
-	"intellix/x/processor/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	"intellix/x/processor/types"
 )
 
 func (k Keeper) QueryVoteRequestProcessor(goCtx context.Context, req *types.QueryVoteRequestProcessorRequest) (*types.QueryVoteRequestProcessorResponse, error) {
