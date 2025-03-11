@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/0xPellNetwork/pelldvs/libs/log"
+	"github.com/0xPellNetwork/pelldvs-libs/log"
 	"github.com/cosmos/cosmos-sdk/client"
 
 	cmttypes "github.com/cometbft/cometbft/types"

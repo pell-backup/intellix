@@ -3,11 +3,8 @@ package server
 import (
 	context "context"
 	"fmt"
-	"intellix/dvs/processor/types"
 	"intellix/pkg/tx_listener"
-	"intellix/pkg/utils"
-	sdktypes "intellix/sdk/types"
-	processortypes "intellix/x/processor/types"
+	"intellix/sdk/utils"
 	"sort"
 	"sync"
 	"time"

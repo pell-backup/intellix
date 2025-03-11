@@ -3,16 +3,8 @@ package server
 import (
 	"context"
 	"fmt"
-	taskgateway "intellix/gateway"
-	"intellix/x/price/types"
 
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
-
-	sdktypes "intellix/sdk/types"
-
-	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
-	"github.com/cosmos/cosmos-sdk/x/authz"
 
 	"github.com/0xPellNetwork/pelldvs-libs/log"
 	cmttypes "github.com/cometbft/cometbft/types"

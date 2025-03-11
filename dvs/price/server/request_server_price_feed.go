@@ -3,11 +3,8 @@ package server
 import (
 	"context"
 	"fmt"
-	"intellix/dvs/price/types"
 	"intellix/pkg/tx_listener"
-	"intellix/pkg/utils"
-	sdktypes "intellix/sdk/types"
-	pricetypes "intellix/x/price/types"
+	"intellix/sdk/utils"
 	"sort"
 	"sync"
 	"time"
@@ -27,7 +24,7 @@ func (d *RequestServer) RequestPriceFeed(ctx context.Context, request *types.Req
 	d.logger.Info("ProcessRequestPriceFeed", "PriceFeedParam", fmt.Sprintf("%+v", request.PriceFeed))
 
 	// fetch raw price from chain
-	rawPrices, err := fetchRawPrices(pkgContext, d.Logger(), request.PriceFeed.BaseSymbol, request.PriceFeed.QuoteSymbol, ToPriceTickConverterByDataSource(server.tickConverterConfig))
+	rawPrices, err := fetchRawPrices(pkgContext, d.Logger(), request.PriceFeed.BaseSymbol, request.PriceFeed.QuoteSymbol, ToPriceTickConverterByDataSource(d.tickConverterConfig))
 	if err != nil {
 		d.logger.Error("ProcessRequestPriceFeed fetchRawPrices error: " + err.Error())
 		return nil, fmt.Errorf("failed to fetch raw prices: %w", err)
