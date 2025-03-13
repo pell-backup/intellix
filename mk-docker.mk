@@ -1,20 +1,18 @@
 check-env-gh-token:
-	@if [ -z "$${GITHUB_TOKEN}" ] && ! grep -q '^GITHUB_TOKEN=' docker/.env 2>/dev/null; then \
-		echo "Error: GITHUB_TOKEN is not set in environment or docker/.env file"; \
+	@if [ -z "$${GITHUB_TOKEN}" ] ; then \
+		echo "Error: GITHUB_TOKEN is not set in environment"; \
 		exit 1; \
 	else \
 		echo "GITHUB_TOKEN is set."; \
 	fi
 
+GITHUB_TOKEN_FILE ?= $${TMPDIR}/gh_token.txt
+write_github_token: check-env-gh-token
+	@echo "$${GITHUB_TOKEN}" > ${GITHUB_TOKEN_FILE}
+	@echo "Wrote GITHUB_TOKEN to ${GITHUB_TOKEN_FILE}"
+
 docker-build-all: check-env-gh-token
 	@cd docker && docker compose -f docker-compose.build.yml build
-
-DOCKER_TAG ?= latest
-
-docker-build-release-local: check-env-gh-token
-	docker build -f ./Dockerfile-local -t pellnetwork/intellix:${DOCKER_TAG} . \
-	--build-arg GITHUB_TOKEN=$${GITHUB_TOKEN} \
-	--build-arg PELLDVS_VERSION=v0.2.2
 
 docker-build-contracts: check-env-gh-token
 	@cd docker && docker compose -f docker-compose.build.yml build hardhat
@@ -24,6 +22,13 @@ docker-build-pelldvs: check-env-gh-token
 
 docker-build-operator: check-env-gh-token
 	@cd docker && docker compose -f docker-compose.build.yml build operator
+
+DOCKER_TAG ?= latest
+PELLDVS_VERSION ?= v0.2.2
+docker-build-release-local: write_github_token
+	docker build --secret id=github_token,src=${GITHUB_TOKEN_FILE} \
+	-f ./Dockerfile -t pellnetwork/intellix:${DOCKER_TAG} . \
+	--build-arg PELLDVS_VERSION=${PELLDVS_VERSION}
 
 docker-all-up:
 	@cd docker && docker compose up -d

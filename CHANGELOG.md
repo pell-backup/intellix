@@ -37,6 +37,9 @@ Ref: https://keepachangelog.com/en/1.0.0/
 # Changelog
 
 ## Unreleased
+### Improvements
+
+- (test) [#49](https://github.com/IntelliXLabs/intellix/pull/49) security: Use docker secrets to pass github token to prevent it from being leaked.
 - (test) [#50](https://github.com/IntelliXLabs/intellix/pull/50 ): e2e: correct interactor config for e2e tests
 - (feat) [#51](https://github.com/IntelliXLabs/intellix/pull/51 ): feat: centralize the task dispather and merge the dispather and gateway into one process and start.
 
