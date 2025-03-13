@@ -1,4 +1,4 @@
-name: Docker publish release
+name: Docker Publish E2E Hardhat
 
 on:
   workflow_dispatch:
