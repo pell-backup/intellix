@@ -77,9 +77,9 @@ func NewTaskDispatcher(logger dvslog.Logger, pellDVSConf *pelldvscfg.Config, tdC
 		msgEncoder: newTaskProtoEncoder(),
 	}
 
-	for _, config := range tdConf.Chains {
-		if err := td.AddChain(config); err != nil {
-			return nil, fmt.Errorf("failed to add chain %d: %w", config.ChainID, err)
+	for _, chainConfig := range tdConf.Chains {
+		if err := td.AddChain(chainConfig); err != nil {
+			return nil, fmt.Errorf("failed to add chain %d: %w", chainConfig.ChainID, err)
 		}
 	}
 
@@ -213,6 +213,16 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractdataora
 			)
 			continue
 		}
+
+		td.logger.Info("prepare to send task to DVS app operator",
+			"chainID", chainID,
+			"TaskIndex", newTask.TaskIndex,
+			"RequestId", newTask.Task.RequestId,
+			"operatorID", operatorID,
+			"operatorAddress", operatorState.OperatorAddress,
+			"socket", info.Socket,
+		)
+
 		client, err := http.New(info.Socket.String(), "")
 		if err != nil {
 			td.logger.Error("Failed to create eth client",
