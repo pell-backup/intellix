@@ -1,8 +1,12 @@
 FROM node:18
 
-ARG GITHUB_TOKEN
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
+
+RUN --mount=type=secret,id=github_token \
+    if [ ! -s /run/secrets/github_token ]; then echo "github token is not set via secrets" >&2; exit 1; fi; \
+    git config --global url."https://$(cat /run/secrets/github_token):x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork" ; \
+    git config --global url."https://$(cat /run/secrets/github_token):x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
 
 RUN apt-get update -yqq && apt-get install -yqq openssh-server curl jq
 RUN mkdir -p /run/sshd && chmod 0755 /run/sshd
@@ -14,11 +18,8 @@ ENV PATH="$PATH:/root/.foundry/bin"
 RUN curl -L https://foundry.paradigm.xyz | bash
 RUN foundryup
 
-ARG GITHUB_TOKEN
+
 ARG CONTRACT_VERSION
-RUN if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN is not set" && exit 1; fi
-RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
-RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
 RUN git clone https://github.com/IntelliXLabs/price-oracle-dvs.git -b $CONTRACT_VERSION ./price-oracle-dvs
 
 
