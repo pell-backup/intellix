@@ -97,7 +97,7 @@ services:
       - DEBUG_ENABLED=${GATEWAY_DEBUG_ENABLED:-false}
     entrypoint: [ "bash", "/root/scripts/start_gateway.sh" ]
     depends_on:
-      emulator:
+      dvs:
         condition: service_started
     ports:
       - "3347:${DEBUG_PORT:-2345}"
