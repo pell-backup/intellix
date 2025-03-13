@@ -134,3 +134,10 @@ docker-all-logs-in-ci:
 		echo -e "\n\n\t==================== gateway logs end \n\n" && \
 		docker compose logs operator -n 50 && \
 		echo -e "\n\n\t==================== operator logs end \n\n"
+
+docker-ci-e2e-local:
+	make docker-all-down
+	make docker-operator-up
+	@echo "sleep 60 seconds"
+	sleep 60
+	make docker-test

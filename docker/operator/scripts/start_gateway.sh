@@ -56,6 +56,22 @@ function contract_healthcheck {
   set -e
 }
 
+function dvs_healthcheck {
+  set +e
+  while true; do
+    curl -s $AGGREGATOR_RPC_SERVER >/dev/null
+    if [ $? -eq 52 ]; then
+      echo "DVS RPC port is ready, proceeding to the next step..."
+      break
+    fi
+    echo "DVS RPC port not ready, retrying in 2 seconds..."
+    sleep 2
+  done
+  ## Wait for aggregator to be ready
+  sleep 3
+  set -e
+}
+
 function init_pelldvs_config {
   pelldvs init --home $PELLDVS_HOME
 
@@ -160,7 +176,7 @@ function start_gateway {
 logt "Load Default Values for ENV Vars if not set."
 load_defaults
 
-contract_healthcheck
+dvs_healthcheck
 
 logt "setup pelldvs config"
 init_pelldvs_config
