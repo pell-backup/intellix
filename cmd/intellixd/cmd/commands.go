@@ -60,6 +60,7 @@ func initRootCmd(
 		// taskDispatcherCommand(),
 		taskGatewayCommand(),
 		pellAppCommand(),
+		startDispathcerCommand(),
 	)
 }
 

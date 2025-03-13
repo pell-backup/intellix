@@ -97,12 +97,17 @@ services:
       - DEBUG_ENABLED=${GATEWAY_DEBUG_ENABLED:-false}
     entrypoint: [ "bash", "/root/scripts/start_gateway.sh" ]
     depends_on:
-      hardhat:
+      emulator:
         condition: service_started
     ports:
       - "3347:${DEBUG_PORT:-2345}"
     volumes:
       - ./operator/scripts:/root/scripts
+    healthcheck:
+      test: [ "CMD", "test", "-f", "/root/gateway_initialized" ]
+      start_period: 50s
+      retries: 3
+      interval: 10s
 
   test:
     image: intellixlabs-intellix-operator:latest

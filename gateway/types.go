@@ -1,6 +1,7 @@
 package taskgateway
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
@@ -9,26 +10,27 @@ import (
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/ethereum/go-ethereum/common"
+
+	"intellix/config"
 )
 
-type ChainConfig struct {
-	EthEndpoint     string `mapstructure:"eth_endpoint"`
-	ContractAddress string `mapstructure:"contract_address"`
-	ChainID         int64  `mapstructure:"chain_id"`
-	GasLimit        uint64 `mapstructure:"gas_limit"`
+type TaskGatewayCfg struct {
+	ServerAddr          string                        `json:"server_addr"`
+	PrivateKeyStorePath string                        `json:"private_key_store_path"`
+	Chains              map[uint64]config.ChainConfig `json:"chains"`
 }
 
-type TaskGatewayCfg struct {
-	ServerAddr          string                `mapstructure:"server_addr"`
-	SenderAddress       string                `mapstructure:"sender_address"`
-	PrivateKeyStorePath string                `mapstructure:"private_key_store_path"`
-	Chains              map[int64]ChainConfig `mapstructure:"chains"`
+func LoadConfig(cfgPath string) (*TaskGatewayCfg, error) {
+	var cfg TaskGatewayCfg
+	input, err := os.ReadFile(cfgPath)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(input, &cfg)
+	return &cfg, err
 }
 
 func (t TaskGatewayCfg) Validate() error {
-	if t.SenderAddress == "" {
-		return fmt.Errorf("sender address cannot be empty")
-	}
 	if t.ServerAddr == "" {
 		return fmt.Errorf("server address cannot be empty")
 	}
@@ -42,11 +44,8 @@ func (t TaskGatewayCfg) Validate() error {
 		return fmt.Errorf("no chain configs provided")
 	}
 	for chainID, cfg := range t.Chains {
-		if cfg.EthEndpoint == "" {
-			return fmt.Errorf("eth endpoint for chain %d cannot be empty", chainID)
-		}
-		if cfg.ContractAddress == "" {
-			return fmt.Errorf("contract address for chain %d cannot be empty", chainID)
+		if err := cfg.Validate(); err != nil {
+			return fmt.Errorf("chain %d: %w", chainID, err)
 		}
 	}
 	return nil

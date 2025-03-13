@@ -1,15 +1,18 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 
+	pelldvscfg "github.com/0xPellNetwork/pelldvs/config"
 	"github.com/cosmos/cosmos-sdk/server"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/sync/errgroup"
 
+	taskdispatcher "intellix/dispatcher"
 	taskgateway "intellix/gateway"
-	pkglogger "intellix/sdk/logger"
+	sdklogger "intellix/sdk/logger"
 )
 
 func taskGatewayCommand() *cobra.Command {
@@ -20,37 +23,79 @@ func taskGatewayCommand() *cobra.Command {
 			"intellixd start-task-gateway --config=config.yml",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serverCtx := server.GetServerContextFromCmd(cmd)
+			logger := sdklogger.NewDVSLogAdapter(serverCtx.Logger)
 
 			home := getConfigHome()
 			if configFile == "" {
 				configFile = home + "/config/gateway.config.json"
 			}
-			viper.SetConfigFile(configFile)
-			if err := viper.ReadInConfig(); err != nil {
-				return err
-			}
 
-			conf := &taskgateway.TaskGatewayCfg{}
-			err := viper.Unmarshal(conf)
+			conf, err := taskgateway.LoadConfig(configFile)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to load TaskGateway configuration: %w", err)
 			}
 			err = conf.Validate()
 			if err != nil {
 				return err
 			}
 
-			dvsLogger := pkglogger.NewDVSLogAdapter(serverCtx.Logger)
-			taskGateway, err := taskgateway.NewTaskGateway(dvsLogger, context.Background(), conf)
+			// load pellDVS config
+			pellDVSConf := pelldvscfg.DefaultConfig()
+			vp := viper.New()
+			vp.SetConfigFile(home + "/config/config.toml")
+			err = vp.ReadInConfig()
+			if err != nil {
+				return errors.Wrap(err, "failed to read in pelldvs config")
+			}
+			err = vp.Unmarshal(pellDVSConf)
+			if err != nil {
+				return errors.Wrap(err, "failed to unmarshal pelldvs configuration")
+			}
+			pellDVSConf.SetRoot(home)
+			logger.Info("PellDVS configuration",
+				"config", fmt.Sprintf("%+v", pellDVSConf),
+				"pell", fmt.Sprintf("%+v", pellDVSConf.Pell),
+			)
+
+			g, ctx := errgroup.WithContext(cmd.Context())
+
+			// create TaskDispatcher
+			tdConf := &taskdispatcher.Config{Chains: conf.Chains}
+			td, err := taskdispatcher.NewTaskDispatcher(logger, pellDVSConf, tdConf)
+			if err != nil {
+				return fmt.Errorf("failed to create TaskDispatcher: %w", err)
+			}
+			// create TaskGateway
+			taskGateway, err := taskgateway.NewTaskGateway(logger, ctx, conf)
 			if err != nil {
 				return fmt.Errorf("failed to create TaskGateway: %w", err)
 			}
 
-			err = taskGateway.Start()
-			if err != nil {
-				return fmt.Errorf("failed to start TaskGateway: %w", err)
+			// start TaskDispatcher
+			g.Go(func() error {
+				err = td.Start()
+				if err != nil {
+					return fmt.Errorf("failed to start TaskDispatcher: %w", err)
+				}
+				<-td.Quit()
+				return nil
+			})
+
+			// start TaskGateway
+			g.Go(func() error {
+				err = taskGateway.Start()
+				if err != nil {
+					return fmt.Errorf("failed to start TaskGateway: %w", err)
+				}
+				<-taskGateway.Quit()
+
+				return nil
+			})
+
+			// wait for TaskDispatcher and TaskGateway to quit
+			if err := g.Wait(); err != nil {
+				return err
 			}
-			<-taskGateway.Quit()
 
 			return nil
 		},

@@ -121,7 +121,7 @@ function register_operator_to_dvs {
     --home $PELLDVS_HOME \
     --from $OPERATOR_KEY_NAME \
     --groups 0 \
-    --socket http://$OPERATOR_NODE_NAME:26657
+    --socket http://$(hostname -i):26657
   show_dvs_operator_info $OPERATOR_ADDRESS
 }
 

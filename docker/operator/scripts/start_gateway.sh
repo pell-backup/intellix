@@ -19,6 +19,17 @@ function load_defaults {
 
   export GATEWAY_PORT=${GATEWAY_PORT:-8949}
   export AGGREGATOR_RPC_SERVER=${AGGREGATOR_RPC_SERVER:-dvs:26653}
+
+  export CHAIN_ID=${CHAIN_ID:-1337}
+  ## TODO: remove this after the integration with the operator
+  export OPERATOR_RPC_SERVER=${OPERATOR_RPC_SERVER:-operator:26657}
+
+  export AGGREGATOR_INDEXER_START_HEIGHT=${AGGREGATOR_INDEXER_START_HEIGHT:-0}
+  export AGGREGATOR_INDEXER_BATCH_SIZE=${AGGREGATOR_INDEXER_BATCH_SIZE:-1000}
+
+  export SERVICE_CHAIN_ID=${SERVICE_CHAIN_ID:-1337}
+  export SERVICE_CHAIN_RPC_URL=${SERVICE_CHAIN_RPC_URL:-http://eth:8545}
+  export SERVICE_CHAIN_WS_URL=${SERVICE_CHAIN_WS_URL:-ws://eth:8545}
 }
 
 function setup_gateway_key {
@@ -45,6 +56,64 @@ function contract_healthcheck {
   set -e
 }
 
+function init_pelldvs_config {
+  pelldvs init --home $PELLDVS_HOME
+
+  update-config() {
+    KEY="$1"
+    VALUE="$2"
+    sed -i "s|${KEY} = \".*\"|${KEY} = \"${VALUE}\"|" $PELLDVS_HOME/config/config.toml
+  }
+
+  ## update config
+  REGISTRY_ROUTER_FACTORY_ADDRESS=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellRegistryRouterFactory.json" | jq -r .address)
+  PELL_DELEGATION_MNAGER=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellDelegationManager-Proxy.json" | jq -r .address)
+  PELL_DVS_DIRECTORY=$(ssh hardhat "cat $HARDHAT_CONTRACTS_PATH/PellDVSDirectory-Proxy.json" | jq -r .address)
+  REGISTRY_ROUTER_ADDRESS=$(ssh emulator "cat /root/RegistryRouterAddress.json" | jq -r .address)
+
+  update-config aggregator_rpc_url "$AGGREGATOR_RPC_URL"
+	update-config interactor_config_path "$PELLDVS_HOME/config/interactor_config.json"
+
+  ## FIXME: don't use absolute path for key
+  update-config operator_bls_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.bls.key.json"
+  update-config operator_ecdsa_private_key_store_path "$PELLDVS_HOME/keys/$OPERATOR_KEY_NAME.ecdsa.key.json"
+
+  DVS_OPERATOR_KEY_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorKeyManager-Proxy.json" | jq -r .address)
+  DVS_CENTRAL_SCHEDULER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/CentralScheduler-Proxy.json" | jq -r .address)
+  DVS_OPERATOR_INFO_PROVIDER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorInfoProvider.json" | jq -r .address)
+  DVS_OPERATOR_INDEX_MANAGER=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorIndexManager-Proxy.json" | jq -r .address)
+
+  cat <<EOF > $PELLDVS_HOME/config/interactor_config.json
+{
+    "rpc_url": "$ETH_RPC_URL",
+    "chain_id": $CHAIN_ID,
+    "contract_config": {
+      "indexer_start_height": $AGGREGATOR_INDEXER_START_HEIGHT,
+      "indexer_batch_size": $AGGREGATOR_INDEXER_BATCH_SIZE,
+      "pell_registry_router_factory": "$REGISTRY_ROUTER_FACTORY_ADDRESS",
+      "pell_dvs_directory": "$PELL_DVS_DIRECTORY",
+      "pell_delegation_manager": "$PELL_DELEGATION_MNAGER",
+      "pell_registry_router": "$REGISTRY_ROUTER_ADDRESS",
+      "dvs_configs": {
+        "$SERVICE_CHAIN_ID": {
+          "chain_id": $SERVICE_CHAIN_ID,
+          "rpc_url": "$SERVICE_CHAIN_RPC_URL",
+          "ws_url": "$SERVICE_CHAIN_WS_URL",
+          "operator_info_provider": "$DVS_OPERATOR_INFO_PROVIDER",
+          "operator_key_manager": "$DVS_OPERATOR_KEY_MANAGER",
+          "central_scheduler": "$DVS_CENTRAL_SCHEDULER",
+          "operator_index_manager": "$DVS_OPERATOR_INDEX_MANAGER"
+        }
+      }
+    }
+}
+EOF
+
+cat $PELLDVS_HOME/config/interactor_config.json
+
+tail -n 10 $PELLDVS_HOME/config/config.toml
+
+}
 
 function setup_gateway_config {
   setup_gateway_key
@@ -61,11 +130,18 @@ function setup_gateway_config {
       "eth_endpoint": "$ETH_WS_URL",
       "contract_address": "$DATA_ORACLE_ADDRESS",
       "chain_id": 1337,
-      "gas_limit": 1000000
+      "gas_limit": 1000000,
+      "chain_id": $SERVICE_CHAIN_ID,
+      "rpc_url": "$SERVICE_CHAIN_RPC_URL",
+      "ws_url": "$SERVICE_CHAIN_WS_URL",
+      "contract_address": "$DATA_ORACLE_ADDRESS"
     }
   }
 }
 EOF
+
+cat $PELLDVS_HOME/config/gateway.config.json
+
 }
 
 function start_gateway {
@@ -74,7 +150,7 @@ function start_gateway {
       --listen=:$DEBUG_PORT --headless=true --api-version=2 --accept-multiclient\
       -- start-task-gateway
   else
-    intellixd start-task-gateway
+    intellixd start-task-gateway --home $PELLDVS_HOME
   fi
 }
 
@@ -85,6 +161,9 @@ logt "Load Default Values for ENV Vars if not set."
 load_defaults
 
 contract_healthcheck
+
+logt "setup pelldvs config"
+init_pelldvs_config
 
 logt "Setup gateway config"
 setup_gateway_config
