@@ -14,6 +14,9 @@ write_github_token: check-env-gh-token
 docker-build-all: check-env-gh-token
 	@cd docker && docker compose -f docker-compose.build.yml build
 
+docker-build-in-ci: check-env-gh-token
+	cd docker && docker compose -f docker-compose.build.yml build pelldvs operator
+
 docker-build-contracts: check-env-gh-token
 	@cd docker && docker compose -f docker-compose.build.yml build hardhat
 
