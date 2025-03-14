@@ -33,6 +33,7 @@ type Server struct {
 
 	taskGatewayClient   *taskgateway.Client
 	tickConverterConfig map[string]map[string]string
+	cmcApiKey           string // CoinMarketCap API 密钥
 }
 
 func NewServer(
@@ -48,6 +49,7 @@ func NewServer(
 	gasPrices string,
 	gasAdjustment float64,
 	tickConverterConfig map[string]map[string]string,
+	cmcApiKey string,
 ) (Server, error) {
 	if gasPrices == "" {
 		gasPrices = "1uixn"
@@ -57,6 +59,11 @@ func NewServer(
 	}
 	if waitBlockCount == 0 {
 		waitBlockCount = 1
+	}
+
+	taskGatewayClient, err := taskgateway.NewClient(gatewayAddr, logger)
+	if err != nil {
+		return Server{}, fmt.Errorf("failed to create task gateway client: %w", err)
 	}
 
 	k := Server{
@@ -70,6 +77,8 @@ func NewServer(
 		gasPrices:           gasPrices,
 		gasAdjustment:       gasAdjustment,
 		tickConverterConfig: tickConverterConfig,
+		taskGatewayClient:   taskGatewayClient,
+		cmcApiKey:           cmcApiKey,
 	}
 
 	if operatorAddress != "" {
@@ -79,12 +88,6 @@ func NewServer(
 			return Server{}, fmt.Errorf("operator key not found in keyring: %w", err)
 		}
 	}
-
-	taskGatewayClient, err := taskgateway.NewClient(gatewayAddr, logger)
-	if err != nil {
-		return Server{}, err
-	}
-	k.taskGatewayClient = taskGatewayClient
 
 	return k, nil
 }
@@ -144,6 +147,11 @@ func (k *Server) SignAndBroadcastTx(ctx sdktypes.Context, msg sdk.Msg) error {
 		return fmt.Errorf("failed to prepare tx factory: %w", err)
 	}
 
+	// 设置足够的gas限制和费用
+	txf = txf.WithGas(200000)
+	// 设置足够高的gas价格，确保交易能够被处理
+	txf = txf.WithGasPrices("1.0uixn")
+
 	address, err := k.key.GetAddress()
 	if err != nil {
 		return err
@@ -184,7 +192,8 @@ func (k *Server) prepareTxFactory(ctx sdktypes.Context) (tx.Factory, error) {
 		return tx.Factory{}, err
 	}
 
-	txf = txf.WithGasPrices(k.gasPrices).WithGasAdjustment(k.gasAdjustment)
+	// 确保gas价格足够高
+	txf = txf.WithGasPrices("1.0uixn").WithGasAdjustment(k.gasAdjustment)
 	txf = txf.WithChainID(k.cosmosChainId)
 	txf = txf.WithSignMode(signing.SignMode_SIGN_MODE_DIRECT)
 

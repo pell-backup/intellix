@@ -20,3 +20,4 @@ test/e2e/build/*
 .go-version
 proto/generate/
 lib/*
+start.sh

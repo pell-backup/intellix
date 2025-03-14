@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"cosmossdk.io/math"
 	dvslog "github.com/0xPellNetwork/pelldvs-libs/log"
@@ -141,16 +142,32 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractdataora
 		quorumNumbers[i] = uint32(b)
 	}
 
-	_, err = td.pellDVSClient.RequestDVS(
-		context.Background(),
-		taskData,
-		int64(newTask.Raw.BlockNumber),
-		int64(chainID),
-		quorumNumbers,
-		[]uint32{newTask.Task.GroupThresholdPercentage},
-	)
-	if err != nil {
-		td.logger.Error("Failed to send task to PellDVS", "chainID", chainID, "error", err)
+	defer func() {
+		if r := recover(); r != nil {
+			td.logger.Error("Recovered from panic in handleNewTask", "chainID", chainID, "error", r)
+		}
+	}()
+
+	maxRetries := 3
+	var requestErr error
+	for i := 0; i < maxRetries; i++ {
+		_, requestErr = td.pellDVSClient.RequestDVS(
+			context.Background(),
+			taskData,
+			int64(newTask.Raw.BlockNumber),
+			int64(chainID),
+			quorumNumbers,
+			[]uint32{newTask.Task.GroupThresholdPercentage},
+		)
+		if requestErr == nil {
+			break
+		}
+		td.logger.Error("Failed to send task to PellDVS, retrying...", "chainID", chainID, "error", requestErr, "attempt", i+1)
+		time.Sleep(time.Second * time.Duration(i+1))
+	}
+
+	if requestErr != nil {
+		td.logger.Error("Failed to send task to PellDVS after retries", "chainID", chainID, "error", requestErr)
 		return
 	}
 
@@ -164,6 +181,10 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractdataora
 		"task", fmt.Sprintf("%+v", newTask.Task),
 	)
 
+	if newTask == nil {
+		return nil, fmt.Errorf("newTask is nil")
+	}
+
 	task := newTask.Task
 	var taskRequest sdk.Msg
 
@@ -173,6 +194,11 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractdataora
 			td.logger.Error("Failed to parse price feed", "chainID", chainID, "error", err)
 			return nil, err
 		}
+
+		if priceFeed == nil {
+			return nil, fmt.Errorf("priceFeed is nil after parsing")
+		}
+
 		taskRequest = &pricetypes.RequestPriceFeedIn{
 			Task: &pricetypes.TaskRequest{
 				TaskIndex:                 newTask.TaskIndex,
@@ -198,6 +224,11 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractdataora
 			td.logger.Error("Failed to parse script data", "chainID", chainID, "error", err)
 			return nil, err
 		}
+
+		if scriptData == nil {
+			return nil, fmt.Errorf("scriptData is nil after parsing")
+		}
+
 		taskRequest = &processortypes.RequestScriptIn{
 			TaskIndex:                 newTask.TaskIndex,
 			RequestId:                 task.RequestId[:],
@@ -216,6 +247,10 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractdataora
 	}
 	if taskRequest == nil {
 		return nil, fmt.Errorf("invalid task request")
+	}
+
+	if td.msgEncoder == nil {
+		return nil, fmt.Errorf("msgEncoder is nil")
 	}
 
 	return td.msgEncoder.EncodeMsgs(taskRequest)

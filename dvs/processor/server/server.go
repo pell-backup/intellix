@@ -99,6 +99,9 @@ func (k *Server) SignAndBroadcastTx(ctx sdktypes.Context, msg sdk.Msg) error {
 		return fmt.Errorf("failed to prepare tx factory: %w", err)
 	}
 
+	// 设置足够的gas限制
+	txf = txf.WithGas(200000)
+
 	address, err := k.key.GetAddress()
 	if err != nil {
 		return err
@@ -147,7 +150,8 @@ func (k *Server) prepareTxFactory(ctx sdktypes.Context) (tx.Factory, error) {
 		return tx.Factory{}, err
 	}
 
-	txf = txf.WithGasPrices(k.gasPrices).WithGasAdjustment(k.gasAdjustment)
+	// 确保gas价格足够高
+	txf = txf.WithGasPrices("1.0uixn").WithGasAdjustment(k.gasAdjustment)
 	txf = txf.WithChainID(k.cosmosChainId)
 	txf = txf.WithSignMode(signing.SignMode_SIGN_MODE_DIRECT)
 

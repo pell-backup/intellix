@@ -14,7 +14,7 @@ function abci_healthcheck {
   set +e
   while true; do
     curl -s $COSMOS_NODE_URI >/dev/null
-        if [ $? -eq 0 ]; then
+    if [ $? -eq 0 ]; then
       echo "Cosmos ABCI is ready, proceeding to the next step..."
       break
     fi
@@ -28,7 +28,7 @@ function operator_healthcheck {
   set +e
   while true; do
     ssh operator "test -f /root/operator_initialized"
-        if [ $? -eq 0 ]; then
+    if [ $? -eq 0 ]; then
       echo "Operator initialized, proceeding to the next step..."
       break
     fi
@@ -55,14 +55,14 @@ abci_healthcheck
 
 ADMIN_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/PriceOraclePayInNativeConsumer.json" | jq -r .address)
+
 ## create a new task
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "ETH" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "PEPE" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
 # wait for the task to be processed
 export TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-20}
 echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
 sleep ${TIMEOUT_FOR_TASK_PROCESS}
-
 RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
 assert_gt "$RESULT" "0"
 

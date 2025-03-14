@@ -263,3 +263,19 @@ help: Makefile
 .PHONY: help
 
 include mk-docker.mk
+
+# 添加价格测试目标
+.PHONY: test-price
+test-price:
+	@echo "Building price test tool..."
+	@go build -o build/price_test cmd/price_test/main.go
+	@echo "Running price test for BTC..."
+	@./build/price_test -symbol BTC
+
+# 添加多代币价格测试目标
+.PHONY: test-price-all
+test-price-all:
+	@echo "Building price test tool..."
+	@go build -o build/price_test cmd/price_test/main.go
+	@echo "Running price test for multiple tokens..."
+	@./build/price_test -all BTC,ETH,BNB,XRP,DOGE,TON

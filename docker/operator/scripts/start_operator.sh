@@ -93,6 +93,7 @@ function setup_operator_config {
   "gateway_addr": "$GATEWAY_ADDR",
   "cosmos_node_uri": "$COSMOS_NODE_URI",
   "cosmos_chain_id": "$COSMOS_CHAIN_ID",
+  "gas_prices": "0.01uixn",
   "price_tick_converter_config": {
     "binance": {
       "USD": "USDT"

@@ -25,8 +25,10 @@ function load_defaults {
 
 function init_genesis {
   intellixd init $COSMOS_NODE_NAME --chain-id $COSMOS_CHAIN_ID
+  
+  # 在初始化后立即替换stake为uixn
   sed -i 's/stake/uixn/g' ~/.intellix/config/genesis.json
-
+  
   export DEFAULT_KEY=${DEFAULT_KEY:-mykey}
 
   echo "Generating genesis.json"
