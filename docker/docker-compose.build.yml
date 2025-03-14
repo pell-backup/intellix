@@ -1,4 +1,4 @@
-name: intellixlabs-intellix
+name: intellix-e2e
 
 services:
   hardhat:
@@ -9,6 +9,8 @@ services:
         - HTTP_PROXY=$HTTP_PROXY
         - HTTPS_PROXY=$HTTPS_PROXY
         - CONTRACT_VERSION=${CONTRACT_VERSION:-v0.4.4}
+      tags:
+        - pellnetwork/intellix-e2e-hardhat:${CONTRACT_VERSION:-v0.4.4}
       secrets:
         - github_token
 
