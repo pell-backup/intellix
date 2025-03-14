@@ -34,8 +34,7 @@ func taskGatewayCommand() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("failed to load TaskGateway configuration: %w", err)
 			}
-			err = conf.Validate()
-			if err != nil {
+			if err = conf.Validate(); err != nil {
 				return err
 			}
 
@@ -43,14 +42,14 @@ func taskGatewayCommand() *cobra.Command {
 			pellDVSConf := pelldvscfg.DefaultConfig()
 			vp := viper.New()
 			vp.SetConfigFile(home + "/config/config.toml")
-			err = vp.ReadInConfig()
-			if err != nil {
+
+			if err = vp.ReadInConfig(); err != nil {
 				return errors.Wrap(err, "failed to read in pelldvs config")
 			}
-			err = vp.Unmarshal(pellDVSConf)
-			if err != nil {
+			if err = vp.Unmarshal(pellDVSConf); err != nil {
 				return errors.Wrap(err, "failed to unmarshal pelldvs configuration")
 			}
+
 			pellDVSConf.SetRoot(home)
 			logger.Info("PellDVS configuration",
 				"config", fmt.Sprintf("%+v", pellDVSConf),
@@ -61,10 +60,11 @@ func taskGatewayCommand() *cobra.Command {
 
 			// create TaskDispatcher
 			tdConf := &taskdispatcher.Config{Chains: conf.Chains}
-			td, err := taskdispatcher.NewTaskDispatcher(logger, pellDVSConf, tdConf)
+			taskDispatcher, err := taskdispatcher.NewTaskDispatcher(logger, pellDVSConf, tdConf)
 			if err != nil {
 				return fmt.Errorf("failed to create TaskDispatcher: %w", err)
 			}
+
 			// create TaskGateway
 			taskGateway, err := taskgateway.NewTaskGateway(logger, ctx, conf)
 			if err != nil {
@@ -73,11 +73,11 @@ func taskGatewayCommand() *cobra.Command {
 
 			// start TaskDispatcher
 			g.Go(func() error {
-				err = td.Start()
+				err = taskDispatcher.Start()
 				if err != nil {
 					return fmt.Errorf("failed to start TaskDispatcher: %w", err)
 				}
-				<-td.Quit()
+				<-taskDispatcher.Quit()
 				return nil
 			})
 

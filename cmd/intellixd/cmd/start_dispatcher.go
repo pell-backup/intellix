@@ -9,11 +9,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	taskdispatcher "intellix/dispatcher"
+	dispatcher "intellix/dispatcher"
 	sdklogger "intellix/sdk/logger"
 )
 
-func startDispathcerCommand() *cobra.Command {
+func startDispatcherCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start-dispatcher",
 		Short: "Start the dispatcher service",
@@ -26,8 +26,8 @@ func startDispathcerCommand() *cobra.Command {
 
 			home := getConfigHome()
 
-			// load taskdispatcher config
-			var conf = &taskdispatcher.Config{}
+			// load dispatcher config
+			var conf = &dispatcher.Config{}
 			viper.SetConfigFile(home + "/config/dispatcher.config.json")
 			if err := viper.ReadInConfig(); err != nil {
 				return err
@@ -43,14 +43,14 @@ func startDispathcerCommand() *cobra.Command {
 			pellDVSConf := pelldvscfg.DefaultConfig()
 			vp := viper.New()
 			vp.SetConfigFile(home + "/config/config.toml")
-			err := vp.ReadInConfig()
-			if err != nil {
+
+			if err := vp.ReadInConfig(); err != nil {
 				return errors.Wrap(err, "failed to read in pelldvs config")
 			}
-			err = vp.Unmarshal(pellDVSConf)
-			if err != nil {
+			if err := vp.Unmarshal(pellDVSConf); err != nil {
 				return errors.Wrap(err, "failed to unmarshal pelldvs configuration")
 			}
+
 			pellDVSConf.SetRoot(home)
 			logger.Info("PellDVS configuration",
 				"config", fmt.Sprintf("%+v", pellDVSConf),
@@ -58,13 +58,12 @@ func startDispathcerCommand() *cobra.Command {
 			)
 
 			// create TaskDispatcher
-			td, err := taskdispatcher.NewTaskDispatcher(logger, pellDVSConf, nil)
+			td, err := dispatcher.NewTaskDispatcher(logger, pellDVSConf, nil)
 			if err != nil {
 				return fmt.Errorf("failed to create TaskDispatcher: %w", err)
 			}
 
-			err = td.Start()
-			if err != nil {
+			if err = td.Start(); err != nil {
 				return fmt.Errorf("failed to start TaskDispatcher: %w", err)
 			}
 

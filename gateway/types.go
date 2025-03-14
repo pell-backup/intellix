@@ -14,14 +14,14 @@ import (
 	"intellix/config"
 )
 
-type TaskGatewayCfg struct {
+type Config struct {
 	ServerAddr          string                        `json:"server_addr"`
 	PrivateKeyStorePath string                        `json:"private_key_store_path"`
 	Chains              map[uint64]config.ChainConfig `json:"chains"`
 }
 
-func LoadConfig(cfgPath string) (*TaskGatewayCfg, error) {
-	var cfg TaskGatewayCfg
+func LoadConfig(cfgPath string) (*Config, error) {
+	var cfg Config
 	input, err := os.ReadFile(cfgPath)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func LoadConfig(cfgPath string) (*TaskGatewayCfg, error) {
 	return &cfg, err
 }
 
-func (t TaskGatewayCfg) Validate() error {
+func (t Config) Validate() error {
 	if t.ServerAddr == "" {
 		return fmt.Errorf("server address cannot be empty")
 	}

@@ -35,7 +35,7 @@ type TaskGateway struct {
 	serverAddr string
 	listener   net.Listener
 
-	cfg *TaskGatewayCfg
+	cfg *Config
 	ctx context.Context
 
 	logger     log.Logger
@@ -46,7 +46,7 @@ type TaskGateway struct {
 	nonceMap         sync.Map
 }
 
-func NewTaskGateway(logger log.Logger, ctx context.Context, cfg *TaskGatewayCfg) (*TaskGateway, error) {
+func NewTaskGateway(logger log.Logger, ctx context.Context, cfg *Config) (*TaskGateway, error) {
 	logger = logger.With("comp", "gateway")
 	chainConns := make(map[uint64]*ChainConnection)
 	for chainID, chainCfg := range cfg.Chains {
