@@ -10,7 +10,7 @@ services:
         - HTTPS_PROXY=$HTTPS_PROXY
         - CONTRACT_VERSION=${CONTRACT_VERSION:-v0.4.4}
       tags:
-        - pellnetwork/intellix-e2e-hardhat:${CONTRACT_VERSION:-latest}
+        - pellnetwork/intellix-e2e-hardhat:${CONTRACT_VERSION:-v0.4.4}
       secrets:
         - github_token
 
