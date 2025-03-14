@@ -85,3 +85,5 @@ curl https://get.ignite.com/username/intellix@latest! | sudo bash
 - [Ignite CLI docs](https://docs.ignite.com)
 - [Cosmos SDK docs](https://docs.cosmos.network)
 - [Developer Chat](https://discord.gg/ignite)
+
+test
