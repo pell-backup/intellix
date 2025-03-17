@@ -76,7 +76,7 @@ services:
       - HTTP_PROXY=$HTTP_PROXY
       - HTTPS_PROXY=$HTTPS_PROXY
       - NO_PROXY=${NO_PROXY:-localhost,127.0.0.1,eth,dvs,hardhat,emulator,abci,gateway}
-      - COINMARKETCAP_API_KEY=${COINMARKETCAP_API_KEY:-94290f15-2076-4cc3-8c39-52459524f450}
+      - COINMARKETCAP_API_KEY=$COINMARKETCAP_API_KEY
       - API_KEYS_PATH=/root/.intellix/api_keys
     ports:
       - "3346:${DEBUG_PORT:-2345}"

@@ -3,7 +3,6 @@ package server
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -15,21 +14,21 @@ import (
 )
 
 // APIKeyManager is responsible for managing API keys
-type APIKeyManager struct {
+type CMCAPIKeyManager struct {
 	logger log.Logger
 	path   string
 }
 
 // NewAPIKeyManager creates a new API key manager
-func NewAPIKeyManager(logger log.Logger, path string) *APIKeyManager {
-	return &APIKeyManager{
+func NewCMCAPIKeyManager(logger log.Logger, path string) *CMCAPIKeyManager {
+	return &CMCAPIKeyManager{
 		logger: logger,
 		path:   path,
 	}
 }
 
 // GetAPIKey retrieves an API key from a file
-func (m *APIKeyManager) GetAPIKey(name string) (string, error) {
+func (m *CMCAPIKeyManager) GetAPIKey(name string) (string, error) {
 	if m.path == "" {
 		m.logger.Error("API key path not set")
 		return "", fmt.Errorf("API key path not set")
@@ -45,7 +44,7 @@ func (m *APIKeyManager) GetAPIKey(name string) (string, error) {
 	}
 
 	// Read file contents
-	keyBytes, err := ioutil.ReadFile(keyPath)
+	keyBytes, err := os.ReadFile(keyPath)
 	if err != nil {
 		m.logger.Error("Failed to read API key file", "path", keyPath, "error", err)
 		return "", fmt.Errorf("failed to read API key file: %w", err)
@@ -66,20 +65,20 @@ func (m *APIKeyManager) GetAPIKey(name string) (string, error) {
 }
 
 // CoinMarketCapFetchPriceService implements the CoinMarketCap data source
-type CoinMarketCapFetchPriceService struct {
+type CMCFetchPriceService struct {
 	logger        log.Logger
-	apiKeyManager *APIKeyManager
+	apiKeyManager *CMCAPIKeyManager
 }
 
 // NewCoinMarketCapFetchPriceService creates a new CoinMarketCap data source service
-func NewCoinMarketCapFetchPriceService(logger log.Logger, apiKeyPath string) *CoinMarketCapFetchPriceService {
-	return &CoinMarketCapFetchPriceService{
+func NewCMCFetchPriceService(logger log.Logger, apiKeyPath string) *CMCFetchPriceService {
+	return &CMCFetchPriceService{
 		logger:        logger,
-		apiKeyManager: NewAPIKeyManager(logger, apiKeyPath),
+		apiKeyManager: NewCMCAPIKeyManager(logger, apiKeyPath),
 	}
 }
 
-func (s *CoinMarketCapFetchPriceService) fetchCoinPrice(base, quote string, tickConverter PriceTickConverter, priceChan chan<- *PriceInfo) error {
+func (s *CMCFetchPriceService) fetchCoinPrice(base, quote string, tickConverter PriceTickConverter, priceChan chan<- *PriceInfo) error {
 	s.logger.Info("CoinMarketCap data source activated", "status", "initializing")
 
 	// Get API key

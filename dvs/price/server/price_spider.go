@@ -91,7 +91,7 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 	// Try to enable CoinMarketCap data source
 	if apiKeysPath != "" {
 		logger.Info("Checking for CoinMarketCap API key")
-		cmcService := NewCoinMarketCapFetchPriceService(logger, apiKeysPath)
+		cmcService := NewCMCFetchPriceService(logger, apiKeysPath)
 
 		// Try to get API key and verify if it's available
 		apiKey, err := cmcService.apiKeyManager.GetAPIKey("coinmarketcap")
