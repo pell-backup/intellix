@@ -25,7 +25,7 @@ function load_defaults {
   export COSMOS_CHAIN_ID=${COSMOS_CHAIN_ID:-intellix}
   export COSMOS_NODE_URI=${COSMOS_NODE_URI:-http://abci:26657}
   export OPERATOR_RPC_SERVER=${OPERATOR_RPC_SERVER:-operator:26657}
-
+  
 }
 
 function dvs_healthcheck {
@@ -56,7 +56,7 @@ function gateway_healthcheck {
     sleep 2
   done
   ## Wait for aggregator to be ready
-  sleep 3
+    sleep 3
   set -e
 }
 
@@ -78,16 +78,13 @@ EOF
 }
 
 function gen_cosmos_key {
-  # TODO: generate new key and use admin to faceut
   mkdir -p "$PELLDVS_HOME/keyring-test/"
   scp abci:/root/.intellix/keyring-test/* "$PELLDVS_HOME/keyring-test/"
 }
 
 function setup_operator_config {
-  ## migrate to dvs logic after fix
   export OPERATOR_ADDRESS=$(pelldvs keys show $OPERATOR_KEY_NAME --home $PELLDVS_HOME | awk '/Key content:/{getline; print}' | head -n 1 | jq -r .address)
-  ## TODO: use operator key on config.toml and gateway should be on app.toml
-  cat <<EOF > $PELLDVS_HOME/config/operator.config.json
+    cat <<EOF > $PELLDVS_HOME/config/operator.config.json
 {
   "operator_address": "$OPERATOR_ADDRESS",
   "gateway_addr": "$GATEWAY_ADDR",
@@ -96,10 +93,41 @@ function setup_operator_config {
   "price_tick_converter_config": {
     "binance": {
       "USD": "USDT"
+    },
+    "coinbase": {
+      "USD": "USD"
+    },
+    "okx": {
+      "USD": "USDT"
+    },
+    "gate": {
+      "USD": "USDT"
+    },
+    "coinmarketcap": {
+      "USD": "USD"
     }
   }
 }
 EOF
+
+  logt "Operator config created:"
+  
+  # 设置 API 密钥
+  export COINMARKETCAP_API_KEY=${COINMARKETCAP_API_KEY:-""}
+  COINMARKETCAP_API_KEY=$(echo $COINMARKETCAP_API_KEY | sed 's/^"\(.*\)"$/\1/')
+  
+  export API_KEYS_PATH=${API_KEYS_PATH:-"/root/.intellix/api_keys"}
+  
+  mkdir -p "$API_KEYS_PATH"
+  
+  if [ -n "$COINMARKETCAP_API_KEY" ]; then
+    echo "$COINMARKETCAP_API_KEY" > "$API_KEYS_PATH/coinmarketcap.key"
+    logt "CoinMarketCap API key configured: $COINMARKETCAP_API_KEY"
+  else
+    logt "No CoinMarketCap API key provided"
+  fi
+  
+  logt "API keys path: $API_KEYS_PATH"
 }
 
 function start_operator {
@@ -116,7 +144,6 @@ function upload_wasm_script {
   ssh abci "intellixd tx processor create-processor 'Intellix' ./scripts/processor_data/mock_processor.wasm --from $OPERATOR_KEY_NAME --chain-id $COSMOS_CHAIN_ID --keyring-backend test --gas auto --fees 2000000uixn -y"
 }
 
-## start sshd
 /usr/sbin/sshd
 
 logt "Load Default Values for ENV Vars if not set."

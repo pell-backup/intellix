@@ -3,6 +3,8 @@ package server
 import (
 	"context"
 	"fmt"
+	"os"
+	"sort"
 	"strings"
 
 	"cosmossdk.io/math"
@@ -16,8 +18,11 @@ type PriceInfo struct {
 }
 
 const (
-	dataSourceCoinbase = "coinbase"
-	dataSourceBinance  = "binance"
+	dataSourceCoinbase      = "coinbase"
+	dataSourceBinance       = "binance"
+	dataSourceCoinMarketCap = "coinmarketcap"
+	dataSourceOKX           = "okx"
+	dataSourceGate          = "gate"
 )
 
 type PriceTickConverter map[string]string
@@ -39,17 +44,80 @@ type FetchPriceServiceIF interface {
 	fetchCoinPrice(base, quote string, tickConverter PriceTickConverter, priceChan chan<- *PriceInfo) error
 }
 
+// Helper function to get all keys from a map and sort them
+func getMapKeys(m map[string]FetchPriceServiceIF) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+// TruncatePriceDecimal ensures price decimal places don't exceed 18 digits
+func TruncatePriceDecimal(priceStr string, logger log.Logger) string {
+	// Check if precision exceeds 18 decimal places
+	parts := strings.Split(priceStr, ".")
+	if len(parts) == 2 && len(parts[1]) > 18 {
+		logger.Info("Truncating price decimal places to 18 digits",
+			"original", priceStr,
+			"decimal_places", len(parts[1]))
+		// Truncate to 18 decimal places
+		priceStr = parts[0] + "." + parts[1][:18]
+		logger.Info("Truncated price", "new_price", priceStr)
+	}
+	return priceStr
+}
+
 func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSymbol string, tickConverter PriceTickConverterByDataSource) (map[string]math.LegacyDec, error) {
+	// Record enabled data sources
+	logger.Info("Initializing price data sources")
+
 	// TODO: configurable
 	var fetchPriceIfs = map[string]FetchPriceServiceIF{
 		dataSourceCoinbase: &CoinbaseFetchPriceService{logger: logger},
 		dataSourceBinance:  &BinanceFetchPriceService{logger: logger},
 	}
 
+	// Check environment variables to determine whether to enable OKX and Gate.io data sources
+	apiKeysPath := os.Getenv("API_KEYS_PATH")
+
+	logger.Info("Checking environment variables for data sources",
+		"API_KEYS_PATH", apiKeysPath)
+
+	fetchPriceIfs[dataSourceOKX] = &OKXFetchPriceService{logger: logger}
+	fetchPriceIfs[dataSourceGate] = &GateFetchPriceService{logger: logger}
+
+	// Try to enable CoinMarketCap data source
+	if apiKeysPath != "" {
+		logger.Info("Checking for CoinMarketCap API key")
+		cmcService := NewCoinMarketCapFetchPriceService(logger, apiKeysPath)
+
+		// Try to get API key and verify if it's available
+		apiKey, err := cmcService.apiKeyManager.GetAPIKey("coinmarketcap")
+		if err != nil {
+			logger.Error("Failed to get CoinMarketCap API key, skipping this data source", "error", err)
+		} else if apiKey != "" {
+			logger.Info("Enabling CoinMarketCap data source with valid API key")
+			fetchPriceIfs[dataSourceCoinMarketCap] = cmcService
+		} else {
+			logger.Error("CoinMarketCap API key is empty, skipping this data source")
+		}
+	} else {
+		logger.Error("API_KEYS_PATH not set, skipping CoinMarketCap data source")
+	}
+
+	// Record enabled data sources
+	logger.Info("Enabled price data sources",
+		"count", len(fetchPriceIfs),
+		"sources", fmt.Sprintf("%v", getMapKeys(fetchPriceIfs)))
+
 	priceChan := make(chan *PriceInfo, len(fetchPriceIfs))
 	g, _ := errgroup.WithContext(ctx)
 
 	for dataSource, fetchPriceIf := range fetchPriceIfs {
+		dataSource := dataSource // Create a copy to avoid closure issues
+		fetchPriceIf := fetchPriceIf
 		g.Go(func() error {
 			logger.Info("fetching coin price",
 				"baseSymbol", baseSymbol,
@@ -72,6 +140,16 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 
 	if len(prices) == 0 {
 		return nil, fmt.Errorf("failed to fetch prices from exchanges")
+	}
+
+	// Record prices from each data source
+	logger.Info("Price data summary", "total_sources", len(prices))
+	for source, price := range prices {
+		logger.Info("Price data from source",
+			"source", source,
+			"price", price.String(),
+			"base", baseSymbol,
+			"quote", quoteSymbol)
 	}
 
 	return prices, nil

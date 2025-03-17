@@ -52,9 +52,15 @@ func (s *BinanceFetchPriceService) fetchCoinPrice(base, quote string, tickConver
 
 	s.logger.Info("Fetched price from Binance", "base", base, "quote", quote, "price", price)
 
-	dec, err := math.LegacyNewDecFromStr(binanceResp.Price)
+	// Convert to Dec type
+	priceStr := binanceResp.Price
+
+	// Truncate decimal places if needed
+	priceStr = TruncatePriceDecimal(priceStr, s.logger)
+
+	dec, err := math.LegacyNewDecFromStr(priceStr)
 	if err != nil {
-		s.logger.Error("Error converting price to Dec", "error", err)
+		s.logger.Error("Error converting price to Dec", "error", err, "price", priceStr)
 		return err
 	}
 	priceChan <- &PriceInfo{DataSource: dataSourceBinance, Price: dec}
