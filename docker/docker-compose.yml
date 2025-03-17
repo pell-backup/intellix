@@ -1,8 +1,8 @@
-name: intellix
+name: intellix-e2e
 
 services:
   hardhat:
-    image: intellixlabs-intellix-hardhat:latest
+    image: pellnetwork/intellix-e2e-hardhat:${CONTRACT_VERSION:-v0.4.4}
     environment:
       - LOCALHOST_URL=http://eth:8545
       - ETH_RPC_URL=http://eth:8545
@@ -27,7 +27,7 @@ services:
       interval: 10s
 
   emulator:
-    image: intellixlabs-intellix-pelldvs:latest
+    image: intellix-e2e-pelldvs:latest
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
@@ -44,7 +44,7 @@ services:
       interval: 10s
 
   dvs:
-    image: intellixlabs-intellix-pelldvs:latest
+    image: intellix-e2e-pelldvs:latest
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
@@ -58,7 +58,7 @@ services:
       - ./pelldvs/scripts:/root/scripts
 
   abci:
-    image: intellixlabs-intellix-operator:latest
+    image: intellix-e2e-operator:latest
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
@@ -67,7 +67,7 @@ services:
       - ./operator/scripts:/root/scripts
 
   operator:
-    image: intellixlabs-intellix-operator:latest
+    image: intellix-e2e-operator:latest
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
@@ -92,22 +92,27 @@ services:
       - ./operator/scripts:/root/scripts
 
   gateway:
-    image: intellixlabs-intellix-operator:latest
+    image: intellix-e2e-operator:latest
     environment:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
       - DEBUG_ENABLED=${GATEWAY_DEBUG_ENABLED:-false}
     entrypoint: [ "bash", "/root/scripts/start_gateway.sh" ]
     depends_on:
-      hardhat:
+      dvs:
         condition: service_started
     ports:
       - "3347:${DEBUG_PORT:-2345}"
     volumes:
       - ./operator/scripts:/root/scripts
+    healthcheck:
+      test: [ "CMD", "test", "-f", "/root/gateway_initialized" ]
+      start_period: 50s
+      retries: 3
+      interval: 10s
 
   test:
-    image: intellixlabs-intellix-operator:latest
+    image: intellix-e2e-operator:latest
     tty: true
     environment:
       - ETH_RPC_URL=http://eth:8545

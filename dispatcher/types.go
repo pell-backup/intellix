@@ -5,44 +5,36 @@ import (
 	"fmt"
 
 	cbor "github.com/fxamacker/cbor/v2"
+	"github.com/spf13/viper"
+
+	"intellix/config"
 )
 
 type Config struct {
-	Chains     []*ChainConfig `mapstructure:"chains"`
-	DvsAddress string         `mapstructure:"dvs_address"`
+	Chains map[uint64]config.ChainConfig `json:"chains"`
+}
+
+func LoadConfig(filepath string) (*Config, error) {
+	var cfg Config
+	vp := viper.New()
+	vp.SetConfigFile(filepath)
+	if err := vp.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("failed to read config: %w", err)
+	}
+	if err := vp.Unmarshal(&cfg); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
+	}
+	return &cfg, nil
 }
 
 func (c Config) Validate() error {
 	if len(c.Chains) == 0 {
 		return fmt.Errorf("no chain specified")
 	}
-	if c.DvsAddress == "" {
-		return fmt.Errorf("dvs address is required")
-	}
 	for _, chain := range c.Chains {
 		if err := chain.Validate(); err != nil {
 			return err
 		}
-	}
-	return nil
-}
-
-type ChainConfig struct {
-	ChainID         uint64 `mapstructure:"chain_id"`
-	EthURL          string `mapstructure:"eth_url"`
-	ContractAddress string `mapstructure:"contract_address"`
-}
-
-// Validate checks if the ChainConfig is valid
-func (c ChainConfig) Validate() error {
-	if c.ChainID == 0 {
-		return fmt.Errorf("chain_id cannot be empty")
-	}
-	if c.EthURL == "" {
-		return fmt.Errorf("eth_url cannot be empty")
-	}
-	if c.ContractAddress == "" {
-		return fmt.Errorf("contract_address cannot be empty")
 	}
 	return nil
 }

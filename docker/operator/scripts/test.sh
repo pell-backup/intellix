@@ -37,7 +37,7 @@ function operator_healthcheck {
     sleep 2
   done
   ## Wait for operator to be ready
-  sleep 3
+  sleep 15
   set -e
 }
 

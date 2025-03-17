@@ -8,7 +8,12 @@ import (
 	"sync"
 
 	"cosmossdk.io/math"
+	interactorcfg "github.com/0xPellNetwork/pelldvs-interactor/config"
+	"github.com/0xPellNetwork/pelldvs-interactor/interactor/reader"
+	interactortypes "github.com/0xPellNetwork/pelldvs-interactor/types"
 	dvslog "github.com/0xPellNetwork/pelldvs-libs/log"
+	pelldvscfg "github.com/0xPellNetwork/pelldvs/config"
+	"github.com/0xPellNetwork/pelldvs/rpc/client/http"
 	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/log"
@@ -19,7 +24,9 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/pkg/errors"
 
+	"intellix/config"
 	pricetypes "intellix/dvs/price/types"
 	processortypes "intellix/dvs/processor/types"
 	"intellix/sdk/dvs_msg_handler/tx"
@@ -33,6 +40,7 @@ type TaskDispatcher struct {
 	chains        map[uint64]*chainWatcher
 	mu            sync.Mutex
 	msgEncoder    tx.MsgEncoder
+	reader        *reader.DVSReaderServer
 }
 
 type chainWatcher struct {
@@ -46,28 +54,48 @@ func newTaskProtoEncoder() tx.MsgEncoder {
 	return tx.NewDefaultDecoder(cdc)
 }
 
-func NewTaskDispatcher(logger dvslog.Logger, pellDVSClient *rpclocal.Local, configs []*ChainConfig) (*TaskDispatcher, error) {
-	td := &TaskDispatcher{
-		logger:        logger,
-		pellDVSClient: pellDVSClient,
-		chains:        make(map[uint64]*chainWatcher),
-		msgEncoder:    newTaskProtoEncoder(),
+func NewTaskDispatcher(logger dvslog.Logger, pellDVSConf *pelldvscfg.Config, tdConf *Config) (*TaskDispatcher, error) {
+	logger = logger.With("comp", "dispatcher")
+	// load interactor config
+	iteractorConfig, err := interactorcfg.LoadConfig(pellDVSConf.Pell.InteractorConfigPath)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to load interactor configuration")
 	}
 
-	for _, config := range configs {
-		if err := td.AddChain(config); err != nil {
-			return nil, fmt.Errorf("failed to add chain %d: %w", config.ChainID, err)
+	//  create db
+	db, err := pelldvscfg.DefaultDBProvider(&pelldvscfg.DBContext{
+		ID:     "indexer",
+		Config: pellDVSConf,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to init db: %v", err)
+	}
+
+	td := &TaskDispatcher{
+		logger:     logger,
+		chains:     make(map[uint64]*chainWatcher),
+		msgEncoder: newTaskProtoEncoder(),
+	}
+
+	for _, chainConfig := range tdConf.Chains {
+		if err := td.AddChain(chainConfig); err != nil {
+			return nil, fmt.Errorf("failed to add chain %d: %w", chainConfig.ChainID, err)
 		}
 	}
 
+	dvsReader, err := reader.NewDVSReaderFromConfig(iteractorConfig, db, logger)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create DVS reader: %w", err)
+	}
+	td.reader = dvsReader
 	td.BaseService = *service.NewBaseService(nil, "TaskDispatcher", td)
 	return td, nil
 }
 
-func (td *TaskDispatcher) AddChain(config *ChainConfig) error {
+func (td *TaskDispatcher) AddChain(config config.ChainConfig) error {
 	td.mu.Lock()
 	defer td.mu.Unlock()
-	td.logger.Info(fmt.Sprintf("listen chain, chainID: %d, url: %s, address: %s", config.ChainID, config.EthURL, config.ContractAddress))
+	td.logger.Info(fmt.Sprintf("listen chain, chainID: %d, url: %s, address: %s", config.ChainID, config.RPCURL, config.ContractAddress))
 
 	if err := config.Validate(); err != nil {
 		return err
@@ -76,12 +104,12 @@ func (td *TaskDispatcher) AddChain(config *ChainConfig) error {
 		return fmt.Errorf("chain %d already exists", config.ChainID)
 	}
 
-	ethClient, err := ethclient.Dial(config.EthURL)
+	wsClient, err := ethclient.Dial(config.WSURL)
 	if err != nil {
 		return fmt.Errorf("failed to connect to Ethereum client: %w", err)
 	}
 
-	contract, err := contractdataoracle.NewContractDataOracle(common.HexToAddress(config.ContractAddress), ethClient)
+	contract, err := contractdataoracle.NewContractDataOracle(common.HexToAddress(config.ContractAddress), wsClient)
 	if err != nil {
 		return fmt.Errorf("failed to instantiate contract: %w", err)
 	}
@@ -89,7 +117,7 @@ func (td *TaskDispatcher) AddChain(config *ChainConfig) error {
 	td.chains[config.ChainID] = &chainWatcher{
 		chainID:  config.ChainID,
 		contract: contract,
-		client:   ethClient,
+		client:   wsClient,
 	}
 
 	return nil
@@ -128,7 +156,12 @@ func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
 }
 
 func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractdataoracle.ContractDataOracleNewTaskCreated) {
-	td.logger.Info("New task created", "chainID", chainID, "TaskIndex", newTask.TaskIndex, "RequestId", newTask.Task.RequestId, "TaskType", newTask.Task.TaskType)
+	td.logger.Info("New task created",
+		"chainID", chainID,
+		"TaskIndex", newTask.TaskIndex,
+		"RequestId", newTask.Task.RequestId,
+		"TaskType", newTask.Task.TaskType,
+	)
 
 	taskData, err := td.serializeTask(chainID, newTask)
 	if err != nil {
@@ -137,24 +170,99 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractdataora
 	}
 
 	quorumNumbers := make([]uint32, len(newTask.Task.GroupNumbers))
+	quorumNumbersForInteractor := make([]interactortypes.GroupNumber, len(newTask.Task.GroupNumbers))
 	for i, b := range newTask.Task.GroupNumbers {
 		quorumNumbers[i] = uint32(b)
+		quorumNumbersForInteractor[i] = interactortypes.GroupNumber(b)
 	}
 
-	_, err = td.pellDVSClient.RequestDVS(
-		context.Background(),
-		taskData,
-		int64(newTask.Raw.BlockNumber),
-		int64(chainID),
-		quorumNumbers,
-		[]uint32{newTask.Task.GroupThresholdPercentage},
+	operatorDVSState, err := td.reader.GetOperatorsDVSStateAtBlock(chainID,
+		quorumNumbersForInteractor,
+		uint32(newTask.Raw.BlockNumber),
 	)
 	if err != nil {
-		td.logger.Error("Failed to send task to PellDVS", "chainID", chainID, "error", err)
+		td.logger.Error("Failed to get operator DVS state",
+			"chainID", chainID,
+			"blockNumber", newTask.Raw.BlockNumber,
+			"quorumNumbers", quorumNumbers,
+			"error", err,
+		)
 		return
 	}
 
-	td.logger.Info("Task sent to PellDVS successfully", "chainID", chainID, "TaskIndex", newTask.TaskIndex)
+	if len(operatorDVSState) == 0 {
+		td.logger.Error("No operator DVS state found",
+			"chainID", chainID,
+			"blockNumber", newTask.Raw.BlockNumber,
+			"quorumNumbers", quorumNumbers,
+			"error", err,
+		)
+		return
+	}
+
+	td.logger.Info("Operator DVS state count", "count", len(operatorDVSState))
+
+	for operatorID, operatorState := range operatorDVSState {
+		info, err := td.reader.GetOperatorInfoByID(operatorID)
+		if err != nil {
+			td.logger.Error("Failed to get operator info",
+				"chainID", chainID,
+				"error", err,
+				"operatorID", operatorID,
+				"operatorAddress", operatorState.OperatorAddress,
+			)
+			continue
+		}
+
+		td.logger.Info("prepare to send task to DVS app operator",
+			"chainID", chainID,
+			"TaskIndex", newTask.TaskIndex,
+			"RequestId", newTask.Task.RequestId,
+			"operatorID", operatorID,
+			"operatorAddress", operatorState.OperatorAddress,
+			"socket", info.Socket,
+		)
+
+		client, err := http.New(info.Socket.String(), "")
+		if err != nil {
+			td.logger.Error("Failed to create eth client",
+				"chainID", chainID,
+				"error", err,
+				"operatorID", operatorID,
+				"operatorAddress", operatorState.OperatorAddress,
+				"socket", info.Socket,
+			)
+			continue
+		}
+		reqResp, err := client.RequestDVSAsync(
+			context.Background(),
+			taskData,
+			int64(newTask.Raw.BlockNumber),
+			int64(chainID),
+			quorumNumbers,
+			[]uint32{newTask.Task.GroupThresholdPercentage},
+		)
+		if err != nil {
+			td.logger.Error("Failed to send task to PellDVS",
+				"chainID", chainID, "error", err,
+				"operatorID", operatorID,
+				"operatorAddress", operatorState.OperatorAddress,
+				"socket", info.Socket,
+			)
+			continue
+		}
+
+		td.logger.Info("Task sent to PellDVS successfully",
+			"chainID", chainID,
+			"TaskIndex", newTask.TaskIndex,
+			"RequestId", newTask.Task.RequestId,
+			"operatorID", operatorID,
+			"operatorAddress", operatorState.OperatorAddress,
+			"socket", info.Socket,
+			"response", reqResp,
+		)
+
+	}
 }
 
 func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractdataoracle.ContractDataOracleNewTaskCreated) ([]byte, error) {

@@ -75,7 +75,7 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/0xPellNetwork/contracts v0.2.31 // indirect
 	github.com/0xPellNetwork/pell-middleware-contracts v0.2.32 // indirect
-	github.com/0xPellNetwork/pelldvs-interactor v0.0.10 // indirect
+	github.com/0xPellNetwork/pelldvs-interactor v0.0.12 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.1 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect

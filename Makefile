@@ -88,6 +88,10 @@ build-debug: install-lib
 	CGO_LDFLAGS=-L$(PWD)/lib go build -gcflags="all=-N -l" --trimpath=false -o $(OUTPUT) ./cmd/intellixd/
 .PHONY: build
 
+build-without-install-lib:
+	CGO_LDFLAGS=-L$(PWD)/lib go build -mod=readonly -ldflags "-s -w" -o $(OUTPUT) ./cmd/intellixd/
+.PHONY: build
+
 #? install: Install Intellixd to GOBIN
 install:
 	CGO_ENABLED=$(CGO_ENABLED) go install $(BUILD_FLAGS) -tags $(BUILD_TAGS) ./cmd/intellixd

@@ -22,7 +22,7 @@ concurrency:
 jobs:
   golangci:
     name: golangci-lint
-    runs-on: ubuntu-latest
+    runs-on: [ "self-hosted", "Linux", "X64", "ci" ]
     timeout-minutes: 10
     steps:
       - name: Setup new work dir

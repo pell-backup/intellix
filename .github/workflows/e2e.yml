@@ -13,8 +13,7 @@ concurrency:
 
 jobs:
   e2e-test:
-#    runs-on: [ "self-hosted", "Linux", "X64", "ci" ]
-    runs-on: ubuntu-latest
+    runs-on: [ "self-hosted", "Linux", "X64", "ci" ]
     timeout-minutes: 60
     env:
       GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
