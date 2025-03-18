@@ -1,7 +1,8 @@
-package gateway
+package submitter
 
 import (
 	"fmt"
+	"intellix/gateway"
 	"net/rpc"
 
 	"github.com/0xPellNetwork/pelldvs-libs/log"
@@ -14,7 +15,7 @@ type Client struct {
 	address string
 }
 
-// NewClient creates a new TaskGateway RPC client
+// NewClient creates a new Submitter RPC client
 func NewClient(address string, logger log.Logger) (*Client, error) {
 	if logger == nil {
 		logger = log.NewNopLogger()
@@ -51,10 +52,10 @@ func (c *Client) reconnect() error {
 	return nil
 }
 
-func (c *Client) RespondToTask(req *RPCVoteFinalizedRequestIn) error {
-	resp := &RespondToTaskResponse{}
+func (c *Client) RespondToTask(req *gateway.RPCVoteFinalizedRequestIn) error {
+	resp := &gateway.RespondToTaskResponse{}
 
-	err := c.client.Call("TaskGateway.RespondToTask", req, resp)
+	err := c.client.Call("Submitter.RespondToTask", req, resp)
 	if err != nil {
 		// retry
 		if err.Error() == "connection is shut down" {
@@ -62,7 +63,7 @@ func (c *Client) RespondToTask(req *RPCVoteFinalizedRequestIn) error {
 			if err := c.reconnect(); err != nil {
 				return fmt.Errorf("failed to reconnect: %v", err)
 			}
-			err = c.client.Call("TaskGateway.RespondToTask", req, resp)
+			err = c.client.Call("Submitter.RespondToTask", req, resp)
 			if err != nil {
 				c.logger.Error("RPC call failed after reconnection", "error", err.Error())
 				return err

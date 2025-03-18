@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	taskgateway "intellix/gateway/submitter"
 
 	"github.com/0xPellNetwork/pelldvs-libs/log"
 	cmttypes "github.com/cometbft/cometbft/types"
@@ -15,7 +16,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/spf13/pflag"
 
-	taskgateway "intellix/gateway"
 	sdktypes "intellix/sdk/types"
 )
 

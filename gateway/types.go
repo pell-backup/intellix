@@ -113,8 +113,3 @@ type RPCVoteFinalizedRequestIn struct {
 	ValidatedData  *RPCValidatedData `json:"validated_data"`
 	RespToTaskData []byte            `json:"resp_to_task_data"` // decoded data
 }
-
-const (
-	TaskTypePriceFeed int64 = 1
-	TaskTypeProcessor int64 = 3
-)

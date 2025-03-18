@@ -1,10 +1,11 @@
-package gateway
+package submitter
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"intellix/gateway"
 	"math/big"
 	"net"
 	"net/rpc"
@@ -28,14 +29,14 @@ type ChainConnection struct {
 	contractDataOracle *contractdataoracle.ContractDataOracle
 }
 
-type TaskGateway struct {
+type Submitter struct {
 	service.BaseService
 
 	server     *rpc.Server
 	serverAddr string
 	listener   net.Listener
 
-	cfg *Config
+	cfg *gateway.Config
 	ctx context.Context
 
 	logger     log.Logger
@@ -46,7 +47,7 @@ type TaskGateway struct {
 	nonceMap         sync.Map
 }
 
-func NewTaskGateway(logger log.Logger, ctx context.Context, cfg *Config) (*TaskGateway, error) {
+func NewSubmitter(logger log.Logger, ctx context.Context, cfg *gateway.Config) (*Submitter, error) {
 	logger = logger.With("comp", "gateway")
 	chainConns := make(map[uint64]*ChainConnection)
 	for chainID, chainCfg := range cfg.Chains {
@@ -80,7 +81,7 @@ func NewTaskGateway(logger log.Logger, ctx context.Context, cfg *Config) (*TaskG
 	}
 
 	server := rpc.NewServer()
-	tg := &TaskGateway{
+	tg := &Submitter{
 		server:           server,
 		cfg:              cfg,
 		ctx:              ctx,
@@ -96,11 +97,11 @@ func NewTaskGateway(logger log.Logger, ctx context.Context, cfg *Config) (*TaskG
 		return nil, fmt.Errorf("failed to register RPC server: %v", err)
 	}
 
-	tg.BaseService = *service.NewBaseService(nil, "TaskGateway", tg)
+	tg.BaseService = *service.NewBaseService(nil, "Submitter", tg)
 	return tg, nil
 }
 
-func (tg *TaskGateway) OnStart() error {
+func (tg *Submitter) OnStart() error {
 	var err error
 	tg.listener, err = net.Listen("tcp", tg.serverAddr)
 	if err != nil {
@@ -112,7 +113,7 @@ func (tg *TaskGateway) OnStart() error {
 	return nil
 }
 
-func (tg *TaskGateway) OnStop() {
+func (tg *Submitter) OnStop() {
 	for chainID, conn := range tg.chainConnections {
 		conn.ethClient.Close()
 		tg.logger.Info("Closed connection", "chainID", chainID)
@@ -122,7 +123,7 @@ func (tg *TaskGateway) OnStop() {
 	}
 }
 
-func (tg *TaskGateway) RespondToTask(req *RPCVoteFinalizedRequestIn, resp *RespondToTaskResponse) error {
+func (tg *Submitter) RespondToTask(req *gateway.RPCVoteFinalizedRequestIn, resp *gateway.RespondToTaskResponse) error {
 	err := tg.handleResponse(context.Background(), req)
 	if err != nil {
 		resp.Error = err.Error()
@@ -132,7 +133,7 @@ func (tg *TaskGateway) RespondToTask(req *RPCVoteFinalizedRequestIn, resp *Respo
 	return nil
 }
 
-func (tg *TaskGateway) getAuthOpts(chainId int64) (*bind.TransactOpts, error) {
+func (tg *Submitter) getAuthOpts(chainId int64) (*bind.TransactOpts, error) {
 	// Create transaction authenticator
 	auth, err := bind.NewKeyedTransactorWithChainID(tg.privateKey.PrivateKey, big.NewInt(chainId))
 	if err != nil {
@@ -143,10 +144,10 @@ func (tg *TaskGateway) getAuthOpts(chainId int64) (*bind.TransactOpts, error) {
 	return auth, nil
 }
 
-func (tg *TaskGateway) handleResponse(ctx context.Context, response *RPCVoteFinalizedRequestIn) error {
+func (tg *Submitter) handleResponse(ctx context.Context, response *gateway.RPCVoteFinalizedRequestIn) error {
 	value, loaded := tg.taskMap.LoadOrStore(response.TaskRaw.TaskIndex, response)
 	if loaded {
-		existingResponse := value.(*RPCVoteFinalizedRequestIn)
+		existingResponse := value.(*gateway.RPCVoteFinalizedRequestIn)
 		if tg.shouldReplaceResponse(ctx, existingResponse, response) {
 			tg.taskMap.Store(response.TaskRaw.RequestID, response)
 			return tg.wrapSubmitToChain(ctx, response)
@@ -157,12 +158,12 @@ func (tg *TaskGateway) handleResponse(ctx context.Context, response *RPCVoteFina
 	return nil
 }
 
-func (tg *TaskGateway) shouldReplaceResponse(ctx context.Context, existing, new *RPCVoteFinalizedRequestIn) bool {
+func (tg *Submitter) shouldReplaceResponse(ctx context.Context, existing, new *gateway.RPCVoteFinalizedRequestIn) bool {
 	// TODO: add security threshold comparison
 	return false
 }
 
-func (tg *TaskGateway) wrapSubmitToChain(ctx context.Context, request *RPCVoteFinalizedRequestIn) error {
+func (tg *Submitter) wrapSubmitToChain(ctx context.Context, request *gateway.RPCVoteFinalizedRequestIn) error {
 	var wg = &sync.WaitGroup{}
 	wg.Add(1)
 	var err error
@@ -180,14 +181,14 @@ func (tg *TaskGateway) wrapSubmitToChain(ctx context.Context, request *RPCVoteFi
 	return err
 }
 
-func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinalizedRequestIn) error {
+func (tg *Submitter) submitToChain(ctx context.Context, response *gateway.RPCVoteFinalizedRequestIn) error {
 	chainConn, ok := tg.chainConnections[uint64(response.ChainID)]
 	if !ok {
 		return fmt.Errorf("no connection found for chain ID %d", response.ChainID)
 	}
 
 	jsData, _ := json.Marshal(response)
-	tg.logger.Info("TaskGateway.submitToChain request", "data", string(jsData))
+	tg.logger.Info("Submitter.submitToChain request", "data", string(jsData))
 
 	// Validate BLS signature components
 	if err := validateBLSComponents(response.ValidatedData); err != nil {
@@ -277,7 +278,7 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 	return nil
 }
 
-func (tg *TaskGateway) queryTransaction(ctx context.Context, tx *types.Transaction, ethClient *ethclient.Client) error {
+func (tg *Submitter) queryTransaction(ctx context.Context, tx *types.Transaction, ethClient *ethclient.Client) error {
 	tg.logger.Info("Transaction submitted", "txHash", tx.Hash().Hex())
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)

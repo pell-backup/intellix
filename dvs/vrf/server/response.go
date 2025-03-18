@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"intellix/dvs/vrf/types"
-	taskgateway "intellix/gateway"
+	taskgateway "intellix/gateway/submitter"
 )
 
 var GatewayClient *taskgateway.Client

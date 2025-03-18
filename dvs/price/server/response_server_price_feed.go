@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"intellix/dvs"
 	"math/big"
 
 	"cosmossdk.io/math"
@@ -85,7 +86,7 @@ func (d ResponseServer) sendResponseToGateway(ctx sdktypes.Context, raw *types.R
 	req := &taskgateway.RPCVoteFinalizedRequestIn{
 		ChainID: ctx.ChainID(),
 		TaskRaw: &taskgateway.RPCTaskRaw{
-			TaskType:                  taskgateway.TaskTypePriceFeed,
+			TaskType:                  dvs.TaskTypePriceFeed,
 			TaskIndex:                 raw.Task.TaskIndex,
 			RequestID:                 raw.Task.RequestId,
 			FeeToken:                  raw.Task.FeeToken,

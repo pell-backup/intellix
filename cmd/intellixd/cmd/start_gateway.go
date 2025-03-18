@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"intellix/gateway/dispatcher"
+	"intellix/gateway/submitter"
 
 	pelldvscfg "github.com/0xPellNetwork/pelldvs/config"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -18,8 +19,8 @@ import (
 func taskGatewayCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start-task-gateway",
-		Short: "Start the TaskGateway service",
-		Long: "Start the TaskGateway service, Example:\n" +
+		Short: "Start the Submitter service",
+		Long: "Start the Submitter service, Example:\n" +
 			"intellixd start-task-gateway --config=config.yml",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			serverCtx := server.GetServerContextFromCmd(cmd)
@@ -32,7 +33,7 @@ func taskGatewayCommand() *cobra.Command {
 
 			conf, err := taskgateway.LoadConfig(configFile)
 			if err != nil {
-				return fmt.Errorf("failed to load TaskGateway configuration: %w", err)
+				return fmt.Errorf("failed to load Submitter configuration: %w", err)
 			}
 			if err = conf.Validate(); err != nil {
 				return err
@@ -58,40 +59,40 @@ func taskGatewayCommand() *cobra.Command {
 
 			g, ctx := errgroup.WithContext(cmd.Context())
 
-			// create TaskDispatcher
-			taskDispatcher, err := taskdispatcher.NewTaskDispatcher(logger, pellDVSConf, conf)
+			// create Dispatcher
+			taskDispatcher, err := taskdispatcher.NewDispatcher(logger, pellDVSConf, conf)
 			if err != nil {
-				return fmt.Errorf("failed to create TaskDispatcher: %w", err)
+				return fmt.Errorf("failed to create Dispatcher: %w", err)
 			}
 
-			// create TaskGateway
-			taskGateway, err := taskgateway.NewTaskGateway(logger, ctx, conf)
+			// create Submitter
+			taskGateway, err := submitter.NewSubmitter(logger, ctx, conf)
 			if err != nil {
-				return fmt.Errorf("failed to create TaskGateway: %w", err)
+				return fmt.Errorf("failed to create Submitter: %w", err)
 			}
 
-			// start TaskDispatcher
+			// start Dispatcher
 			g.Go(func() error {
 				err = taskDispatcher.Start()
 				if err != nil {
-					return fmt.Errorf("failed to start TaskDispatcher: %w", err)
+					return fmt.Errorf("failed to start Dispatcher: %w", err)
 				}
 				<-taskDispatcher.Quit()
 				return nil
 			})
 
-			// start TaskGateway
+			// start Submitter
 			g.Go(func() error {
 				err = taskGateway.Start()
 				if err != nil {
-					return fmt.Errorf("failed to start TaskGateway: %w", err)
+					return fmt.Errorf("failed to start Submitter: %w", err)
 				}
 				<-taskGateway.Quit()
 
 				return nil
 			})
 
-			// wait for TaskDispatcher and TaskGateway to quit
+			// wait for Dispatcher and Submitter to quit
 			if err := g.Wait(); err != nil {
 				return err
 			}

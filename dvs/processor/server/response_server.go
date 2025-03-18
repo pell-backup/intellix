@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"intellix/dvs"
 
 	"intellix/dvs/processor/types"
 	taskgateway "intellix/gateway"
@@ -80,7 +81,7 @@ func (r ResponseServer) responseToTask(ctx sdktypes.Context, in *types.RequestSc
 	return r.taskGatewayClient.RespondToTask(&taskgateway.RPCVoteFinalizedRequestIn{
 		ChainID: ctx.ChainID(),
 		TaskRaw: &taskgateway.RPCTaskRaw{
-			TaskType:                  taskgateway.TaskTypeProcessor,
+			TaskType:                  dvs.TaskTypeProcessor,
 			TaskIndex:                 in.TaskIndex,
 			RequestID:                 in.RequestId,
 			FeeToken:                  in.FeeToken,

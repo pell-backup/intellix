@@ -5,6 +5,7 @@ import "C"
 import (
 	"context"
 	"fmt"
+	"intellix/dvs"
 	taskgateway "intellix/gateway"
 	"sync"
 
@@ -32,7 +33,7 @@ import (
 	"intellix/sdk/dvs_msg_handler/tx"
 )
 
-type TaskDispatcher struct {
+type Dispatcher struct {
 	service.BaseService
 
 	logger        dvslog.Logger
@@ -54,7 +55,7 @@ func newTaskProtoEncoder() tx.MsgEncoder {
 	return tx.NewDefaultDecoder(cdc)
 }
 
-func NewTaskDispatcher(logger dvslog.Logger, pellDVSConf *pelldvscfg.Config, conf *taskgateway.Config) (*TaskDispatcher, error) {
+func NewDispatcher(logger dvslog.Logger, pellDVSConf *pelldvscfg.Config, conf *taskgateway.Config) (*Dispatcher, error) {
 	logger = logger.With("comp", "dispatcher")
 	// load interactor config
 	iteractorConfig, err := interactorcfg.LoadConfig(pellDVSConf.Pell.InteractorConfigPath)
@@ -71,7 +72,7 @@ func NewTaskDispatcher(logger dvslog.Logger, pellDVSConf *pelldvscfg.Config, con
 		return nil, fmt.Errorf("failed to init db: %v", err)
 	}
 
-	td := &TaskDispatcher{
+	td := &Dispatcher{
 		logger:     logger,
 		chains:     make(map[uint64]*chainWatcher),
 		msgEncoder: newTaskProtoEncoder(),
@@ -88,11 +89,11 @@ func NewTaskDispatcher(logger dvslog.Logger, pellDVSConf *pelldvscfg.Config, con
 		return nil, fmt.Errorf("failed to create DVS reader: %w", err)
 	}
 	td.reader = dvsReader
-	td.BaseService = *service.NewBaseService(nil, "TaskDispatcher", td)
+	td.BaseService = *service.NewBaseService(nil, "Dispatcher", td)
 	return td, nil
 }
 
-func (td *TaskDispatcher) AddChain(config taskgateway.ChainConfig) error {
+func (td *Dispatcher) AddChain(config taskgateway.ChainConfig) error {
 	td.mu.Lock()
 	defer td.mu.Unlock()
 	td.logger.Info(fmt.Sprintf("listen chain, chainID: %d, url: %s, address: %s", config.ChainID, config.RPCURL, config.ContractAddress))
@@ -123,14 +124,14 @@ func (td *TaskDispatcher) AddChain(config taskgateway.ChainConfig) error {
 	return nil
 }
 
-func (td *TaskDispatcher) Start() error {
+func (td *Dispatcher) Start() error {
 	for _, chain := range td.chains {
 		go td.listenForNewTasks(chain)
 	}
 	return nil
 }
 
-func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
+func (td *Dispatcher) listenForNewTasks(chain *chainWatcher) {
 	td.logger.Info("now listen for new tasks")
 	newTaskChan := make(chan *contractdataoracle.ContractDataOracleNewTaskCreated)
 	// TODO: add index by height
@@ -155,7 +156,7 @@ func (td *TaskDispatcher) listenForNewTasks(chain *chainWatcher) {
 	}
 }
 
-func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractdataoracle.ContractDataOracleNewTaskCreated) {
+func (td *Dispatcher) handleNewTask(chainID uint64, newTask *contractdataoracle.ContractDataOracleNewTaskCreated) {
 	td.logger.Info("New task created",
 		"chainID", chainID,
 		"TaskIndex", newTask.TaskIndex,
@@ -265,7 +266,7 @@ func (td *TaskDispatcher) handleNewTask(chainID uint64, newTask *contractdataora
 	}
 }
 
-func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractdataoracle.ContractDataOracleNewTaskCreated) ([]byte, error) {
+func (td *Dispatcher) serializeTask(chainID uint64, newTask *contractdataoracle.ContractDataOracleNewTaskCreated) ([]byte, error) {
 	td.logger.Info("serializeTask",
 		"chainID", chainID,
 		"taskIndex", newTask.TaskIndex,
@@ -275,7 +276,7 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractdataora
 	task := newTask.Task
 	var taskRequest sdk.Msg
 
-	if task.TaskType.Int64() == TaskTypePrice {
+	if task.TaskType.Int64() == dvs.TaskTypePriceFeed {
 		priceFeed, err := ParsePriceFeed(newTask.Task.RequestData)
 		if err != nil {
 			td.logger.Error("Failed to parse price feed", "chainID", chainID, "error", err)
@@ -300,7 +301,7 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractdataora
 				QuoteSymbol: priceFeed.QuoteSymbol,
 			},
 		}
-	} else if task.TaskType.Int64() == TaskTypeScript {
+	} else if task.TaskType.Int64() == dvs.TaskTypeProcessor {
 		scriptData, err := ParseScript(newTask.Task.RequestData)
 		if err != nil {
 			td.logger.Error("Failed to parse script data", "chainID", chainID, "error", err)
@@ -329,37 +330,37 @@ func (td *TaskDispatcher) serializeTask(chainID uint64, newTask *contractdataora
 	return td.msgEncoder.EncodeMsgs(taskRequest)
 }
 
-func (td *TaskDispatcher) OnStart() error {
+func (td *Dispatcher) OnStart() error {
 	return nil
 }
 
-func (td *TaskDispatcher) Stop() error {
+func (td *Dispatcher) Stop() error {
 	return nil
 }
 
-func (td *TaskDispatcher) OnStop() {
+func (td *Dispatcher) OnStop() {
 }
 
-func (td *TaskDispatcher) Reset() error {
+func (td *Dispatcher) Reset() error {
 	return nil
 }
 
-func (td *TaskDispatcher) OnReset() error {
+func (td *Dispatcher) OnReset() error {
 	return nil
 }
 
-func (td *TaskDispatcher) IsRunning() bool {
+func (td *Dispatcher) IsRunning() bool {
 	return td.BaseService.IsRunning()
 }
 
-func (td *TaskDispatcher) Quit() <-chan struct{} {
+func (td *Dispatcher) Quit() <-chan struct{} {
 	return td.BaseService.Quit()
 }
 
-func (td *TaskDispatcher) String() string {
+func (td *Dispatcher) String() string {
 	return td.BaseService.String()
 }
 
-func (td *TaskDispatcher) SetLogger(logger log.Logger) {
+func (td *Dispatcher) SetLogger(logger log.Logger) {
 	td.BaseService.SetLogger(logger)
 }

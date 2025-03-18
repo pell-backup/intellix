@@ -1,10 +1,11 @@
-package gateway
+package submitter
 
 import (
 	"fmt"
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/ethereum/go-ethereum/common"
+	"intellix/gateway"
 	"math/big"
 )
 
@@ -88,7 +89,7 @@ func convertSigma(pb []byte) contractdataoracle.BN254G1Point {
 	}
 }
 
-func validateBLSComponents(data *RPCValidatedData) error {
+func validateBLSComponents(data *gateway.RPCValidatedData) error {
 	if data == nil {
 		return fmt.Errorf("validated data is nil")
 	}

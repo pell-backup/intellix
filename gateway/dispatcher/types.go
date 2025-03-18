@@ -72,8 +72,3 @@ func ParseScript(data []byte) (*ScriptParam, error) {
 
 	return sp, nil
 }
-
-const (
-	TaskTypePrice  int64 = 1
-	TaskTypeScript int64 = 3
-)
