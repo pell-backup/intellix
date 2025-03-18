@@ -1,4 +1,4 @@
-package taskgateway
+package gateway
 
 import (
 	"fmt"

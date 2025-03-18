@@ -5,6 +5,7 @@ import "C"
 import (
 	"context"
 	"fmt"
+	taskgateway "intellix/gateway"
 	"sync"
 
 	"cosmossdk.io/math"
@@ -26,7 +27,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/pkg/errors"
 
-	"intellix/config"
 	pricetypes "intellix/dvs/price/types"
 	processortypes "intellix/dvs/processor/types"
 	"intellix/sdk/dvs_msg_handler/tx"
@@ -54,7 +54,7 @@ func newTaskProtoEncoder() tx.MsgEncoder {
 	return tx.NewDefaultDecoder(cdc)
 }
 
-func NewTaskDispatcher(logger dvslog.Logger, pellDVSConf *pelldvscfg.Config, tdConf *Config) (*TaskDispatcher, error) {
+func NewTaskDispatcher(logger dvslog.Logger, pellDVSConf *pelldvscfg.Config, conf *taskgateway.Config) (*TaskDispatcher, error) {
 	logger = logger.With("comp", "dispatcher")
 	// load interactor config
 	iteractorConfig, err := interactorcfg.LoadConfig(pellDVSConf.Pell.InteractorConfigPath)
@@ -77,7 +77,7 @@ func NewTaskDispatcher(logger dvslog.Logger, pellDVSConf *pelldvscfg.Config, tdC
 		msgEncoder: newTaskProtoEncoder(),
 	}
 
-	for _, chainConfig := range tdConf.Chains {
+	for _, chainConfig := range conf.Chains {
 		if err := td.AddChain(chainConfig); err != nil {
 			return nil, fmt.Errorf("failed to add chain %d: %w", chainConfig.ChainID, err)
 		}
@@ -92,7 +92,7 @@ func NewTaskDispatcher(logger dvslog.Logger, pellDVSConf *pelldvscfg.Config, tdC
 	return td, nil
 }
 
-func (td *TaskDispatcher) AddChain(config config.ChainConfig) error {
+func (td *TaskDispatcher) AddChain(config taskgateway.ChainConfig) error {
 	td.mu.Lock()
 	defer td.mu.Unlock()
 	td.logger.Info(fmt.Sprintf("listen chain, chainID: %d, url: %s, address: %s", config.ChainID, config.RPCURL, config.ContractAddress))

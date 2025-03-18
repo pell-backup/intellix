@@ -2,42 +2,8 @@ package taskdispatcher
 
 import (
 	"bytes"
-	"fmt"
-
 	cbor "github.com/fxamacker/cbor/v2"
-	"github.com/spf13/viper"
-
-	"intellix/config"
 )
-
-type Config struct {
-	Chains map[uint64]config.ChainConfig `json:"chains"`
-}
-
-func LoadConfig(filepath string) (*Config, error) {
-	var cfg Config
-	vp := viper.New()
-	vp.SetConfigFile(filepath)
-	if err := vp.ReadInConfig(); err != nil {
-		return nil, fmt.Errorf("failed to read config: %w", err)
-	}
-	if err := vp.Unmarshal(&cfg); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
-	}
-	return &cfg, nil
-}
-
-func (c Config) Validate() error {
-	if len(c.Chains) == 0 {
-		return fmt.Errorf("no chain specified")
-	}
-	for _, chain := range c.Chains {
-		if err := chain.Validate(); err != nil {
-			return err
-		}
-	}
-	return nil
-}
 
 type PriceFeedParam struct {
 	BaseSymbol  string

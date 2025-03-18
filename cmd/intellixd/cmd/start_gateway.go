@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"intellix/gateway/dispatcher"
 
 	pelldvscfg "github.com/0xPellNetwork/pelldvs/config"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -10,7 +11,6 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 
-	taskdispatcher "intellix/dispatcher"
 	taskgateway "intellix/gateway"
 	sdklogger "intellix/sdk/logger"
 )
@@ -59,8 +59,7 @@ func taskGatewayCommand() *cobra.Command {
 			g, ctx := errgroup.WithContext(cmd.Context())
 
 			// create TaskDispatcher
-			tdConf := &taskdispatcher.Config{Chains: conf.Chains}
-			taskDispatcher, err := taskdispatcher.NewTaskDispatcher(logger, pellDVSConf, tdConf)
+			taskDispatcher, err := taskdispatcher.NewTaskDispatcher(logger, pellDVSConf, conf)
 			if err != nil {
 				return fmt.Errorf("failed to create TaskDispatcher: %w", err)
 			}
