@@ -1,4 +1,4 @@
-package taskdispatcher
+package dispatcher
 
 import (
 	"bytes"

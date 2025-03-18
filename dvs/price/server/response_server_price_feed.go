@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"intellix/dvs"
+	taskgateway "intellix/gateway/types"
 	"math/big"
 
 	"cosmossdk.io/math"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 
 	"intellix/dvs/price/types"
-	taskgateway "intellix/gateway"
 	"intellix/sdk/pelldvs"
 	dvstypes "intellix/sdk/pelldvs/types"
 	sdktypes "intellix/sdk/types"
@@ -118,5 +118,5 @@ func (d ResponseServer) sendResponseToGateway(ctx sdktypes.Context, raw *types.R
 	reqJs, _ := json.Marshal(req)
 	d.logger.Info("DvsPostProcessRequestServer.sendResponseToGateway", "req", string(reqJs))
 
-	return d.Server.taskGatewayClient.RespondToTask(req)
+	return d.Server.taskGatewayClient.RespondToPriceTask(req)
 }

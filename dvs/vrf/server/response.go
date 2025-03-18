@@ -93,11 +93,11 @@ func (s Server) DVSResponsHandler(ctx context.Context, in *types.GenerateRandomN
 	//	NonSignerStakeIndices:       nonSignerStakeIndices,
 	//}
 	//
-	//s.logger.Debug("RespondToTask",
+	//s.logger.Debug("RespondToPriceTask",
 	//	"task", task, "taskResponse", taskResponse,
 	//	"nonSignerStakesAndSignature", nonSignerStakesAndSignature,
 	//)
-	//err = GatewayClient.RespondToTask(uint64(pkgCtx.ChainID()), task, taskResponse, nonSignerStakesAndSignature)
+	//err = GatewayClient.RespondToPriceTask(uint64(pkgCtx.ChainID()), task, taskResponse, nonSignerStakesAndSignature)
 	//if err != nil {
 	//	s.logger.Error("Failed to respond to task", "error", err)
 	//	return nil, err

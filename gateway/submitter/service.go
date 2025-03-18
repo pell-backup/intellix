@@ -2,26 +2,20 @@ package submitter
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"intellix/gateway"
-	"math/big"
-	"net"
-	"net/rpc"
-	"os"
-	"sync"
-	"time"
-
-	"cosmossdk.io/math"
 	"github.com/0xPellNetwork/pelldvs-libs/log"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"intellix/gateway/types"
+	"math/big"
+	"net"
+	"net/rpc"
+	"os"
+	"sync"
 )
 
 type ChainConnection struct {
@@ -36,7 +30,7 @@ type Submitter struct {
 	serverAddr string
 	listener   net.Listener
 
-	cfg *gateway.Config
+	cfg *types.Config
 	ctx context.Context
 
 	logger     log.Logger
@@ -47,8 +41,9 @@ type Submitter struct {
 	nonceMap         sync.Map
 }
 
-func NewSubmitter(logger log.Logger, ctx context.Context, cfg *gateway.Config) (*Submitter, error) {
-	logger = logger.With("comp", "gateway")
+func NewSubmitter(logger log.Logger, ctx context.Context, cfg *types.Config) (*Submitter, error) {
+	logger = logger.With("comp", "submitter")
+
 	chainConns := make(map[uint64]*ChainConnection)
 	for chainID, chainCfg := range cfg.Chains {
 		ethClient, err := ethclient.Dial(chainCfg.RPCURL)
@@ -81,7 +76,7 @@ func NewSubmitter(logger log.Logger, ctx context.Context, cfg *gateway.Config) (
 	}
 
 	server := rpc.NewServer()
-	tg := &Submitter{
+	submitter := &Submitter{
 		server:           server,
 		cfg:              cfg,
 		ctx:              ctx,
@@ -92,220 +87,44 @@ func NewSubmitter(logger log.Logger, ctx context.Context, cfg *gateway.Config) (
 		taskMap:          sync.Map{},
 		nonceMap:         sync.Map{},
 	}
-	if err := server.Register(tg); err != nil {
+	if err := server.Register(submitter); err != nil {
 		logger.Error("Failed to register RPC server", "error", err)
 		return nil, fmt.Errorf("failed to register RPC server: %v", err)
 	}
 
-	tg.BaseService = *service.NewBaseService(nil, "Submitter", tg)
-	return tg, nil
+	submitter.BaseService = *service.NewBaseService(nil, "Submitter", submitter)
+	return submitter, nil
 }
 
-func (tg *Submitter) OnStart() error {
+func (s *Submitter) OnStart() error {
 	var err error
-	tg.listener, err = net.Listen("tcp", tg.serverAddr)
+	s.listener, err = net.Listen("tcp", s.serverAddr)
 	if err != nil {
-		tg.logger.Error("Failed to start listener", "address", tg.serverAddr, "error", err)
+		s.logger.Error("Failed to start listener", "address", s.serverAddr, "error", err)
 		panic(err)
 	}
 
-	go tg.server.Accept(tg.listener)
+	go s.server.Accept(s.listener)
 	return nil
 }
 
-func (tg *Submitter) OnStop() {
-	for chainID, conn := range tg.chainConnections {
+func (s *Submitter) OnStop() {
+	for chainID, conn := range s.chainConnections {
 		conn.ethClient.Close()
-		tg.logger.Info("Closed connection", "chainID", chainID)
+		s.logger.Info("Closed connection", "chainID", chainID)
 	}
-	if tg.listener != nil {
-		tg.listener.Close()
+	if s.listener != nil {
+		s.listener.Close()
 	}
 }
 
-func (tg *Submitter) RespondToTask(req *gateway.RPCVoteFinalizedRequestIn, resp *gateway.RespondToTaskResponse) error {
-	err := tg.handleResponse(context.Background(), req)
-	if err != nil {
-		resp.Error = err.Error()
-		return err
-	}
-	resp.Error = ""
-	return nil
-}
-
-func (tg *Submitter) getAuthOpts(chainId int64) (*bind.TransactOpts, error) {
+func (s *Submitter) getAuthOpts(chainId int64) (*bind.TransactOpts, error) {
 	// Create transaction authenticator
-	auth, err := bind.NewKeyedTransactorWithChainID(tg.privateKey.PrivateKey, big.NewInt(chainId))
+	auth, err := bind.NewKeyedTransactorWithChainID(s.privateKey.PrivateKey, big.NewInt(chainId))
 	if err != nil {
-		tg.logger.Error("Failed to create transaction authenticator", "error", err)
+		s.logger.Error("Failed to create transaction authenticator", "error", err)
 		return nil, fmt.Errorf("failed to create transaction authenticator: %v", err)
 	}
 
 	return auth, nil
-}
-
-func (tg *Submitter) handleResponse(ctx context.Context, response *gateway.RPCVoteFinalizedRequestIn) error {
-	value, loaded := tg.taskMap.LoadOrStore(response.TaskRaw.TaskIndex, response)
-	if loaded {
-		existingResponse := value.(*gateway.RPCVoteFinalizedRequestIn)
-		if tg.shouldReplaceResponse(ctx, existingResponse, response) {
-			tg.taskMap.Store(response.TaskRaw.RequestID, response)
-			return tg.wrapSubmitToChain(ctx, response)
-		}
-	} else {
-		return tg.wrapSubmitToChain(ctx, response)
-	}
-	return nil
-}
-
-func (tg *Submitter) shouldReplaceResponse(ctx context.Context, existing, new *gateway.RPCVoteFinalizedRequestIn) bool {
-	// TODO: add security threshold comparison
-	return false
-}
-
-func (tg *Submitter) wrapSubmitToChain(ctx context.Context, request *gateway.RPCVoteFinalizedRequestIn) error {
-	var wg = &sync.WaitGroup{}
-	wg.Add(1)
-	var err error
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				tg.logger.Error("Failed to submit vote finalized request", "error", r)
-				err = fmt.Errorf("%v", r)
-			}
-			wg.Done()
-		}()
-		err = tg.submitToChain(ctx, request)
-	}()
-	wg.Wait()
-	return err
-}
-
-func (tg *Submitter) submitToChain(ctx context.Context, response *gateway.RPCVoteFinalizedRequestIn) error {
-	chainConn, ok := tg.chainConnections[uint64(response.ChainID)]
-	if !ok {
-		return fmt.Errorf("no connection found for chain ID %d", response.ChainID)
-	}
-
-	jsData, _ := json.Marshal(response)
-	tg.logger.Info("Submitter.submitToChain request", "data", string(jsData))
-
-	// Validate BLS signature components
-	if err := validateBLSComponents(response.ValidatedData); err != nil {
-		tg.logger.Error("Invalid BLS signature components", "error", err)
-		return fmt.Errorf("invalid BLS components: %v", err)
-	}
-
-	feeTokenAddr, err := convertAddressToString(response.TaskRaw.FeeToken)
-	if err != nil {
-		tg.logger.Error("Error converting fee token address", "err", err)
-		return err
-	}
-	cbAddr, err := convertAddressToString(response.TaskRaw.CallbackAddress)
-	if err != nil {
-		tg.logger.Error("Error converting callback address", "err", err)
-		return err
-	}
-
-	paymentInt, ok := math.NewIntFromString(response.TaskRaw.Payment)
-	if !ok {
-		tg.logger.Error("Error converting taskRaw payment", "payment", response.TaskRaw.Payment)
-		return fmt.Errorf("error converting taskRaw payment")
-	}
-	task := contractdataoracle.IDataOracleTask{
-		TaskType:                 math.NewInt(response.TaskRaw.TaskType).BigInt(),
-		RequestId:                [32]byte(response.TaskRaw.RequestID),
-		FeeToken:                 *feeTokenAddr,
-		AdvanceDecode:            response.TaskRaw.AdvanceDecode,
-		Payment:                  paymentInt.BigInt(),
-		RequestData:              response.TaskRaw.RequestData,
-		CallbackAddress:          *cbAddr,
-		CallbackFunctionId:       [4]byte(response.TaskRaw.CallbackFunctionID),
-		TaskCreatedBlock:         response.TaskRaw.TaskCreatedBlock,
-		GroupNumbers:             response.TaskRaw.QuorumNumbers,
-		GroupThresholdPercentage: response.TaskRaw.QuorumThresholdPercentage,
-	}
-
-	sign := contractdataoracle.IBLSSignatureVerifierNonSignerStakesAndSignature{
-		NonSignerGroupBitmapIndices: response.ValidatedData.NonSignerQuorumBitmapIndices,
-		NonSignerPubkeys:            convertNonSignersPubkeysG1(response.ValidatedData.NonSignersPubkeysG1),
-		GroupApks:                   convertQuorumApks(response.ValidatedData.QuorumApksG1),
-		ApkG2:                       convertApkG2(response.ValidatedData.SignersApkG2),
-		Sigma:                       convertSigma(response.ValidatedData.SignersAggSigG1),
-		GroupApkIndices:             response.ValidatedData.QuorumApkIndices,
-		TotalStakeIndices:           response.ValidatedData.TotalStakeIndices,
-		NonSignerStakeIndices:       response.ValidatedData.NonSignerStakeIndices,
-	}
-
-	taskResp := contractdataoracle.IDataOracleTaskResponse{
-		ReferenceTaskIndex: response.TaskRaw.TaskIndex,
-		Data:               response.RespToTaskData,
-	}
-
-	authOpts, err := tg.getAuthOpts(response.ChainID)
-	if err != nil {
-		return err
-	}
-
-	// For debug purpose,
-	// set gas limit to 1000000 to bypass transaction pre-execution and force broadcast
-	// authOpts.GasLimit = 1000000
-
-	if conf, ok := tg.cfg.Chains[uint64(response.ChainID)]; ok {
-		if conf.GasLimit > 0 {
-			authOpts.GasLimit = conf.GasLimit
-		}
-	}
-
-	transaction, err := chainConn.contractDataOracle.ResponseToTask(authOpts, task, taskResp, sign)
-	if err != nil {
-		tg.logger.Error("Error assembling RequestPrice tx",
-			"chainID", response.ChainID,
-			"err", err,
-			"task", fmt.Sprintf("%+v", task),
-			"taskResp", fmt.Sprintf("%+v", taskResp),
-			"sign", fmt.Sprintf("%+v", sign))
-		return err
-	}
-
-	if transaction != nil {
-		err = tg.queryTransaction(ctx, transaction, chainConn.ethClient)
-		if err != nil {
-			return fmt.Errorf("chain %d: %v", response.ChainID, err)
-		}
-	}
-
-	return nil
-}
-
-func (tg *Submitter) queryTransaction(ctx context.Context, tx *types.Transaction, ethClient *ethclient.Client) error {
-	tg.logger.Info("Transaction submitted", "txHash", tx.Hash().Hex())
-
-	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-
-	receipt, err := bind.WaitMined(timeoutCtx, ethClient, tx)
-	if err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
-			tg.logger.Error("Transaction confirmation timeout",
-				"txHash", tx.Hash().Hex())
-			return fmt.Errorf("transaction confirmation timeout: %s", tx.Hash().Hex())
-		}
-		tg.logger.Error("Error waiting for transaction to be mined",
-			"txHash", tx.Hash().Hex(),
-			"error", err)
-		return err
-	}
-
-	tg.logger.Info("Transaction confirmed",
-		"txHash", tx.Hash().Hex(),
-		"status", receipt.Status,
-		"gasUsed", receipt.GasUsed,
-		"blockNumber", receipt.BlockNumber,
-		"blockHash", receipt.BlockHash.Hex())
-
-	if receipt.Status == 0 {
-		return fmt.Errorf("transaction failed: %s", tx.Hash().Hex())
-	}
-	return nil
 }

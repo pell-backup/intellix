@@ -5,7 +5,7 @@ import (
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/ethereum/go-ethereum/common"
-	"intellix/gateway"
+	"intellix/gateway/types"
 	"math/big"
 )
 
@@ -89,7 +89,7 @@ func convertSigma(pb []byte) contractdataoracle.BN254G1Point {
 	}
 }
 
-func validateBLSComponents(data *gateway.RPCValidatedData) error {
+func validateBLSComponents(data *types.RPCValidatedData) error {
 	if data == nil {
 		return fmt.Errorf("validated data is nil")
 	}

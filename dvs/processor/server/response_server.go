@@ -3,9 +3,9 @@ package server
 import (
 	"context"
 	"intellix/dvs"
+	taskgateway "intellix/gateway/types"
 
 	"intellix/dvs/processor/types"
-	taskgateway "intellix/gateway"
 	"intellix/sdk/pelldvs"
 	dvstypes "intellix/sdk/pelldvs/types"
 	sdktypes "intellix/sdk/types"
@@ -78,7 +78,7 @@ func (r ResponseServer) responseToTask(ctx sdktypes.Context, in *types.RequestSc
 		nonSignerStakeIndices = append(nonSignerStakeIndices, v.NonSignerStakeIndice)
 	}
 
-	return r.taskGatewayClient.RespondToTask(&taskgateway.RPCVoteFinalizedRequestIn{
+	return r.taskGatewayClient.RespondToPriceTask(&taskgateway.RPCVoteFinalizedRequestIn{
 		ChainID: ctx.ChainID(),
 		TaskRaw: &taskgateway.RPCTaskRaw{
 			TaskType:                  dvs.TaskTypeProcessor,

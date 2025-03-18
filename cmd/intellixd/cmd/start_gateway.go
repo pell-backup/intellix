@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"intellix/gateway/dispatcher"
 	"intellix/gateway/submitter"
+	"intellix/gateway/types"
 
 	pelldvscfg "github.com/0xPellNetwork/pelldvs/config"
 	"github.com/cosmos/cosmos-sdk/server"
@@ -12,7 +13,6 @@ import (
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
 
-	taskgateway "intellix/gateway"
 	sdklogger "intellix/sdk/logger"
 )
 
@@ -31,7 +31,7 @@ func taskGatewayCommand() *cobra.Command {
 				configFile = home + "/config/gateway.config.json"
 			}
 
-			conf, err := taskgateway.LoadConfig(configFile)
+			conf, err := types.LoadConfig(configFile)
 			if err != nil {
 				return fmt.Errorf("failed to load Submitter configuration: %w", err)
 			}
@@ -60,34 +60,34 @@ func taskGatewayCommand() *cobra.Command {
 			g, ctx := errgroup.WithContext(cmd.Context())
 
 			// create Dispatcher
-			taskDispatcher, err := taskdispatcher.NewDispatcher(logger, pellDVSConf, conf)
+			dispatcher, err := dispatcher.NewDispatcher(logger, pellDVSConf, conf)
 			if err != nil {
 				return fmt.Errorf("failed to create Dispatcher: %w", err)
 			}
 
 			// create Submitter
-			taskGateway, err := submitter.NewSubmitter(logger, ctx, conf)
+			gateway, err := submitter.NewSubmitter(logger, ctx, conf)
 			if err != nil {
 				return fmt.Errorf("failed to create Submitter: %w", err)
 			}
 
 			// start Dispatcher
 			g.Go(func() error {
-				err = taskDispatcher.Start()
+				err = dispatcher.Start()
 				if err != nil {
 					return fmt.Errorf("failed to start Dispatcher: %w", err)
 				}
-				<-taskDispatcher.Quit()
+				<-dispatcher.Quit()
 				return nil
 			})
 
 			// start Submitter
 			g.Go(func() error {
-				err = taskGateway.Start()
+				err = gateway.Start()
 				if err != nil {
 					return fmt.Errorf("failed to start Submitter: %w", err)
 				}
-				<-taskGateway.Quit()
+				<-gateway.Quit()
 
 				return nil
 			})
