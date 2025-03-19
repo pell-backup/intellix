@@ -6,6 +6,11 @@ import "gogoproto/gogo.proto";
 
 option go_package = "intellix/dvs/processor/types";
 
+// TODO: This proto file belongs to DVS module rather than cosmos-sdk module.
+// Need to reorganize the directory structure to separate DVS protos from
+// cosmos-sdk module protos for better maintainability and clearer module
+// boundaries.
+
 // DVSRequest defines the service for handling decentralized verification system
 // requests.
 service DVSRequest {

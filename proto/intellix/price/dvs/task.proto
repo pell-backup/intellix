@@ -5,6 +5,11 @@ import "gogoproto/gogo.proto";
 
 option go_package = "intellix/price/dvs/types";
 
+// TODO: This proto file belongs to DVS module rather than cosmos-sdk module.
+// Need to reorganize the directory structure to separate DVS protos from
+// cosmos-sdk module protos for better maintainability and clearer module
+// boundaries.
+
 // TaskRequest represents a task execution request with payment and callback
 // details.
 message TaskRequest {
