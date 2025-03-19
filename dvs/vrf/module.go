@@ -36,7 +36,7 @@ func (am AppModule) RegisterServices() {
 	// register dvs-msg result handler
 	if r, ok := am.RequestServer.(*dvsservermanager.ProcessRequestHandler); ok {
 		r.RegisterResultHandler(
-			&types.GenerateRandomNumberResponse{}, handler.NewVRFResultHandler(),
+			&types.VRFTaskResponse{}, handler.NewVRFResultHandler(),
 		)
 	}
 

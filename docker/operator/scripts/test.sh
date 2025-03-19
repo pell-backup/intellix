@@ -96,7 +96,7 @@ assert_gt "$RESULT" "0"
 ## create a new vrf task
 VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/VRFOraclePayInNativeConsumer.json" | jq -r .address)
 
-cast send "$VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestRandomWords(uint256)" 1 --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+cast send "$VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestRandomWords(uint256)" 2 --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
 
 

@@ -171,7 +171,7 @@ func NewApp(
 		panic(err)
 	}
 
-	app.VRFServer, err = vrfserver.NewServer(app.logger)
+	app.VRFServer, err = vrfserver.NewServer(app.logger, config.GatewayAddr)
 	if err != nil {
 		panic(err)
 	}

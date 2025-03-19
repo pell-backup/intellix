@@ -179,10 +179,16 @@ func (d *Dispatcher) serializeVRFTask(chainID uint64, newTask *contractdataoracl
 
 	taskMetadata := &types.TaskMetadata{
 		TaskIndex:                newTask.TaskIndex,
-		Height:                   uint32(newTask.Raw.BlockNumber),
-		ChainId:                  chainID,
+		RequestId:                task.RequestId[:],
+		FeeToken:                 task.FeeToken.Hex(),
+		Payment:                  math.NewIntFromBigInt(task.Payment),
+		RequestData:              task.RequestData,
+		CallbackAddress:          task.CallbackAddress.Hex(),
+		CallbackFunctionId:       task.CallbackFunctionId[:],
+		TaskCreatedBlock:         task.TaskCreatedBlock,
 		GroupNumbers:             task.GroupNumbers,
 		GroupThresholdPercentage: task.GroupThresholdPercentage,
+		AdvanceDecode:            task.AdvanceDecode,
 	}
 
 	for i := 0; i < int(param.NumWords); i++ {
@@ -197,7 +203,7 @@ func (d *Dispatcher) serializeVRFTask(chainID uint64, newTask *contractdataoracl
 		})
 	}
 
-	taskRequest := &types.GenerateRandomNumberRequest{
+	taskRequest := &types.VRFTaskRequest{
 		TaskMetadata: taskMetadata,
 		VrfData:      vrfData,
 	}

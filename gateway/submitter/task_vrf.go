@@ -16,7 +16,8 @@ import (
 )
 
 func (s *Submitter) RespondToVRFTask(req *types.RPCVoteFinalizedRequestIn, resp *types.RespondToTaskResponse) error {
-	err := s.handlePriceTaskResponse(context.Background(), req)
+	s.logger.Info("RespondToVRFTask called", "req", fmt.Sprintf("%+v", req))
+	err := s.handleVRFTaskResponse(context.Background(), req)
 	if err != nil {
 		resp.Error = err.Error()
 		return err
@@ -31,10 +32,10 @@ func (s *Submitter) handleVRFTaskResponse(ctx context.Context, response *types.R
 		existingResponse := value.(*types.RPCVoteFinalizedRequestIn)
 		if s.shouldReplaceVRFTaskResponse(ctx, existingResponse, response) {
 			s.taskMap.Store(response.TaskRaw.RequestID, response)
-			return s.wrapPriceTaskSubmitToChain(ctx, response)
+			return s.wrapVRFTaskSubmitToChain(ctx, response)
 		}
 	} else {
-		return s.wrapPriceTaskSubmitToChain(ctx, response)
+		return s.wrapVRFTaskSubmitToChain(ctx, response)
 	}
 	return nil
 }
@@ -128,6 +129,10 @@ func (s *Submitter) submitVRFTaskResultToChain(ctx context.Context, response *ty
 		return err
 	}
 
+	// For debug purpose,
+	// set gas limit to 1000000 to bypass transaction pre-execution and force broadcast
+	// authOpts.GasLimit = 1000000
+
 	if conf, ok := s.cfg.Chains[uint64(response.ChainID)]; ok {
 		if conf.GasLimit > 0 {
 			authOpts.GasLimit = conf.GasLimit
@@ -146,7 +151,7 @@ func (s *Submitter) submitVRFTaskResultToChain(ctx context.Context, response *ty
 	}
 
 	if transaction != nil {
-		err = s.queryVRFTaskTransaction(ctx, transaction, chainConn.ethClient)
+		err = s.queryPriceTaskTransaction(ctx, transaction, chainConn.ethClient)
 		if err != nil {
 			return fmt.Errorf("chain %d: %v", response.ChainID, err)
 		}

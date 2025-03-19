@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"intellix/dvs"
-	taskgateway "intellix/gateway/types"
+	gateway "intellix/gateway/types"
 	"math/big"
 
 	"cosmossdk.io/math"
@@ -83,9 +83,9 @@ func (d ResponseServer) sendResponseToGateway(ctx sdktypes.Context, raw *types.R
 		nonSignerStakeIndices[i] = indices.NonSignerStakeIndice
 	}
 
-	req := &taskgateway.RPCVoteFinalizedRequestIn{
+	req := &gateway.RPCVoteFinalizedRequestIn{
 		ChainID: ctx.ChainID(),
-		TaskRaw: &taskgateway.RPCTaskRaw{
+		TaskRaw: &gateway.RPCTaskRaw{
 			TaskType:                  dvs.TaskTypePriceFeed,
 			TaskIndex:                 raw.Task.TaskIndex,
 			RequestID:                 raw.Task.RequestId,
@@ -99,7 +99,7 @@ func (d ResponseServer) sendResponseToGateway(ctx sdktypes.Context, raw *types.R
 			QuorumThresholdPercentage: raw.Task.QuorumThresholdPercentage,
 			AdvanceDecode:             raw.Task.AdvanceDecode,
 		},
-		ValidatedData: &taskgateway.RPCValidatedData{
+		ValidatedData: &gateway.RPCValidatedData{
 			Data:                         validatedData.Data,
 			Error:                        validatedData.Error,
 			Hash:                         validatedData.Hash,

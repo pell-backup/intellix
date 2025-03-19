@@ -33,11 +33,17 @@ var _ = math.Inf
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 type TaskMetadata struct {
-	TaskIndex                uint32 `protobuf:"varint,1,opt,name=task_index,json=taskIndex,proto3" json:"task_index,omitempty"`
-	Height                   uint32 `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
-	ChainId                  uint64 `protobuf:"varint,3,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
-	GroupNumbers             []byte `protobuf:"bytes,4,opt,name=group_numbers,json=groupNumbers,proto3" json:"group_numbers,omitempty"`
-	GroupThresholdPercentage uint32 `protobuf:"varint,5,opt,name=group_threshold_percentage,json=groupThresholdPercentage,proto3" json:"group_threshold_percentage,omitempty"`
+	TaskIndex                uint32                `protobuf:"varint,1,opt,name=task_index,json=taskIndex,proto3" json:"task_index,omitempty"`
+	RequestId                []byte                `protobuf:"bytes,2,opt,name=request_id,json=requestId,proto3" json:"request_id,omitempty"`
+	FeeToken                 string                `protobuf:"bytes,3,opt,name=fee_token,json=feeToken,proto3" json:"fee_token,omitempty"`
+	Payment                  cosmossdk_io_math.Int `protobuf:"bytes,4,opt,name=payment,proto3,customtype=cosmossdk.io/math.Int" json:"payment"`
+	RequestData              []byte                `protobuf:"bytes,5,opt,name=request_data,json=requestData,proto3" json:"request_data,omitempty"`
+	CallbackAddress          string                `protobuf:"bytes,6,opt,name=callback_address,json=callbackAddress,proto3" json:"callback_address,omitempty"`
+	CallbackFunctionId       []byte                `protobuf:"bytes,7,opt,name=callback_function_id,json=callbackFunctionId,proto3" json:"callback_function_id,omitempty"`
+	TaskCreatedBlock         uint32                `protobuf:"varint,8,opt,name=task_created_block,json=taskCreatedBlock,proto3" json:"task_created_block,omitempty"`
+	GroupNumbers             []byte                `protobuf:"bytes,9,opt,name=group_numbers,json=groupNumbers,proto3" json:"group_numbers,omitempty"`
+	GroupThresholdPercentage uint32                `protobuf:"varint,10,opt,name=group_threshold_percentage,json=groupThresholdPercentage,proto3" json:"group_threshold_percentage,omitempty"`
+	AdvanceDecode            bool                  `protobuf:"varint,11,opt,name=advance_decode,json=advanceDecode,proto3" json:"advance_decode,omitempty"`
 }
 
 func (m *TaskMetadata) Reset()         { *m = TaskMetadata{} }
@@ -80,16 +86,44 @@ func (m *TaskMetadata) GetTaskIndex() uint32 {
 	return 0
 }
 
-func (m *TaskMetadata) GetHeight() uint32 {
+func (m *TaskMetadata) GetRequestId() []byte {
 	if m != nil {
-		return m.Height
+		return m.RequestId
 	}
-	return 0
+	return nil
 }
 
-func (m *TaskMetadata) GetChainId() uint64 {
+func (m *TaskMetadata) GetFeeToken() string {
 	if m != nil {
-		return m.ChainId
+		return m.FeeToken
+	}
+	return ""
+}
+
+func (m *TaskMetadata) GetRequestData() []byte {
+	if m != nil {
+		return m.RequestData
+	}
+	return nil
+}
+
+func (m *TaskMetadata) GetCallbackAddress() string {
+	if m != nil {
+		return m.CallbackAddress
+	}
+	return ""
+}
+
+func (m *TaskMetadata) GetCallbackFunctionId() []byte {
+	if m != nil {
+		return m.CallbackFunctionId
+	}
+	return nil
+}
+
+func (m *TaskMetadata) GetTaskCreatedBlock() uint32 {
+	if m != nil {
+		return m.TaskCreatedBlock
 	}
 	return 0
 }
@@ -106,6 +140,13 @@ func (m *TaskMetadata) GetGroupThresholdPercentage() uint32 {
 		return m.GroupThresholdPercentage
 	}
 	return 0
+}
+
+func (m *TaskMetadata) GetAdvanceDecode() bool {
+	if m != nil {
+		return m.AdvanceDecode
+	}
+	return false
 }
 
 type VRFData struct {
@@ -160,23 +201,23 @@ func (m *VRFData) GetVrfProof() []byte {
 	return nil
 }
 
-type GenerateRandomNumberRequest struct {
+type VRFTaskRequest struct {
 	TaskMetadata *TaskMetadata `protobuf:"bytes,1,opt,name=task_metadata,json=taskMetadata,proto3" json:"task_metadata,omitempty"`
 	VrfData      []*VRFData    `protobuf:"bytes,2,rep,name=vrf_data,json=vrfData,proto3" json:"vrf_data,omitempty"`
 }
 
-func (m *GenerateRandomNumberRequest) Reset()         { *m = GenerateRandomNumberRequest{} }
-func (m *GenerateRandomNumberRequest) String() string { return proto.CompactTextString(m) }
-func (*GenerateRandomNumberRequest) ProtoMessage()    {}
-func (*GenerateRandomNumberRequest) Descriptor() ([]byte, []int) {
+func (m *VRFTaskRequest) Reset()         { *m = VRFTaskRequest{} }
+func (m *VRFTaskRequest) String() string { return proto.CompactTextString(m) }
+func (*VRFTaskRequest) ProtoMessage()    {}
+func (*VRFTaskRequest) Descriptor() ([]byte, []int) {
 	return fileDescriptor_7b5b703e76daccbc, []int{2}
 }
-func (m *GenerateRandomNumberRequest) XXX_Unmarshal(b []byte) error {
+func (m *VRFTaskRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *GenerateRandomNumberRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *VRFTaskRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_GenerateRandomNumberRequest.Marshal(b, m, deterministic)
+		return xxx_messageInfo_VRFTaskRequest.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -186,49 +227,49 @@ func (m *GenerateRandomNumberRequest) XXX_Marshal(b []byte, deterministic bool) 
 		return b[:n], nil
 	}
 }
-func (m *GenerateRandomNumberRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GenerateRandomNumberRequest.Merge(m, src)
+func (m *VRFTaskRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VRFTaskRequest.Merge(m, src)
 }
-func (m *GenerateRandomNumberRequest) XXX_Size() int {
+func (m *VRFTaskRequest) XXX_Size() int {
 	return m.Size()
 }
-func (m *GenerateRandomNumberRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_GenerateRandomNumberRequest.DiscardUnknown(m)
+func (m *VRFTaskRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_VRFTaskRequest.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GenerateRandomNumberRequest proto.InternalMessageInfo
+var xxx_messageInfo_VRFTaskRequest proto.InternalMessageInfo
 
-func (m *GenerateRandomNumberRequest) GetTaskMetadata() *TaskMetadata {
+func (m *VRFTaskRequest) GetTaskMetadata() *TaskMetadata {
 	if m != nil {
 		return m.TaskMetadata
 	}
 	return nil
 }
 
-func (m *GenerateRandomNumberRequest) GetVrfData() []*VRFData {
+func (m *VRFTaskRequest) GetVrfData() []*VRFData {
 	if m != nil {
 		return m.VrfData
 	}
 	return nil
 }
 
-type GenerateRandomNumberResponse struct {
+type VRFTaskResponse struct {
 	TaskIndex    uint32                  `protobuf:"varint,1,opt,name=task_index,json=taskIndex,proto3" json:"task_index,omitempty"`
 	RandomNumber []cosmossdk_io_math.Int `protobuf:"bytes,2,rep,name=randomNumber,proto3,customtype=cosmossdk.io/math.Int" json:"randomNumber"`
 }
 
-func (m *GenerateRandomNumberResponse) Reset()         { *m = GenerateRandomNumberResponse{} }
-func (m *GenerateRandomNumberResponse) String() string { return proto.CompactTextString(m) }
-func (*GenerateRandomNumberResponse) ProtoMessage()    {}
-func (*GenerateRandomNumberResponse) Descriptor() ([]byte, []int) {
+func (m *VRFTaskResponse) Reset()         { *m = VRFTaskResponse{} }
+func (m *VRFTaskResponse) String() string { return proto.CompactTextString(m) }
+func (*VRFTaskResponse) ProtoMessage()    {}
+func (*VRFTaskResponse) Descriptor() ([]byte, []int) {
 	return fileDescriptor_7b5b703e76daccbc, []int{3}
 }
-func (m *GenerateRandomNumberResponse) XXX_Unmarshal(b []byte) error {
+func (m *VRFTaskResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *GenerateRandomNumberResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *VRFTaskResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_GenerateRandomNumberResponse.Marshal(b, m, deterministic)
+		return xxx_messageInfo_VRFTaskResponse.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -238,19 +279,19 @@ func (m *GenerateRandomNumberResponse) XXX_Marshal(b []byte, deterministic bool)
 		return b[:n], nil
 	}
 }
-func (m *GenerateRandomNumberResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_GenerateRandomNumberResponse.Merge(m, src)
+func (m *VRFTaskResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VRFTaskResponse.Merge(m, src)
 }
-func (m *GenerateRandomNumberResponse) XXX_Size() int {
+func (m *VRFTaskResponse) XXX_Size() int {
 	return m.Size()
 }
-func (m *GenerateRandomNumberResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_GenerateRandomNumberResponse.DiscardUnknown(m)
+func (m *VRFTaskResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_VRFTaskResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_GenerateRandomNumberResponse proto.InternalMessageInfo
+var xxx_messageInfo_VRFTaskResponse proto.InternalMessageInfo
 
-func (m *GenerateRandomNumberResponse) GetTaskIndex() uint32 {
+func (m *VRFTaskResponse) GetTaskIndex() uint32 {
 	if m != nil {
 		return m.TaskIndex
 	}
@@ -296,53 +337,61 @@ var xxx_messageInfo_DVSResultResponse proto.InternalMessageInfo
 func init() {
 	proto.RegisterType((*TaskMetadata)(nil), "intellix.vrf.TaskMetadata")
 	proto.RegisterType((*VRFData)(nil), "intellix.vrf.VRFData")
-	proto.RegisterType((*GenerateRandomNumberRequest)(nil), "intellix.vrf.GenerateRandomNumberRequest")
-	proto.RegisterType((*GenerateRandomNumberResponse)(nil), "intellix.vrf.GenerateRandomNumberResponse")
+	proto.RegisterType((*VRFTaskRequest)(nil), "intellix.vrf.VRFTaskRequest")
+	proto.RegisterType((*VRFTaskResponse)(nil), "intellix.vrf.VRFTaskResponse")
 	proto.RegisterType((*DVSResultResponse)(nil), "intellix.vrf.DVSResultResponse")
 }
 
 func init() { proto.RegisterFile("intellix/vrf/msg_server.proto", fileDescriptor_7b5b703e76daccbc) }
 
 var fileDescriptor_7b5b703e76daccbc = []byte{
-	// 599 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x54, 0x4f, 0x4f, 0xd4, 0x40,
-	0x14, 0xdf, 0x02, 0xf2, 0x67, 0xe8, 0x9a, 0x50, 0x04, 0x97, 0x05, 0x96, 0x4d, 0xbd, 0xac, 0x24,
-	0xb6, 0xb0, 0xdc, 0x88, 0x89, 0x11, 0x09, 0xca, 0x01, 0x43, 0x46, 0xb2, 0x07, 0x2f, 0xcd, 0x2c,
-	0x7d, 0xdb, 0x6d, 0x68, 0x3b, 0x65, 0x66, 0x5a, 0xf1, 0x1b, 0x18, 0x4f, 0x7e, 0x01, 0xbf, 0x83,
-	0x07, 0xbf, 0x81, 0x31, 0x21, 0x9e, 0x38, 0x1a, 0x0f, 0xc4, 0xb0, 0x07, 0xbf, 0x86, 0x99, 0x99,
-	0x96, 0xec, 0x46, 0x82, 0x7a, 0x69, 0xe7, 0xbd, 0xdf, 0x7b, 0x7d, 0xbf, 0xf7, 0xfb, 0xa5, 0x83,
-	0x56, 0xc3, 0x44, 0x40, 0x14, 0x85, 0x67, 0x6e, 0xce, 0x7a, 0x6e, 0xcc, 0x03, 0x8f, 0x03, 0xcb,
-	0x81, 0x39, 0x29, 0xa3, 0x82, 0x5a, 0x66, 0x09, 0x3b, 0x39, 0xeb, 0xd5, 0xef, 0x05, 0x34, 0xa0,
-	0x0a, 0x70, 0xe5, 0x49, 0xd7, 0xd4, 0xef, 0x1f, 0x53, 0x1e, 0x53, 0x2e, 0x9b, 0xdd, 0x7c, 0x53,
-	0xbe, 0x0a, 0x60, 0x49, 0x03, 0x9e, 0xee, 0xd0, 0x41, 0x01, 0xcd, 0x91, 0x38, 0x4c, 0xa8, 0xab,
-	0x9e, 0x3a, 0x65, 0x7f, 0x31, 0x90, 0x79, 0x44, 0xf8, 0xc9, 0x01, 0x08, 0xe2, 0x13, 0x41, 0xac,
-	0x55, 0x84, 0x04, 0xe1, 0x27, 0x5e, 0x98, 0xf8, 0x70, 0x56, 0x33, 0x9a, 0x46, 0xab, 0x8a, 0x67,
-	0x64, 0x66, 0x5f, 0x26, 0xac, 0x45, 0x34, 0xd9, 0x87, 0x30, 0xe8, 0x8b, 0xda, 0x98, 0x82, 0x8a,
-	0xc8, 0x5a, 0x42, 0xd3, 0xc7, 0x7d, 0x12, 0x26, 0x5e, 0xe8, 0xd7, 0xc6, 0x9b, 0x46, 0x6b, 0x02,
-	0x4f, 0xa9, 0x78, 0xdf, 0xb7, 0x1e, 0xa0, 0x6a, 0xc0, 0x68, 0x96, 0x7a, 0x49, 0x16, 0x77, 0x81,
-	0xf1, 0xda, 0x44, 0xd3, 0x68, 0x99, 0xd8, 0x54, 0xc9, 0x97, 0x3a, 0x67, 0x3d, 0x46, 0x75, 0x5d,
-	0x24, 0xfa, 0x0c, 0x78, 0x9f, 0x46, 0xbe, 0x97, 0x02, 0x3b, 0x86, 0x44, 0x90, 0x00, 0x6a, 0x77,
-	0xd4, 0xac, 0x9a, 0xaa, 0x38, 0x2a, 0x0b, 0x0e, 0xaf, 0x71, 0xfb, 0x19, 0x9a, 0xea, 0xe0, 0xbd,
-	0x5d, 0xc9, 0x7f, 0x19, 0xcd, 0xe4, 0xac, 0xe7, 0xe5, 0x24, 0xca, 0x40, 0xd1, 0x37, 0xf1, 0x74,
-	0xce, 0x7a, 0x1d, 0x19, 0x97, 0x60, 0xca, 0x28, 0xed, 0xa9, 0x05, 0x34, 0x78, 0x28, 0x63, 0xfb,
-	0xab, 0x81, 0x96, 0x9f, 0x43, 0x02, 0x8c, 0x08, 0xc0, 0x24, 0xf1, 0x69, 0xac, 0xc9, 0x61, 0x38,
-	0xcd, 0x80, 0x0b, 0xeb, 0x09, 0xaa, 0x2a, 0x65, 0xe2, 0x42, 0x2a, 0xf5, 0xf5, 0xd9, 0x76, 0xdd,
-	0x19, 0x76, 0xcb, 0x19, 0x16, 0x13, 0x9b, 0x62, 0x58, 0xda, 0x0d, 0x24, 0x87, 0x79, 0xaa, 0x77,
-	0xac, 0x39, 0xde, 0x9a, 0x6d, 0x2f, 0x8c, 0xf6, 0x16, 0x3b, 0xe0, 0xa9, 0x9c, 0xf5, 0xe4, 0x61,
-	0x7b, 0xeb, 0xdb, 0xe7, 0x47, 0x85, 0xd1, 0x4e, 0x97, 0x70, 0x70, 0xf2, 0xcd, 0x2e, 0x08, 0xb2,
-	0xe9, 0x1c, 0xf0, 0xe0, 0xfd, 0xaf, 0x4f, 0xeb, 0xf3, 0x7e, 0xce, 0x5d, 0x7e, 0x9a, 0x11, 0x06,
-	0xbe, 0xcb, 0x34, 0x4f, 0xfb, 0xa3, 0x81, 0x56, 0x6e, 0xde, 0x83, 0xa7, 0x34, 0xe1, 0xf0, 0x37,
-	0x8b, 0x9f, 0x22, 0x93, 0x0d, 0xb5, 0x29, 0xaa, 0x33, 0x3b, 0xab, 0xe7, 0x97, 0x6b, 0x95, 0x1f,
-	0x97, 0x6b, 0x0b, 0x9a, 0x0e, 0xf7, 0x4f, 0x9c, 0x90, 0xba, 0x31, 0x11, 0x7d, 0x67, 0x3f, 0x11,
-	0x78, 0xa4, 0x65, 0x7b, 0xf9, 0x16, 0xde, 0xf6, 0x3c, 0x9a, 0xdb, 0xed, 0xbc, 0xc2, 0xc0, 0xb3,
-	0x48, 0x94, 0x9c, 0xda, 0xef, 0x0c, 0x54, 0xed, 0xe0, 0xbd, 0x03, 0x1e, 0x94, 0x72, 0xbf, 0x41,
-	0x2b, 0x2f, 0x48, 0xe2, 0x47, 0xd0, 0xc1, 0x7b, 0x37, 0xd9, 0xf1, 0x70, 0x54, 0xbb, 0x5b, 0x9c,
-	0xab, 0xaf, 0xff, 0x4b, 0xa9, 0x26, 0x62, 0x57, 0xda, 0x1c, 0xdd, 0x2d, 0x99, 0x14, 0x82, 0x91,
-	0x92, 0xb1, 0x0c, 0x35, 0x29, 0xf6, 0x3f, 0xf3, 0xd7, 0x46, 0x4b, 0xff, 0xd8, 0xde, 0xae, 0xec,
-	0x6c, 0x9c, 0x5f, 0x35, 0x8c, 0x8b, 0xab, 0x86, 0xf1, 0xf3, 0xaa, 0x61, 0x7c, 0x18, 0x34, 0x2a,
-	0x17, 0x83, 0x46, 0xe5, 0xfb, 0xa0, 0x51, 0x79, 0xbd, 0x78, 0x7d, 0x57, 0x48, 0xb3, 0xe5, 0x7d,
-	0x21, 0xde, 0xa6, 0xc0, 0xbb, 0x93, 0xea, 0x07, 0xde, 0xfa, 0x1d, 0x00, 0x00, 0xff, 0xff, 0xbc,
-	0x22, 0xf6, 0x94, 0x4c, 0x04, 0x00, 0x00,
+	// 726 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x54, 0x4f, 0x4f, 0xdb, 0x48,
+	0x14, 0x8f, 0x61, 0x97, 0x24, 0x13, 0x87, 0x3f, 0x06, 0x76, 0xbd, 0x81, 0x84, 0x6c, 0x56, 0x2b,
+	0x65, 0x57, 0xad, 0x0d, 0xe1, 0x50, 0x09, 0x55, 0xaa, 0xf8, 0xa3, 0xa8, 0x39, 0x50, 0x21, 0x37,
+	0xca, 0xa1, 0x52, 0x65, 0x4d, 0x3c, 0xcf, 0x21, 0x8a, 0xed, 0x09, 0x33, 0x13, 0x0b, 0xbe, 0x42,
+	0x4f, 0x7c, 0x94, 0x1e, 0x7a, 0xe8, 0x47, 0x40, 0x3d, 0x71, 0xac, 0x38, 0xa0, 0x0a, 0x0e, 0xfd,
+	0x1a, 0xd5, 0x8c, 0xed, 0x28, 0x08, 0xb5, 0x5c, 0x12, 0xbf, 0xdf, 0xef, 0xcd, 0x7b, 0xbf, 0x79,
+	0xef, 0xa7, 0x41, 0xd5, 0x61, 0x24, 0x20, 0x08, 0x86, 0xe7, 0x76, 0xcc, 0x7c, 0x3b, 0xe4, 0x03,
+	0x97, 0x03, 0x8b, 0x81, 0x59, 0x63, 0x46, 0x05, 0x35, 0xf4, 0x8c, 0xb6, 0x62, 0xe6, 0x57, 0xd6,
+	0x06, 0x74, 0x40, 0x15, 0x61, 0xcb, 0xaf, 0x24, 0xa7, 0xf2, 0xa7, 0x47, 0x79, 0x48, 0xb9, 0x3c,
+	0x6c, 0xc7, 0x3b, 0xf2, 0x2f, 0x25, 0xfe, 0x4a, 0x08, 0x37, 0x39, 0x91, 0x04, 0x29, 0xb5, 0x82,
+	0xc3, 0x61, 0x44, 0x6d, 0xf5, 0x9b, 0x40, 0x8d, 0x9b, 0x79, 0xa4, 0x77, 0x31, 0x1f, 0x1d, 0x83,
+	0xc0, 0x04, 0x0b, 0x6c, 0x54, 0x11, 0x12, 0x98, 0x8f, 0xdc, 0x61, 0x44, 0xe0, 0xdc, 0xd4, 0xea,
+	0x5a, 0xb3, 0xec, 0x14, 0x25, 0xd2, 0x91, 0x80, 0xa4, 0x19, 0x9c, 0x4d, 0x80, 0x0b, 0x77, 0x48,
+	0xcc, 0xb9, 0xba, 0xd6, 0xd4, 0x9d, 0x62, 0x8a, 0x74, 0x88, 0xb1, 0x81, 0x8a, 0x3e, 0x80, 0x2b,
+	0xe8, 0x08, 0x22, 0x73, 0xbe, 0xae, 0x35, 0x8b, 0x4e, 0xc1, 0x07, 0xe8, 0xca, 0xd8, 0x78, 0x81,
+	0xf2, 0x63, 0x7c, 0x11, 0x42, 0x24, 0xcc, 0xdf, 0x24, 0x75, 0x50, 0xbd, 0xba, 0xdd, 0xca, 0xdd,
+	0xdc, 0x6e, 0xad, 0x27, 0x2a, 0x39, 0x19, 0x59, 0x43, 0x6a, 0x87, 0x58, 0x9c, 0x5a, 0x9d, 0x48,
+	0x38, 0x59, 0xb6, 0xf1, 0x37, 0xd2, 0xb3, 0xa6, 0x52, 0xa3, 0xf9, 0xbb, 0x6a, 0x5b, 0x4a, 0xb1,
+	0x23, 0x29, 0xfb, 0x3f, 0xb4, 0xec, 0xe1, 0x20, 0xe8, 0x63, 0x6f, 0xe4, 0x62, 0x42, 0x18, 0x70,
+	0x6e, 0x2e, 0xa8, 0xfe, 0x4b, 0x19, 0xbe, 0x9f, 0xc0, 0xc6, 0x36, 0x5a, 0x9b, 0xa6, 0xfa, 0x93,
+	0xc8, 0x13, 0x43, 0x1a, 0xc9, 0xcb, 0xe4, 0x55, 0x55, 0x23, 0xe3, 0xda, 0x29, 0xd5, 0x21, 0xc6,
+	0x33, 0x64, 0xa8, 0x99, 0x78, 0x0c, 0xb0, 0x00, 0xe2, 0xf6, 0x03, 0xea, 0x8d, 0xcc, 0x82, 0x9a,
+	0xcd, 0xb2, 0x64, 0x0e, 0x13, 0xe2, 0x40, 0xe2, 0xc6, 0x3f, 0xa8, 0x3c, 0x60, 0x74, 0x32, 0x76,
+	0xa3, 0x49, 0xd8, 0x07, 0xc6, 0xcd, 0xa2, 0x2a, 0xac, 0x2b, 0xf0, 0x4d, 0x82, 0x19, 0x2f, 0x51,
+	0x25, 0x49, 0x12, 0xa7, 0x0c, 0xf8, 0x29, 0x0d, 0x88, 0x3b, 0x06, 0xe6, 0x41, 0x24, 0xf0, 0x00,
+	0x4c, 0xa4, 0x4a, 0x9b, 0x2a, 0xa3, 0x9b, 0x25, 0x9c, 0x4c, 0x79, 0xe3, 0x5f, 0xb4, 0x88, 0x49,
+	0x8c, 0x23, 0x0f, 0x5c, 0x02, 0x1e, 0x25, 0x60, 0x96, 0xea, 0x5a, 0xb3, 0xe0, 0x94, 0x53, 0xf4,
+	0x48, 0x81, 0x8d, 0x43, 0x94, 0xef, 0x39, 0x6d, 0x35, 0x9f, 0x0d, 0x54, 0x8c, 0x99, 0xef, 0xc6,
+	0x38, 0x98, 0x80, 0xda, 0xaa, 0xee, 0x14, 0x62, 0xe6, 0xf7, 0x64, 0x9c, 0x91, 0x63, 0x46, 0xa9,
+	0x9f, 0xee, 0x54, 0x92, 0x27, 0x32, 0x6e, 0x7c, 0xd6, 0xd0, 0x62, 0xcf, 0x69, 0x4b, 0x93, 0x38,
+	0xc9, 0xc0, 0x8d, 0x57, 0xa8, 0xac, 0xe6, 0x11, 0xa6, 0xa6, 0x51, 0x05, 0x4b, 0xad, 0x8a, 0x35,
+	0xeb, 0x5b, 0x6b, 0xd6, 0x56, 0x8e, 0x2e, 0x66, 0x4d, 0xb6, 0x8d, 0x64, 0xfd, 0x64, 0x99, 0x73,
+	0xf5, 0xf9, 0x66, 0xa9, 0xb5, 0xfe, 0xf0, 0x6c, 0x2a, 0xdb, 0xc9, 0xc7, 0xcc, 0x97, 0x1f, 0x7b,
+	0xbb, 0x5f, 0x3e, 0x3d, 0x4f, 0x2d, 0x6f, 0xf5, 0x31, 0x07, 0x2b, 0xde, 0xe9, 0x83, 0xc0, 0x3b,
+	0xd6, 0x31, 0x1f, 0x7c, 0xf8, 0xfe, 0xf1, 0xff, 0x55, 0x12, 0x73, 0x9b, 0x9f, 0x4d, 0x30, 0x03,
+	0x62, 0xa7, 0xc6, 0x68, 0x5c, 0x6a, 0x68, 0x69, 0x2a, 0x9d, 0x8f, 0x69, 0xc4, 0xe1, 0x29, 0x7f,
+	0xef, 0x23, 0x9d, 0xe1, 0x88, 0xd0, 0x30, 0x59, 0x94, 0x52, 0xf7, 0xa4, 0x51, 0x1f, 0x1c, 0xd9,
+	0xdb, 0xf8, 0x85, 0xd4, 0xc6, 0x2a, 0x5a, 0x39, 0xea, 0xbd, 0x75, 0x80, 0x4f, 0x02, 0x91, 0x69,
+	0x6a, 0x45, 0xa8, 0xdc, 0x73, 0xda, 0xc7, 0x7c, 0x90, 0x0d, 0xf8, 0x3d, 0xda, 0x7c, 0x8d, 0x23,
+	0x12, 0x40, 0xcf, 0x69, 0x3b, 0x33, 0xb5, 0x33, 0x7e, 0xf3, 0xd1, 0xb4, 0x66, 0xd6, 0x53, 0xa9,
+	0xfe, 0x84, 0x4d, 0xba, 0x35, 0x72, 0x2d, 0x5f, 0x6d, 0x54, 0xf5, 0x4b, 0xa7, 0xd2, 0xcd, 0x64,
+	0xc9, 0x30, 0x69, 0xcd, 0x9e, 0xe8, 0xb2, 0xf5, 0x90, 0x7d, 0x74, 0xab, 0x46, 0xee, 0x60, 0xfb,
+	0xea, 0xae, 0xa6, 0x5d, 0xdf, 0xd5, 0xb4, 0x6f, 0x77, 0x35, 0xed, 0xf2, 0xbe, 0x96, 0xbb, 0xbe,
+	0xaf, 0xe5, 0xbe, 0xde, 0xd7, 0x72, 0xef, 0xfe, 0x98, 0x3e, 0x80, 0x72, 0x6f, 0xf2, 0x11, 0x14,
+	0x17, 0x63, 0xe0, 0xfd, 0x05, 0xf5, 0x2a, 0xed, 0xfe, 0x08, 0x00, 0x00, 0xff, 0xff, 0x37, 0xe1,
+	0xbd, 0xcc, 0x21, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -357,7 +406,7 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type VRFMsgRequestClient interface {
-	HandleVRFRandomNumberRequest(ctx context.Context, in *GenerateRandomNumberRequest, opts ...grpc.CallOption) (*GenerateRandomNumberResponse, error)
+	HandleVRFRandomNumberRequest(ctx context.Context, in *VRFTaskRequest, opts ...grpc.CallOption) (*VRFTaskResponse, error)
 }
 
 type vRFMsgRequestClient struct {
@@ -368,8 +417,8 @@ func NewVRFMsgRequestClient(cc grpc1.ClientConn) VRFMsgRequestClient {
 	return &vRFMsgRequestClient{cc}
 }
 
-func (c *vRFMsgRequestClient) HandleVRFRandomNumberRequest(ctx context.Context, in *GenerateRandomNumberRequest, opts ...grpc.CallOption) (*GenerateRandomNumberResponse, error) {
-	out := new(GenerateRandomNumberResponse)
+func (c *vRFMsgRequestClient) HandleVRFRandomNumberRequest(ctx context.Context, in *VRFTaskRequest, opts ...grpc.CallOption) (*VRFTaskResponse, error) {
+	out := new(VRFTaskResponse)
 	err := c.cc.Invoke(ctx, "/intellix.vrf.VRFMsgRequest/HandleVRFRandomNumberRequest", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -379,14 +428,14 @@ func (c *vRFMsgRequestClient) HandleVRFRandomNumberRequest(ctx context.Context, 
 
 // VRFMsgRequestServer is the server API for VRFMsgRequest service.
 type VRFMsgRequestServer interface {
-	HandleVRFRandomNumberRequest(context.Context, *GenerateRandomNumberRequest) (*GenerateRandomNumberResponse, error)
+	HandleVRFRandomNumberRequest(context.Context, *VRFTaskRequest) (*VRFTaskResponse, error)
 }
 
 // UnimplementedVRFMsgRequestServer can be embedded to have forward compatible implementations.
 type UnimplementedVRFMsgRequestServer struct {
 }
 
-func (*UnimplementedVRFMsgRequestServer) HandleVRFRandomNumberRequest(ctx context.Context, req *GenerateRandomNumberRequest) (*GenerateRandomNumberResponse, error) {
+func (*UnimplementedVRFMsgRequestServer) HandleVRFRandomNumberRequest(ctx context.Context, req *VRFTaskRequest) (*VRFTaskResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HandleVRFRandomNumberRequest not implemented")
 }
 
@@ -395,7 +444,7 @@ func RegisterVRFMsgRequestServer(s grpc1.Server, srv VRFMsgRequestServer) {
 }
 
 func _VRFMsgRequest_HandleVRFRandomNumberRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GenerateRandomNumberRequest)
+	in := new(VRFTaskRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -407,7 +456,7 @@ func _VRFMsgRequest_HandleVRFRandomNumberRequest_Handler(srv interface{}, ctx co
 		FullMethod: "/intellix.vrf.VRFMsgRequest/HandleVRFRandomNumberRequest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VRFMsgRequestServer).HandleVRFRandomNumberRequest(ctx, req.(*GenerateRandomNumberRequest))
+		return srv.(VRFMsgRequestServer).HandleVRFRandomNumberRequest(ctx, req.(*VRFTaskRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -430,7 +479,7 @@ var _VRFMsgRequest_serviceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type VRFMsgResponseClient interface {
-	DVSResponsHandler(ctx context.Context, in *GenerateRandomNumberRequest, opts ...grpc.CallOption) (*DVSResultResponse, error)
+	DVSResponsHandler(ctx context.Context, in *VRFTaskRequest, opts ...grpc.CallOption) (*DVSResultResponse, error)
 }
 
 type vRFMsgResponseClient struct {
@@ -441,7 +490,7 @@ func NewVRFMsgResponseClient(cc grpc1.ClientConn) VRFMsgResponseClient {
 	return &vRFMsgResponseClient{cc}
 }
 
-func (c *vRFMsgResponseClient) DVSResponsHandler(ctx context.Context, in *GenerateRandomNumberRequest, opts ...grpc.CallOption) (*DVSResultResponse, error) {
+func (c *vRFMsgResponseClient) DVSResponsHandler(ctx context.Context, in *VRFTaskRequest, opts ...grpc.CallOption) (*DVSResultResponse, error) {
 	out := new(DVSResultResponse)
 	err := c.cc.Invoke(ctx, "/intellix.vrf.VRFMsgResponse/DVSResponsHandler", in, out, opts...)
 	if err != nil {
@@ -452,14 +501,14 @@ func (c *vRFMsgResponseClient) DVSResponsHandler(ctx context.Context, in *Genera
 
 // VRFMsgResponseServer is the server API for VRFMsgResponse service.
 type VRFMsgResponseServer interface {
-	DVSResponsHandler(context.Context, *GenerateRandomNumberRequest) (*DVSResultResponse, error)
+	DVSResponsHandler(context.Context, *VRFTaskRequest) (*DVSResultResponse, error)
 }
 
 // UnimplementedVRFMsgResponseServer can be embedded to have forward compatible implementations.
 type UnimplementedVRFMsgResponseServer struct {
 }
 
-func (*UnimplementedVRFMsgResponseServer) DVSResponsHandler(ctx context.Context, req *GenerateRandomNumberRequest) (*DVSResultResponse, error) {
+func (*UnimplementedVRFMsgResponseServer) DVSResponsHandler(ctx context.Context, req *VRFTaskRequest) (*DVSResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DVSResponsHandler not implemented")
 }
 
@@ -468,7 +517,7 @@ func RegisterVRFMsgResponseServer(s grpc1.Server, srv VRFMsgResponseServer) {
 }
 
 func _VRFMsgResponse_DVSResponsHandler_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GenerateRandomNumberRequest)
+	in := new(VRFTaskRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -480,7 +529,7 @@ func _VRFMsgResponse_DVSResponsHandler_Handler(srv interface{}, ctx context.Cont
 		FullMethod: "/intellix.vrf.VRFMsgResponse/DVSResponsHandler",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VRFMsgResponseServer).DVSResponsHandler(ctx, req.(*GenerateRandomNumberRequest))
+		return srv.(VRFMsgResponseServer).DVSResponsHandler(ctx, req.(*VRFTaskRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -519,27 +568,77 @@ func (m *TaskMetadata) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.AdvanceDecode {
+		i--
+		if m.AdvanceDecode {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x58
+	}
 	if m.GroupThresholdPercentage != 0 {
 		i = encodeVarintMsgServer(dAtA, i, uint64(m.GroupThresholdPercentage))
 		i--
-		dAtA[i] = 0x28
+		dAtA[i] = 0x50
 	}
 	if len(m.GroupNumbers) > 0 {
 		i -= len(m.GroupNumbers)
 		copy(dAtA[i:], m.GroupNumbers)
 		i = encodeVarintMsgServer(dAtA, i, uint64(len(m.GroupNumbers)))
 		i--
-		dAtA[i] = 0x22
+		dAtA[i] = 0x4a
 	}
-	if m.ChainId != 0 {
-		i = encodeVarintMsgServer(dAtA, i, uint64(m.ChainId))
+	if m.TaskCreatedBlock != 0 {
+		i = encodeVarintMsgServer(dAtA, i, uint64(m.TaskCreatedBlock))
 		i--
-		dAtA[i] = 0x18
+		dAtA[i] = 0x40
 	}
-	if m.Height != 0 {
-		i = encodeVarintMsgServer(dAtA, i, uint64(m.Height))
+	if len(m.CallbackFunctionId) > 0 {
+		i -= len(m.CallbackFunctionId)
+		copy(dAtA[i:], m.CallbackFunctionId)
+		i = encodeVarintMsgServer(dAtA, i, uint64(len(m.CallbackFunctionId)))
 		i--
-		dAtA[i] = 0x10
+		dAtA[i] = 0x3a
+	}
+	if len(m.CallbackAddress) > 0 {
+		i -= len(m.CallbackAddress)
+		copy(dAtA[i:], m.CallbackAddress)
+		i = encodeVarintMsgServer(dAtA, i, uint64(len(m.CallbackAddress)))
+		i--
+		dAtA[i] = 0x32
+	}
+	if len(m.RequestData) > 0 {
+		i -= len(m.RequestData)
+		copy(dAtA[i:], m.RequestData)
+		i = encodeVarintMsgServer(dAtA, i, uint64(len(m.RequestData)))
+		i--
+		dAtA[i] = 0x2a
+	}
+	{
+		size := m.Payment.Size()
+		i -= size
+		if _, err := m.Payment.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintMsgServer(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x22
+	if len(m.FeeToken) > 0 {
+		i -= len(m.FeeToken)
+		copy(dAtA[i:], m.FeeToken)
+		i = encodeVarintMsgServer(dAtA, i, uint64(len(m.FeeToken)))
+		i--
+		dAtA[i] = 0x1a
+	}
+	if len(m.RequestId) > 0 {
+		i -= len(m.RequestId)
+		copy(dAtA[i:], m.RequestId)
+		i = encodeVarintMsgServer(dAtA, i, uint64(len(m.RequestId)))
+		i--
+		dAtA[i] = 0x12
 	}
 	if m.TaskIndex != 0 {
 		i = encodeVarintMsgServer(dAtA, i, uint64(m.TaskIndex))
@@ -586,7 +685,7 @@ func (m *VRFData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
-func (m *GenerateRandomNumberRequest) Marshal() (dAtA []byte, err error) {
+func (m *VRFTaskRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -596,12 +695,12 @@ func (m *GenerateRandomNumberRequest) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *GenerateRandomNumberRequest) MarshalTo(dAtA []byte) (int, error) {
+func (m *VRFTaskRequest) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *GenerateRandomNumberRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *VRFTaskRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -635,7 +734,7 @@ func (m *GenerateRandomNumberRequest) MarshalToSizedBuffer(dAtA []byte) (int, er
 	return len(dAtA) - i, nil
 }
 
-func (m *GenerateRandomNumberResponse) Marshal() (dAtA []byte, err error) {
+func (m *VRFTaskResponse) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -645,12 +744,12 @@ func (m *GenerateRandomNumberResponse) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *GenerateRandomNumberResponse) MarshalTo(dAtA []byte) (int, error) {
+func (m *VRFTaskResponse) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *GenerateRandomNumberResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *VRFTaskResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -720,11 +819,30 @@ func (m *TaskMetadata) Size() (n int) {
 	if m.TaskIndex != 0 {
 		n += 1 + sovMsgServer(uint64(m.TaskIndex))
 	}
-	if m.Height != 0 {
-		n += 1 + sovMsgServer(uint64(m.Height))
+	l = len(m.RequestId)
+	if l > 0 {
+		n += 1 + l + sovMsgServer(uint64(l))
 	}
-	if m.ChainId != 0 {
-		n += 1 + sovMsgServer(uint64(m.ChainId))
+	l = len(m.FeeToken)
+	if l > 0 {
+		n += 1 + l + sovMsgServer(uint64(l))
+	}
+	l = m.Payment.Size()
+	n += 1 + l + sovMsgServer(uint64(l))
+	l = len(m.RequestData)
+	if l > 0 {
+		n += 1 + l + sovMsgServer(uint64(l))
+	}
+	l = len(m.CallbackAddress)
+	if l > 0 {
+		n += 1 + l + sovMsgServer(uint64(l))
+	}
+	l = len(m.CallbackFunctionId)
+	if l > 0 {
+		n += 1 + l + sovMsgServer(uint64(l))
+	}
+	if m.TaskCreatedBlock != 0 {
+		n += 1 + sovMsgServer(uint64(m.TaskCreatedBlock))
 	}
 	l = len(m.GroupNumbers)
 	if l > 0 {
@@ -732,6 +850,9 @@ func (m *TaskMetadata) Size() (n int) {
 	}
 	if m.GroupThresholdPercentage != 0 {
 		n += 1 + sovMsgServer(uint64(m.GroupThresholdPercentage))
+	}
+	if m.AdvanceDecode {
+		n += 2
 	}
 	return n
 }
@@ -753,7 +874,7 @@ func (m *VRFData) Size() (n int) {
 	return n
 }
 
-func (m *GenerateRandomNumberRequest) Size() (n int) {
+func (m *VRFTaskRequest) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -772,7 +893,7 @@ func (m *GenerateRandomNumberRequest) Size() (n int) {
 	return n
 }
 
-func (m *GenerateRandomNumberResponse) Size() (n int) {
+func (m *VRFTaskResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -854,10 +975,10 @@ func (m *TaskMetadata) Unmarshal(dAtA []byte) error {
 				}
 			}
 		case 2:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Height", wireType)
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RequestId", wireType)
 			}
-			m.Height = 0
+			var byteLen int
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowMsgServer
@@ -867,16 +988,31 @@ func (m *TaskMetadata) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.Height |= uint32(b&0x7F) << shift
+				byteLen |= int(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			if byteLen < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RequestId = append(m.RequestId[:0], dAtA[iNdEx:postIndex]...)
+			if m.RequestId == nil {
+				m.RequestId = []byte{}
+			}
+			iNdEx = postIndex
 		case 3:
-			if wireType != 0 {
-				return fmt.Errorf("proto: wrong wireType = %d for field ChainId", wireType)
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FeeToken", wireType)
 			}
-			m.ChainId = 0
+			var stringLen uint64
 			for shift := uint(0); ; shift += 7 {
 				if shift >= 64 {
 					return ErrIntOverflowMsgServer
@@ -886,12 +1022,178 @@ func (m *TaskMetadata) Unmarshal(dAtA []byte) error {
 				}
 				b := dAtA[iNdEx]
 				iNdEx++
-				m.ChainId |= uint64(b&0x7F) << shift
+				stringLen |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}
 			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.FeeToken = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Payment", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsgServer
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Payment.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RequestData", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsgServer
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.RequestData = append(m.RequestData[:0], dAtA[iNdEx:postIndex]...)
+			if m.RequestData == nil {
+				m.RequestData = []byte{}
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CallbackAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsgServer
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CallbackAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 7:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field CallbackFunctionId", wireType)
+			}
+			var byteLen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsgServer
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				byteLen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if byteLen < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			postIndex := iNdEx + byteLen
+			if postIndex < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.CallbackFunctionId = append(m.CallbackFunctionId[:0], dAtA[iNdEx:postIndex]...)
+			if m.CallbackFunctionId == nil {
+				m.CallbackFunctionId = []byte{}
+			}
+			iNdEx = postIndex
+		case 8:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskCreatedBlock", wireType)
+			}
+			m.TaskCreatedBlock = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsgServer
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TaskCreatedBlock |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 9:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field GroupNumbers", wireType)
 			}
@@ -925,7 +1227,7 @@ func (m *TaskMetadata) Unmarshal(dAtA []byte) error {
 				m.GroupNumbers = []byte{}
 			}
 			iNdEx = postIndex
-		case 5:
+		case 10:
 			if wireType != 0 {
 				return fmt.Errorf("proto: wrong wireType = %d for field GroupThresholdPercentage", wireType)
 			}
@@ -944,6 +1246,26 @@ func (m *TaskMetadata) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 11:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AdvanceDecode", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsgServer
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.AdvanceDecode = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skipMsgServer(dAtA[iNdEx:])
@@ -1083,7 +1405,7 @@ func (m *VRFData) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *GenerateRandomNumberRequest) Unmarshal(dAtA []byte) error {
+func (m *VRFTaskRequest) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1106,10 +1428,10 @@ func (m *GenerateRandomNumberRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: GenerateRandomNumberRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: VRFTaskRequest: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GenerateRandomNumberRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: VRFTaskRequest: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -1203,7 +1525,7 @@ func (m *GenerateRandomNumberRequest) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *GenerateRandomNumberResponse) Unmarshal(dAtA []byte) error {
+func (m *VRFTaskResponse) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -1226,10 +1548,10 @@ func (m *GenerateRandomNumberResponse) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: GenerateRandomNumberResponse: wiretype end group for non-group")
+			return fmt.Errorf("proto: VRFTaskResponse: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GenerateRandomNumberResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: VRFTaskResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
