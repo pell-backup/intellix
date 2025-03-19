@@ -4,6 +4,7 @@ import "C"
 
 import (
 	"fmt"
+	"github.com/0xPellNetwork/pellapp-sdk/service/tx"
 	"intellix/gateway/types"
 	"sync"
 
@@ -20,8 +21,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/pkg/errors"
-
-	"intellix/sdk/dvs_msg_handler/tx"
 )
 
 type Dispatcher struct {

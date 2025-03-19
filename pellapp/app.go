@@ -16,13 +16,12 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 
-	dvs "intellix/dvs/price"
+	price "intellix/dvs/price"
 	priceserver "intellix/dvs/price/server"
-	processordvs "intellix/dvs/processor"
+	processor "intellix/dvs/processor"
 	processorserver "intellix/dvs/processor/server"
+	vrf "intellix/dvs/vrf"
 	vrfserver "intellix/dvs/vrf/server"
-	"intellix/sdk/baseapp"
-	"intellix/sdk/pelldvs"
 )
 
 const (
@@ -161,7 +160,7 @@ func NewApp(
 		panic(err)
 	}
 
-	priceModule := dvs.NewAppModule(app.PriceServer)
+	priceModule := price.NewAppModule(app.PriceServer)
 	priceModule.RegisterServices(app.GetMsgRouter())
 	priceModule.RegisterInterfaces(app.interfaceRegistry)
 
@@ -174,14 +173,18 @@ func NewApp(
 		panic(err)
 	}
 
+	processorModule := processor.NewAppModule(app.ProcessorServer)
+	processorModule.RegisterServices(app.GetMsgRouter())
+	processorModule.RegisterInterfaces(app.interfaceRegistry)
+
 	app.VRFServer, err = vrfserver.NewServer(app.logger, config.GatewayAddr)
 	if err != nil {
 		panic(err)
 	}
 
-	processorModule := processordvs.NewAppModule(app.ProcessorServer)
-	processorModule.RegisterServices(app.GetMsgRouter())
-	processorModule.RegisterInterfaces(app.interfaceRegistry)
+	dvsModule := vrf.NewAppModule(app.VRFServer)
+	dvsModule.RegisterServices(app.GetMsgRouter())
+	dvsModule.RegisterInterfaces(app.interfaceRegistry)
 
 	return app
 }

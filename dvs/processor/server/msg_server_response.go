@@ -9,12 +9,7 @@ import (
 	dvstypes "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types"
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 
-	"intellix/dvs"
 	"intellix/dvs/processor/types"
-	taskgateway "intellix/gateway"
-	"intellix/sdk/pelldvs"
-	dvstypes "intellix/sdk/pelldvs/types"
-	sdktypes "intellix/sdk/types"
 	processortypes "intellix/x/processor/types"
 )
 

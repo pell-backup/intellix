@@ -4,14 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/0xPellNetwork/pellapp-sdk/pelldvs"
+	dvstypes "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types"
+	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	"intellix/dvs"
 	"intellix/dvs/vrf/handler"
 	"intellix/dvs/vrf/types"
 	submitter "intellix/gateway/submitter"
 	gateway "intellix/gateway/types"
-	"intellix/sdk/pelldvs"
-	dvstypes "intellix/sdk/pelldvs/types"
-	sdktypes "intellix/sdk/types"
 )
 
 var GatewayClient *submitter.Client

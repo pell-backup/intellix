@@ -1,43 +1,37 @@
 package dvs
 
 import (
-	"github.com/cosmos/gogoproto/grpc"
+	sdkservice "github.com/0xPellNetwork/pellapp-sdk/service"
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"intellix/dvs/vrf/handler"
 	"intellix/dvs/vrf/server"
 	"intellix/dvs/vrf/types"
-	dvsservermanager "intellix/sdk/dvs_msg_handler"
 )
 
 // AppModule implements an application module for the dvs module.
 type AppModule struct {
-	server         server.Server
-	RequestServer  grpc.Server
-	ResponseServer grpc.Server
+	server server.Server
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(s server.Server) AppModule {
-	return AppModule{
-		server:         s,
-		RequestServer:  dvsservermanager.GetProcessRequestHandler(),
-		ResponseServer: dvsservermanager.GetPostProcessRequestHandler(),
+func NewAppModule(server server.Server) *AppModule {
+	return &AppModule{
+		server: server,
 	}
 }
 
 // RegisterServices registers module services.
-func (am AppModule) RegisterServices() {
-	requestServer := server.NewRequestServer(am.server)
-	responseServer := server.NewResponseServer(am.server)
-
+func (am AppModule) RegisterServices(router *sdkservice.MsgRouter) {
+	configurator := router.GetConfigurator()
 	// register dvs-msg handler server
-	types.RegisterVRFMsgRequestServer(am.RequestServer, requestServer)
-	types.RegisterVRFMsgResponseServer(am.ResponseServer, responseServer)
+	types.RegisterVRFMsgRequestServer(configurator, am.server)
 
 	// register dvs-msg result handler
-	if r, ok := am.RequestServer.(*dvsservermanager.ProcessRequestHandler); ok {
-		r.RegisterResultHandler(
-			&types.VRFTaskResponse{}, handler.NewVRFResultHandler(),
-		)
-	}
+	configurator.RegisterResultMsgExtractor(
+		&types.VRFTaskResponse{}, handler.NewVRFResultHandler(),
+	)
+}
 
+func (am AppModule) RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
+	types.RegisterInterfaces(registry)
 }

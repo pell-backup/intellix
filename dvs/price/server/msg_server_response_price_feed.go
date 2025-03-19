@@ -13,11 +13,7 @@ import (
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 
-	"intellix/dvs"
 	"intellix/dvs/price/types"
-	"intellix/sdk/pelldvs"
-	dvstypes "intellix/sdk/pelldvs/types"
-	sdktypes "intellix/sdk/types"
 	pricetypes "intellix/x/price/types"
 )
 
@@ -121,6 +117,5 @@ func (d Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.RequestPr
 	reqJs, _ := json.Marshal(req)
 	d.logger.Info("DvsPostProcessServer.sendResponseToGateway", "req", string(reqJs))
 
-	return d.Server.taskGatewayClient.RespondToPriceTask(req)
-	return d.taskGatewayClient.RespondToTask(req)
+	return d.taskGatewayClient.RespondToPriceTask(req)
 }
