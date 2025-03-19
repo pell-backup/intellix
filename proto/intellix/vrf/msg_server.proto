@@ -10,9 +10,6 @@ option go_package = "intellix/dvs/vrf/types";
 
 service VRFMsgRequest {
   rpc HandleVRFRandomNumberRequest(VRFTaskRequest) returns (VRFTaskResponse) {}
-}
-
-service VRFMsgResponse {
   rpc DVSResponsHandler(VRFTaskRequest) returns (DVSResultResponse) {}
 }
 

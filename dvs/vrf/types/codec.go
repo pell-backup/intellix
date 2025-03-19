@@ -8,7 +8,6 @@ import (
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	msgservice.RegisterMsgServiceDesc(registry, &VRFMsgRequest_serviceDesc)
-	msgservice.RegisterMsgServiceDesc(registry, &VRFMsgResponse_serviceDesc)
 
 	registry.RegisterImplementations((*sdk.Msg)(nil), &VRFTaskRequest{})
 	registry.RegisterImplementations((*sdk.Msg)(nil), &VRFTaskResponse{})

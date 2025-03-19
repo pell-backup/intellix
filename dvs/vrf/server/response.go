@@ -10,11 +10,8 @@ import (
 	"intellix/dvs"
 	"intellix/dvs/vrf/handler"
 	"intellix/dvs/vrf/types"
-	submitter "intellix/gateway/submitter"
 	gateway "intellix/gateway/types"
 )
-
-var GatewayClient *submitter.Client
 
 func (s Server) DVSResponsHandler(ctx context.Context, in *types.VRFTaskRequest) (*types.DVSResultResponse, error) {
 	s.logger.Info("DVSResponsHandler", "TaskIndex", in.TaskMetadata.TaskIndex, "TaskMetadata", fmt.Sprintf("%+v", in.TaskMetadata))
