@@ -10,8 +10,8 @@ import (
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	// this line is used by starport scaffolding # 3
-	msgservice.RegisterMsgServiceDesc(registry, &_DVSRequest_serviceDesc)
-	msgservice.RegisterMsgServiceDesc(registry, &_DVSResponse_serviceDesc)
+	msgservice.RegisterMsgServiceDesc(registry, &DVSRequest_serviceDesc)
+	msgservice.RegisterMsgServiceDesc(registry, &DVSResponse_serviceDesc)
 
 	registry.RegisterImplementations((*sdk.Msg)(nil), &dvstypes.RequestPostRequestValidatedData{})
 	registry.RegisterImplementations((*sdk.Msg)(nil), &RequestPriceFeedIn{})

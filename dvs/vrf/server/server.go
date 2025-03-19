@@ -2,13 +2,10 @@ package server
 
 import (
 	"fmt"
+	"intellix/dvs/vrf/types"
 
 	"github.com/0xPellNetwork/pelldvs-libs/log"
-
-	"github.com/0xPellNetwork/dvs-template/dvs/squared/types"
 )
-
-var _ types.SquaredMsgServerServer = Server{}
 
 // Server struct represents the server with a logger and a chain connector client.
 type Server struct {

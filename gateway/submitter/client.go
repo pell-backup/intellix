@@ -82,7 +82,7 @@ func (c *Client) RespondToPriceTask(req *types.RPCVoteFinalizedRequestIn) error 
 		return fmt.Errorf("task RespondToPriceTask failed: %s", resp.Error)
 	}
 
-	c.logger.Info("Task response sent successfully", "TaskIndex", req.TaskRaw.TaskIndex)
+	c.logger.Info("TaskMetadata response sent successfully", "TaskIndex", req.TaskRaw.TaskIndex)
 
 	return nil
 }
@@ -114,7 +114,7 @@ func (c *Client) RespondToVRFTask(req *types.RPCVoteFinalizedRequestIn) error {
 		return fmt.Errorf("task RespondToVRFTask failed: %s", resp.Error)
 	}
 
-	c.logger.Info("Task response sent successfully", "TaskIndex", req.TaskRaw.TaskIndex)
+	c.logger.Info("TaskMetadata response sent successfully", "TaskIndex", req.TaskRaw.TaskIndex)
 
 	return nil
 }

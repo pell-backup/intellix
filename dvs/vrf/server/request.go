@@ -2,21 +2,71 @@ package server
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
+	"github.com/ontio/ontology-crypto/keypair"
+	"intellix/common"
 	"intellix/dvs/vrf/types"
 	"math/big"
+	"strings"
 
 	"cosmossdk.io/math"
 )
 
-func (s Server) GenerateRandomNumber(ctx context.Context, request *types.GenerateRandomNumberRequest) (*types.GenerateRandomNumberResponse, error) {
-	s.logger.Info("GenerateRandomNumber", "in", fmt.Sprintf("%+v", request))
+func (s Server) HandleVRFRandomNumberRequest(ctx context.Context, request *types.GenerateRandomNumberRequest) (*types.GenerateRandomNumberResponse, error) {
+	s.logger.Info("HandleVRFRandomNumberRequest", "in", fmt.Sprintf("%+v", request))
 
-	randomNumber := big.NewInt(1)
+	// TODO: use config
+	pubKeyStr := "03515b41d933f87408a1837681b62a1b49521e10e614027685eac41fe66d1f5c55"
+	if strings.HasPrefix(pubKeyStr, "0x") {
+		pubKeyStr = pubKeyStr[2:]
+	}
+	pubKeyBuf, err := hex.DecodeString(pubKeyStr)
+	if err != nil {
+		s.logger.Error("Failed to decode private key", "error", err)
+	}
+	pubKey, err := keypair.DeserializePublicKey(pubKeyBuf)
+	if err != nil {
+		s.logger.Error("Failed to deserialize public key", "error", err)
+		return nil, err
+	}
 
-	s.logger.Info("Generated random number", "result", randomNumber)
+	var randomNumbers []math.Int
+	for _, v := range request.VrfData {
+		verified, err := common.VerifyVRF(pubKey, request.TaskMetadata, v.VrfValue, v.VrfProof)
+		if err != nil {
+			s.logger.Error("Failed to verify VRF", "error", err)
+			return nil, err
+		}
+
+		if !verified {
+			s.logger.Error("VRF verification failed")
+			return nil, err
+		}
+
+		randomNumber := bytesToNumber(v.VrfValue)
+
+		// Define a 255-bit limit (2^255) as the maximum value for our random number
+		// VRF output can potentially be larger than needed, so we truncate it
+		limit := new(big.Int).Lsh(big.NewInt(1), 255) // 1 << 255
+		// Apply modulo operation to ensure the number is within our defined range
+		// This truncates the bigint to prevent overflow and ensure consistent bit length
+		randomNumber.Mod(randomNumber, limit)
+
+		value := math.NewIntFromBigInt(randomNumber)
+		randomNumbers = append(randomNumbers, value)
+	}
+
+	s.logger.Info("HandleVRFRandomNumberRequest", "randomNumbers", randomNumbers)
+
 	return &types.GenerateRandomNumberResponse{
-		TaskIndex:    request.Task.TaskIndex,
-		RandomNumber: math.NewIntFromBigInt(randomNumber),
+		TaskIndex:    request.TaskMetadata.TaskIndex,
+		RandomNumber: randomNumbers,
 	}, nil
+}
+
+func bytesToNumber(b []byte) *big.Int {
+	num := new(big.Int)
+	num.SetBytes(b)
+	return num
 }

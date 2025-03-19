@@ -3,6 +3,7 @@ package dispatcher
 import (
 	"context"
 	"cosmossdk.io/math"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	interactortypes "github.com/0xPellNetwork/pelldvs-interactor/types"
@@ -10,9 +11,13 @@ import (
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ontio/ontology-crypto/keypair"
+	"intellix/common"
 	"intellix/dvs"
 	pricetypes "intellix/dvs/price/types"
 	processortypes "intellix/dvs/processor/types"
+	"intellix/dvs/vrf/types"
+	"strings"
 )
 
 func (d *Dispatcher) listenForNewTasks(chain *chainWatcher) {
@@ -76,12 +81,16 @@ func (d *Dispatcher) serializeTaskByType(chainID uint64, task *contractdataoracl
 	case dvs.TaskTypeProcessor:
 		taskRequest, err = d.serializeScriptTask(chainID, task)
 	case dvs.TaskTypeVRFRandomNumber:
+		taskRequest, err = d.serializeVRFTask(chainID, task)
 	default:
 		return nil, fmt.Errorf("invalid task type: %d", task.Task.TaskType.Int64())
 	}
 
 	if err != nil {
 		return nil, err
+	}
+	if taskRequest == nil {
+		return nil, errors.New("task request is nil")
 	}
 
 	return d.msgEncoder.EncodeMsgs(taskRequest)
@@ -142,7 +151,58 @@ func (d *Dispatcher) serializeScriptTask(chainID uint64, newTask *contractdataor
 }
 
 func (d *Dispatcher) serializeVRFTask(chainID uint64, newTask *contractdataoracle.ContractDataOracleNewTaskCreated) (sdk.Msg, error) {
-	return nil, nil
+	task := newTask.Task
+	param, err := ParseVRFTaskParam(task.RequestData)
+	if err != nil {
+		d.logger.Error("Failed to parse VRF task param", "chainID", chainID, "error", err)
+		return nil, err
+	}
+
+	// Gnerate random number
+	// TODO: use config
+	privKeyStr := "120227b28b159b591f822f7cb4373e3ac37031f050f38486cbd6a4173c22d3d5c90903515b41d933f87408a1837681b62a1b49521e10e614027685eac41fe66d1f5c55"
+	// pubkey := 03515b41d933f87408a1837681b62a1b49521e10e614027685eac41fe66d1f5c55
+	if strings.HasPrefix(privKeyStr, "0x") {
+		privKeyStr = privKeyStr[2:]
+	}
+	priKeyBuf, err := hex.DecodeString(privKeyStr)
+	if err != nil {
+		d.logger.Error("Failed to decode private key", "error", err)
+	}
+	priKey, err := keypair.DeserializePrivateKey(priKeyBuf)
+	if err != nil {
+		d.logger.Error("Failed to deserialize private key", "error", err)
+	}
+
+	// Generate a VRF
+	var vrfData []*types.VRFData
+
+	taskMetadata := &types.TaskMetadata{
+		TaskIndex:                newTask.TaskIndex,
+		Height:                   uint32(newTask.Raw.BlockNumber),
+		ChainId:                  chainID,
+		GroupNumbers:             task.GroupNumbers,
+		GroupThresholdPercentage: task.GroupThresholdPercentage,
+	}
+
+	for i := 0; i < int(param.NumWords); i++ {
+		vrfValue, vrfProof, err := common.ComputeVRF(priKey, taskMetadata)
+		if err != nil {
+			d.logger.Error("Failed to generate VRF", "error", err)
+			return nil, err
+		}
+		vrfData = append(vrfData, &types.VRFData{
+			VrfValue: vrfValue,
+			VrfProof: vrfProof,
+		})
+	}
+
+	taskRequest := &types.GenerateRandomNumberRequest{
+		TaskMetadata: taskMetadata,
+		VrfData:      vrfData,
+	}
+
+	return taskRequest, nil
 }
 
 // listenForNewTasks listens for new price tasks on a specific chain

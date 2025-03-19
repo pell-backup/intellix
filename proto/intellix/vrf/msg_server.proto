@@ -9,11 +9,11 @@ import "amino/amino.proto";
 option go_package = "intellix/dvs/vrf/types";
 
 service VRFMsgServer {
-  rpc GenerateRandomNumber(GenerateRandomNumberRequest) returns (GenerateRandomNumberResponse) {}
+  rpc HandleVRFRandomNumberRequest(GenerateRandomNumberRequest) returns (GenerateRandomNumberResponse) {}
   rpc DVSResponsHandler(GenerateRandomNumberRequest) returns (DVSResultResponse) {}
 }
 
-message Task {
+message TaskMetadata {
   uint32 task_index = 1;
   uint32 height = 2;
   uint64 chain_id = 3;
@@ -21,18 +21,22 @@ message Task {
   uint32 group_threshold_percentage = 5;
 }
 
+message VRFData {
+  bytes vrf_value = 1;
+  bytes vrf_proof = 2;
+}
+
 message GenerateRandomNumberRequest {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
   option (amino.name) = "dvs/squared/request";
-  Task task = 1;
-  bytes vrf_value = 2;
-  bytes vrf_proof = 3;
+  TaskMetadata task_metadata = 1;
+  repeated VRFData vrf_data = 2;
 }
 
 message GenerateRandomNumberResponse {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
   uint32 task_index = 1;
-  string randomNumber = 2 [
+  repeated string randomNumber = 2 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];

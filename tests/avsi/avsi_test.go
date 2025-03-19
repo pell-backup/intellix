@@ -9,7 +9,7 @@ const (
 
 func mockDvsRequestData() ([]byte, error) {
 	data := &dvstypes.ProcessRequestPriceFeedIn{
-		Task: &dvstypes.TaskRequest{
+		TaskMetadata: &dvstypes.TaskRequest{
 			TaskIndex:                 1,
 			RequestId:                 []byte("1234"),
 			FeeToken:                  "",

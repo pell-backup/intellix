@@ -14,12 +14,15 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 
-	dvs "intellix/dvs/price"
+	price "intellix/dvs/price"
 	dvsserver "intellix/dvs/price/server"
-	dvstypes "intellix/dvs/price/types"
+	pricetypes "intellix/dvs/price/types"
 	processordvs "intellix/dvs/processor"
 	processordvsserver "intellix/dvs/processor/server"
 	processordvstypes "intellix/dvs/processor/types"
+	vrf "intellix/dvs/vrf"
+	vrfserver "intellix/dvs/vrf/server"
+	vrftypes "intellix/dvs/vrf/types"
 	"intellix/sdk/baseapp"
 	dvsservermanager "intellix/sdk/dvs_msg_handler"
 	"intellix/sdk/pelldvs"
@@ -42,8 +45,10 @@ type App struct {
 
 	dvsNode *pelldvs.Node
 
-	DvsServer                dvsserver.Server
-	ProcessorDvsServer       processordvsserver.Server
+	DvsServer          dvsserver.Server
+	ProcessorDvsServer processordvsserver.Server
+	VRFServer          vrfserver.Server
+
 	ProcessRequestServer     grpc1.Server
 	PostProcessRequestServer grpc1.Server
 
@@ -126,7 +131,7 @@ func NewApp(
 
 	// TODO: configurable
 	config.DvsConfig.RPC.ListenAddress = "tcp://0.0.0.0:26657"
-	// dvs client
+	// price client
 	logger.Info("NewNode", "config.DvsConfig.RPC.ListenAddress", config.DvsConfig.RPC.ListenAddress)
 	app.dvsNode, err = pelldvs.NewNode(app.logger, app, config.DvsConfig)
 	if err != nil {
@@ -166,14 +171,24 @@ func NewApp(
 		panic(err)
 	}
 
+	app.VRFServer, err = vrfserver.NewServer(
+		app.logger,
+	)
+	if err != nil {
+		panic(err)
+	}
+
 	// init dvsservermanager
 	dvsservermanager.InitDvsMsgHelper(app.appCodec)
 	app.PostProcessRequestServer = dvsservermanager.GetPostProcessRequestHandler()
 	app.ProcessRequestServer = dvsservermanager.GetProcessRequestHandler()
 
-	//dvs server manager
-	dvs.NewAppModule(app.DvsServer).RegisterServices()
-	dvstypes.RegisterInterfaces(app.interfaceRegistry)
+	//price server manager
+	price.NewAppModule(app.DvsServer).RegisterServices()
+	pricetypes.RegisterInterfaces(app.interfaceRegistry)
+
+	vrf.NewAppModule(app.VRFServer).RegisterServices()
+	vrftypes.RegisterInterfaces(app.interfaceRegistry)
 
 	// processor server
 	processordvs.NewAppModule(app.ProcessorDvsServer).RegisterServices()

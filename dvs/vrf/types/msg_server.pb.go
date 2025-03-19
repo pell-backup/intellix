@@ -32,7 +32,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-type Task struct {
+type TaskMetadata struct {
 	TaskIndex                uint32 `protobuf:"varint,1,opt,name=task_index,json=taskIndex,proto3" json:"task_index,omitempty"`
 	Height                   uint32 `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
 	ChainId                  uint64 `protobuf:"varint,3,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
@@ -40,18 +40,18 @@ type Task struct {
 	GroupThresholdPercentage uint32 `protobuf:"varint,5,opt,name=group_threshold_percentage,json=groupThresholdPercentage,proto3" json:"group_threshold_percentage,omitempty"`
 }
 
-func (m *Task) Reset()         { *m = Task{} }
-func (m *Task) String() string { return proto.CompactTextString(m) }
-func (*Task) ProtoMessage()    {}
-func (*Task) Descriptor() ([]byte, []int) {
+func (m *TaskMetadata) Reset()         { *m = TaskMetadata{} }
+func (m *TaskMetadata) String() string { return proto.CompactTextString(m) }
+func (*TaskMetadata) ProtoMessage()    {}
+func (*TaskMetadata) Descriptor() ([]byte, []int) {
 	return fileDescriptor_7b5b703e76daccbc, []int{0}
 }
-func (m *Task) XXX_Unmarshal(b []byte) error {
+func (m *TaskMetadata) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
 }
-func (m *Task) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+func (m *TaskMetadata) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	if deterministic {
-		return xxx_messageInfo_Task.Marshal(b, m, deterministic)
+		return xxx_messageInfo_TaskMetadata.Marshal(b, m, deterministic)
 	} else {
 		b = b[:cap(b)]
 		n, err := m.MarshalToSizedBuffer(b)
@@ -61,64 +61,115 @@ func (m *Task) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 		return b[:n], nil
 	}
 }
-func (m *Task) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Task.Merge(m, src)
+func (m *TaskMetadata) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_TaskMetadata.Merge(m, src)
 }
-func (m *Task) XXX_Size() int {
+func (m *TaskMetadata) XXX_Size() int {
 	return m.Size()
 }
-func (m *Task) XXX_DiscardUnknown() {
-	xxx_messageInfo_Task.DiscardUnknown(m)
+func (m *TaskMetadata) XXX_DiscardUnknown() {
+	xxx_messageInfo_TaskMetadata.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Task proto.InternalMessageInfo
+var xxx_messageInfo_TaskMetadata proto.InternalMessageInfo
 
-func (m *Task) GetTaskIndex() uint32 {
+func (m *TaskMetadata) GetTaskIndex() uint32 {
 	if m != nil {
 		return m.TaskIndex
 	}
 	return 0
 }
 
-func (m *Task) GetHeight() uint32 {
+func (m *TaskMetadata) GetHeight() uint32 {
 	if m != nil {
 		return m.Height
 	}
 	return 0
 }
 
-func (m *Task) GetChainId() uint64 {
+func (m *TaskMetadata) GetChainId() uint64 {
 	if m != nil {
 		return m.ChainId
 	}
 	return 0
 }
 
-func (m *Task) GetGroupNumbers() []byte {
+func (m *TaskMetadata) GetGroupNumbers() []byte {
 	if m != nil {
 		return m.GroupNumbers
 	}
 	return nil
 }
 
-func (m *Task) GetGroupThresholdPercentage() uint32 {
+func (m *TaskMetadata) GetGroupThresholdPercentage() uint32 {
 	if m != nil {
 		return m.GroupThresholdPercentage
 	}
 	return 0
 }
 
+type VRFData struct {
+	VrfValue []byte `protobuf:"bytes,1,opt,name=vrf_value,json=vrfValue,proto3" json:"vrf_value,omitempty"`
+	VrfProof []byte `protobuf:"bytes,2,opt,name=vrf_proof,json=vrfProof,proto3" json:"vrf_proof,omitempty"`
+}
+
+func (m *VRFData) Reset()         { *m = VRFData{} }
+func (m *VRFData) String() string { return proto.CompactTextString(m) }
+func (*VRFData) ProtoMessage()    {}
+func (*VRFData) Descriptor() ([]byte, []int) {
+	return fileDescriptor_7b5b703e76daccbc, []int{1}
+}
+func (m *VRFData) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *VRFData) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_VRFData.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *VRFData) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_VRFData.Merge(m, src)
+}
+func (m *VRFData) XXX_Size() int {
+	return m.Size()
+}
+func (m *VRFData) XXX_DiscardUnknown() {
+	xxx_messageInfo_VRFData.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_VRFData proto.InternalMessageInfo
+
+func (m *VRFData) GetVrfValue() []byte {
+	if m != nil {
+		return m.VrfValue
+	}
+	return nil
+}
+
+func (m *VRFData) GetVrfProof() []byte {
+	if m != nil {
+		return m.VrfProof
+	}
+	return nil
+}
+
 type GenerateRandomNumberRequest struct {
-	Task     *Task  `protobuf:"bytes,1,opt,name=task,proto3" json:"task,omitempty"`
-	VrfValue []byte `protobuf:"bytes,2,opt,name=vrf_value,json=vrfValue,proto3" json:"vrf_value,omitempty"`
-	VrfProof []byte `protobuf:"bytes,3,opt,name=vrf_proof,json=vrfProof,proto3" json:"vrf_proof,omitempty"`
+	TaskMetadata *TaskMetadata `protobuf:"bytes,1,opt,name=task_metadata,json=taskMetadata,proto3" json:"task_metadata,omitempty"`
+	VrfData      []*VRFData    `protobuf:"bytes,2,rep,name=vrf_data,json=vrfData,proto3" json:"vrf_data,omitempty"`
 }
 
 func (m *GenerateRandomNumberRequest) Reset()         { *m = GenerateRandomNumberRequest{} }
 func (m *GenerateRandomNumberRequest) String() string { return proto.CompactTextString(m) }
 func (*GenerateRandomNumberRequest) ProtoMessage()    {}
 func (*GenerateRandomNumberRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7b5b703e76daccbc, []int{1}
+	return fileDescriptor_7b5b703e76daccbc, []int{2}
 }
 func (m *GenerateRandomNumberRequest) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -147,37 +198,30 @@ func (m *GenerateRandomNumberRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_GenerateRandomNumberRequest proto.InternalMessageInfo
 
-func (m *GenerateRandomNumberRequest) GetTask() *Task {
+func (m *GenerateRandomNumberRequest) GetTaskMetadata() *TaskMetadata {
 	if m != nil {
-		return m.Task
+		return m.TaskMetadata
 	}
 	return nil
 }
 
-func (m *GenerateRandomNumberRequest) GetVrfValue() []byte {
+func (m *GenerateRandomNumberRequest) GetVrfData() []*VRFData {
 	if m != nil {
-		return m.VrfValue
-	}
-	return nil
-}
-
-func (m *GenerateRandomNumberRequest) GetVrfProof() []byte {
-	if m != nil {
-		return m.VrfProof
+		return m.VrfData
 	}
 	return nil
 }
 
 type GenerateRandomNumberResponse struct {
-	TaskIndex    uint32                `protobuf:"varint,1,opt,name=task_index,json=taskIndex,proto3" json:"task_index,omitempty"`
-	RandomNumber cosmossdk_io_math.Int `protobuf:"bytes,2,opt,name=randomNumber,proto3,customtype=cosmossdk.io/math.Int" json:"randomNumber"`
+	TaskIndex    uint32                  `protobuf:"varint,1,opt,name=task_index,json=taskIndex,proto3" json:"task_index,omitempty"`
+	RandomNumber []cosmossdk_io_math.Int `protobuf:"bytes,2,rep,name=randomNumber,proto3,customtype=cosmossdk.io/math.Int" json:"randomNumber"`
 }
 
 func (m *GenerateRandomNumberResponse) Reset()         { *m = GenerateRandomNumberResponse{} }
 func (m *GenerateRandomNumberResponse) String() string { return proto.CompactTextString(m) }
 func (*GenerateRandomNumberResponse) ProtoMessage()    {}
 func (*GenerateRandomNumberResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7b5b703e76daccbc, []int{2}
+	return fileDescriptor_7b5b703e76daccbc, []int{3}
 }
 func (m *GenerateRandomNumberResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -220,7 +264,7 @@ func (m *DVSResultResponse) Reset()         { *m = DVSResultResponse{} }
 func (m *DVSResultResponse) String() string { return proto.CompactTextString(m) }
 func (*DVSResultResponse) ProtoMessage()    {}
 func (*DVSResultResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_7b5b703e76daccbc, []int{3}
+	return fileDescriptor_7b5b703e76daccbc, []int{4}
 }
 func (m *DVSResultResponse) XXX_Unmarshal(b []byte) error {
 	return m.Unmarshal(b)
@@ -250,7 +294,8 @@ func (m *DVSResultResponse) XXX_DiscardUnknown() {
 var xxx_messageInfo_DVSResultResponse proto.InternalMessageInfo
 
 func init() {
-	proto.RegisterType((*Task)(nil), "intellix.vrf.Task")
+	proto.RegisterType((*TaskMetadata)(nil), "intellix.vrf.TaskMetadata")
+	proto.RegisterType((*VRFData)(nil), "intellix.vrf.VRFData")
 	proto.RegisterType((*GenerateRandomNumberRequest)(nil), "intellix.vrf.GenerateRandomNumberRequest")
 	proto.RegisterType((*GenerateRandomNumberResponse)(nil), "intellix.vrf.GenerateRandomNumberResponse")
 	proto.RegisterType((*DVSResultResponse)(nil), "intellix.vrf.DVSResultResponse")
@@ -259,42 +304,45 @@ func init() {
 func init() { proto.RegisterFile("intellix/vrf/msg_server.proto", fileDescriptor_7b5b703e76daccbc) }
 
 var fileDescriptor_7b5b703e76daccbc = []byte{
-	// 545 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x53, 0xc1, 0x6e, 0xd3, 0x4a,
-	0x14, 0xb5, 0xdf, 0x0b, 0xa5, 0x1d, 0xdc, 0x45, 0xa7, 0xa5, 0xb8, 0x09, 0x71, 0x22, 0x23, 0xa1,
-	0x50, 0x09, 0x9b, 0xb4, 0xbb, 0x8a, 0x0d, 0x15, 0x02, 0xb2, 0x28, 0xaa, 0xdc, 0x2a, 0x0b, 0x36,
-	0xd6, 0x24, 0x9e, 0xd8, 0x56, 0xec, 0x19, 0x77, 0x66, 0x6c, 0x95, 0x5f, 0x60, 0xc5, 0x0f, 0xf0,
-	0x0f, 0x2c, 0xba, 0xe3, 0x07, 0x2a, 0x56, 0x5d, 0x22, 0x16, 0x15, 0x4a, 0x16, 0xfc, 0x06, 0x9a,
-	0x99, 0xa4, 0x6a, 0x44, 0x55, 0x60, 0x93, 0xf8, 0x9e, 0x73, 0xae, 0xe7, 0x9c, 0xb9, 0xbe, 0xa0,
-	0x99, 0x12, 0x81, 0xb3, 0x2c, 0x3d, 0xf5, 0x2b, 0x36, 0xf2, 0x73, 0x1e, 0x87, 0x1c, 0xb3, 0x0a,
-	0x33, 0xaf, 0x60, 0x54, 0x50, 0x68, 0xcd, 0x69, 0xaf, 0x62, 0xa3, 0xfa, 0x46, 0x4c, 0x63, 0xaa,
-	0x08, 0x5f, 0x3e, 0x69, 0x4d, 0xfd, 0xc1, 0x90, 0xf2, 0x9c, 0x72, 0xd9, 0xec, 0x57, 0x5d, 0xf9,
-	0x37, 0x23, 0xb6, 0x34, 0x11, 0xea, 0x0e, 0x5d, 0xcc, 0xa8, 0x35, 0x94, 0xa7, 0x84, 0xfa, 0xea,
-	0x57, 0x43, 0xee, 0x17, 0x13, 0xd4, 0x8e, 0x11, 0x1f, 0xc3, 0x26, 0x00, 0x02, 0xf1, 0x71, 0x98,
-	0x92, 0x08, 0x9f, 0xda, 0x66, 0xdb, 0xec, 0xac, 0x06, 0x2b, 0x12, 0xe9, 0x49, 0x00, 0x6e, 0x82,
-	0xa5, 0x04, 0xa7, 0x71, 0x22, 0xec, 0xff, 0x14, 0x35, 0xab, 0xe0, 0x16, 0x58, 0x1e, 0x26, 0x28,
-	0x25, 0x61, 0x1a, 0xd9, 0xff, 0xb7, 0xcd, 0x4e, 0x2d, 0xb8, 0xab, 0xea, 0x5e, 0x04, 0x1f, 0x81,
-	0xd5, 0x98, 0xd1, 0xb2, 0x08, 0x49, 0x99, 0x0f, 0x30, 0xe3, 0x76, 0xad, 0x6d, 0x76, 0xac, 0xc0,
-	0x52, 0xe0, 0x5b, 0x8d, 0xc1, 0xe7, 0xa0, 0xae, 0x45, 0x22, 0x61, 0x98, 0x27, 0x34, 0x8b, 0xc2,
-	0x02, 0xb3, 0x21, 0x26, 0x02, 0xc5, 0xd8, 0xbe, 0xa3, 0xce, 0xb2, 0x95, 0xe2, 0x78, 0x2e, 0x38,
-	0xbc, 0xe2, 0xdd, 0x33, 0x13, 0x34, 0x5e, 0x63, 0x82, 0x19, 0x12, 0x38, 0x40, 0x24, 0xa2, 0xb9,
-	0x7e, 0x6f, 0x80, 0x4f, 0x4a, 0xcc, 0x05, 0x7c, 0x0c, 0x6a, 0x32, 0x82, 0x8a, 0x73, 0x6f, 0x07,
-	0x7a, 0xd7, 0xef, 0xd5, 0x93, 0xb1, 0x03, 0xc5, 0xc3, 0x06, 0x58, 0xa9, 0xd8, 0x28, 0xac, 0x50,
-	0x56, 0x62, 0x15, 0xd0, 0x0a, 0x96, 0x2b, 0x36, 0xea, 0xcb, 0x7a, 0x4e, 0x16, 0x8c, 0xd2, 0x91,
-	0xca, 0xa8, 0xc9, 0x43, 0x59, 0xef, 0xed, 0x7e, 0x3d, 0x7b, 0x3a, 0x1b, 0x85, 0x37, 0x40, 0x1c,
-	0x7b, 0x55, 0x77, 0x80, 0x05, 0xea, 0x7a, 0x07, 0x3c, 0xfe, 0xf0, 0xf3, 0xf3, 0xf6, 0x7a, 0x54,
-	0x71, 0x9f, 0x9f, 0x94, 0x88, 0xe1, 0xc8, 0x67, 0xda, 0x96, 0xfb, 0xc9, 0x04, 0x0f, 0x6f, 0xb6,
-	0xcd, 0x0b, 0x4a, 0x38, 0xfe, 0xd3, 0x30, 0x5e, 0x00, 0x8b, 0x5d, 0x6b, 0x53, 0x8e, 0x57, 0xf6,
-	0x9b, 0xe7, 0x97, 0x2d, 0xe3, 0xfb, 0x65, 0xeb, 0xbe, 0xb6, 0xc3, 0xa3, 0xb1, 0x97, 0x52, 0x3f,
-	0x47, 0x22, 0xf1, 0x7a, 0x44, 0x04, 0x0b, 0x2d, 0x7b, 0x8d, 0x5b, 0x7c, 0xbb, 0xeb, 0x60, 0xed,
-	0x65, 0xff, 0x28, 0xc0, 0xbc, 0xcc, 0xc4, 0xdc, 0xd3, 0xce, 0xc4, 0x04, 0x56, 0x3f, 0x78, 0x75,
-	0xc0, 0xe3, 0x23, 0xf5, 0xad, 0x42, 0x0a, 0x36, 0x6e, 0x0a, 0x01, 0x9f, 0x2c, 0x5e, 0xf3, 0x2d,
-	0xf3, 0xa9, 0x6f, 0xff, 0x8d, 0x54, 0x9f, 0xef, 0x1a, 0x10, 0xcd, 0x6d, 0x49, 0xe0, 0x0d, 0x22,
-	0x51, 0xf6, 0x6f, 0xa7, 0xb5, 0x16, 0xa5, 0xbf, 0x45, 0x74, 0x8d, 0xfd, 0x67, 0xe7, 0x13, 0xc7,
-	0xbc, 0x98, 0x38, 0xe6, 0x8f, 0x89, 0x63, 0x7e, 0x9c, 0x3a, 0xc6, 0xc5, 0xd4, 0x31, 0xbe, 0x4d,
-	0x1d, 0xe3, 0xdd, 0xe6, 0xd5, 0xca, 0xca, 0x89, 0xca, 0xb5, 0x15, 0xef, 0x0b, 0xcc, 0x07, 0x4b,
-	0x6a, 0x8f, 0x76, 0x7f, 0x05, 0x00, 0x00, 0xff, 0xff, 0x9d, 0x41, 0xc7, 0xbe, 0xd3, 0x03, 0x00,
-	0x00,
+	// 595 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x54, 0xcd, 0x4e, 0x14, 0x41,
+	0x10, 0xde, 0x01, 0xe4, 0xa7, 0x19, 0x0e, 0x0c, 0x82, 0xcb, 0x02, 0xcb, 0x66, 0xbc, 0xac, 0x24,
+	0xce, 0xf0, 0x73, 0x23, 0x26, 0x46, 0x24, 0x28, 0x07, 0x0c, 0x69, 0xc8, 0x1e, 0xbc, 0x4c, 0x7a,
+	0x99, 0x9a, 0x9f, 0x30, 0x33, 0x3d, 0x74, 0xf7, 0x8c, 0xf8, 0x0a, 0x9e, 0x7c, 0x01, 0xdf, 0xc1,
+	0x83, 0x6f, 0x60, 0x4c, 0x88, 0x27, 0x8e, 0xc6, 0x03, 0x31, 0xec, 0xc1, 0xc4, 0xa7, 0x30, 0xdd,
+	0x3d, 0x4b, 0x76, 0x23, 0x41, 0xbd, 0xec, 0x76, 0xd5, 0x57, 0xdf, 0xd4, 0x57, 0xf5, 0xa5, 0x1b,
+	0xad, 0xc4, 0x99, 0x80, 0x24, 0x89, 0xcf, 0xdd, 0x92, 0x05, 0x6e, 0xca, 0x43, 0x8f, 0x03, 0x2b,
+	0x81, 0x39, 0x39, 0xa3, 0x82, 0x5a, 0x66, 0x1f, 0x76, 0x4a, 0x16, 0x34, 0xee, 0x87, 0x34, 0xa4,
+	0x0a, 0x70, 0xe5, 0x49, 0xd7, 0x34, 0x1e, 0x9c, 0x50, 0x9e, 0x52, 0x2e, 0xc9, 0x6e, 0xb9, 0x21,
+	0xff, 0x2a, 0x60, 0x51, 0x03, 0x9e, 0x66, 0xe8, 0xa0, 0x82, 0x66, 0x49, 0x1a, 0x67, 0xd4, 0x55,
+	0xbf, 0x3a, 0x65, 0x7f, 0x36, 0x90, 0x79, 0x4c, 0xf8, 0xe9, 0x01, 0x08, 0xe2, 0x13, 0x41, 0xac,
+	0x15, 0x84, 0x04, 0xe1, 0xa7, 0x5e, 0x9c, 0xf9, 0x70, 0x5e, 0x37, 0x5a, 0x46, 0x7b, 0x06, 0x4f,
+	0xc9, 0xcc, 0xbe, 0x4c, 0x58, 0x0b, 0x68, 0x3c, 0x82, 0x38, 0x8c, 0x44, 0x7d, 0x44, 0x41, 0x55,
+	0x64, 0x2d, 0xa2, 0xc9, 0x93, 0x88, 0xc4, 0x99, 0x17, 0xfb, 0xf5, 0xd1, 0x96, 0xd1, 0x1e, 0xc3,
+	0x13, 0x2a, 0xde, 0xf7, 0xad, 0x87, 0x68, 0x26, 0x64, 0xb4, 0xc8, 0xbd, 0xac, 0x48, 0xbb, 0xc0,
+	0x78, 0x7d, 0xac, 0x65, 0xb4, 0x4d, 0x6c, 0xaa, 0xe4, 0x2b, 0x9d, 0xb3, 0x9e, 0xa0, 0x86, 0x2e,
+	0x12, 0x11, 0x03, 0x1e, 0xd1, 0xc4, 0xf7, 0x72, 0x60, 0x27, 0x90, 0x09, 0x12, 0x42, 0xfd, 0x9e,
+	0xea, 0x55, 0x57, 0x15, 0xc7, 0xfd, 0x82, 0xc3, 0x1b, 0xdc, 0x7e, 0x8e, 0x26, 0x3a, 0x78, 0x6f,
+	0x57, 0xea, 0x5f, 0x42, 0x53, 0x25, 0x0b, 0xbc, 0x92, 0x24, 0x05, 0x28, 0xf9, 0x26, 0x9e, 0x2c,
+	0x59, 0xd0, 0x91, 0x71, 0x1f, 0xcc, 0x19, 0xa5, 0x81, 0x1a, 0x40, 0x83, 0x87, 0x32, 0xb6, 0xbf,
+	0x18, 0x68, 0xe9, 0x05, 0x64, 0xc0, 0x88, 0x00, 0x4c, 0x32, 0x9f, 0xa6, 0x5a, 0x1c, 0x86, 0xb3,
+	0x02, 0xb8, 0xb0, 0x9e, 0xa2, 0x19, 0xb5, 0x99, 0xb4, 0x5a, 0x95, 0xfa, 0xfa, 0xf4, 0x66, 0xc3,
+	0x19, 0x74, 0xcb, 0x19, 0x5c, 0x26, 0x36, 0xc5, 0xe0, 0x6a, 0xd7, 0x91, 0x6c, 0xe6, 0x29, 0xee,
+	0x48, 0x6b, 0xb4, 0x3d, 0xbd, 0x39, 0x3f, 0xcc, 0xad, 0x66, 0xc0, 0x13, 0x25, 0x0b, 0xe4, 0x61,
+	0x7b, 0xeb, 0xeb, 0xa7, 0xc7, 0x95, 0xd1, 0x4e, 0x97, 0x70, 0x70, 0xca, 0x8d, 0x2e, 0x08, 0xb2,
+	0xe1, 0x1c, 0xf0, 0xf0, 0xdd, 0xcf, 0x8f, 0x6b, 0x73, 0x7e, 0xc9, 0x5d, 0x7e, 0x56, 0x10, 0x06,
+	0xbe, 0xcb, 0xb4, 0x4e, 0xfb, 0x83, 0x81, 0x96, 0x6f, 0x9f, 0x83, 0xe7, 0x34, 0xe3, 0xf0, 0x37,
+	0x8b, 0x9f, 0x21, 0x93, 0x0d, 0xd0, 0x94, 0xd4, 0xa9, 0x9d, 0x95, 0x8b, 0xab, 0xd5, 0xda, 0xf7,
+	0xab, 0xd5, 0x79, 0x2d, 0x87, 0xfb, 0xa7, 0x4e, 0x4c, 0xdd, 0x94, 0x88, 0xc8, 0xd9, 0xcf, 0x04,
+	0x1e, 0xa2, 0x6c, 0x2f, 0xdd, 0xa1, 0xdb, 0x9e, 0x43, 0xb3, 0xbb, 0x9d, 0x23, 0x0c, 0xbc, 0x48,
+	0x44, 0x5f, 0xd3, 0xe6, 0x2f, 0x03, 0x99, 0x1d, 0xbc, 0x77, 0xc0, 0xc3, 0x23, 0x75, 0x13, 0xac,
+	0x37, 0x68, 0xf9, 0x25, 0xc9, 0xfc, 0x04, 0x3a, 0x78, 0xef, 0x36, 0x37, 0x1e, 0x0d, 0xaf, 0xee,
+	0x0e, 0xe3, 0x1a, 0x6b, 0xff, 0x52, 0xaa, 0x75, 0xd8, 0x35, 0x8b, 0xf4, 0xe5, 0xc9, 0x84, 0x96,
+	0xc0, 0xfe, 0xa7, 0xdb, 0xea, 0x70, 0xe9, 0x1f, 0xa3, 0xda, 0xb5, 0x9d, 0xf5, 0x8b, 0xeb, 0xa6,
+	0x71, 0x79, 0xdd, 0x34, 0x7e, 0x5c, 0x37, 0x8d, 0xf7, 0xbd, 0x66, 0xed, 0xb2, 0xd7, 0xac, 0x7d,
+	0xeb, 0x35, 0x6b, 0xaf, 0x17, 0x6e, 0x1e, 0x06, 0xe9, 0xac, 0x7c, 0x1c, 0xc4, 0xdb, 0x1c, 0x78,
+	0x77, 0x5c, 0xdd, 0xd6, 0xad, 0xdf, 0x01, 0x00, 0x00, 0xff, 0xff, 0x2a, 0x30, 0x87, 0x04, 0x39,
+	0x04, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -309,7 +357,7 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type VRFMsgServerClient interface {
-	GenerateRandomNumber(ctx context.Context, in *GenerateRandomNumberRequest, opts ...grpc.CallOption) (*GenerateRandomNumberResponse, error)
+	HandleVRFRandomNumberRequest(ctx context.Context, in *GenerateRandomNumberRequest, opts ...grpc.CallOption) (*GenerateRandomNumberResponse, error)
 	DVSResponsHandler(ctx context.Context, in *GenerateRandomNumberRequest, opts ...grpc.CallOption) (*DVSResultResponse, error)
 }
 
@@ -321,9 +369,9 @@ func NewVRFMsgServerClient(cc grpc1.ClientConn) VRFMsgServerClient {
 	return &vRFMsgServerClient{cc}
 }
 
-func (c *vRFMsgServerClient) GenerateRandomNumber(ctx context.Context, in *GenerateRandomNumberRequest, opts ...grpc.CallOption) (*GenerateRandomNumberResponse, error) {
+func (c *vRFMsgServerClient) HandleVRFRandomNumberRequest(ctx context.Context, in *GenerateRandomNumberRequest, opts ...grpc.CallOption) (*GenerateRandomNumberResponse, error) {
 	out := new(GenerateRandomNumberResponse)
-	err := c.cc.Invoke(ctx, "/intellix.vrf.VRFMsgServer/GenerateRandomNumber", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/intellix.vrf.VRFMsgServer/HandleVRFRandomNumberRequest", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -341,7 +389,7 @@ func (c *vRFMsgServerClient) DVSResponsHandler(ctx context.Context, in *Generate
 
 // VRFMsgServerServer is the server API for VRFMsgServer service.
 type VRFMsgServerServer interface {
-	GenerateRandomNumber(context.Context, *GenerateRandomNumberRequest) (*GenerateRandomNumberResponse, error)
+	HandleVRFRandomNumberRequest(context.Context, *GenerateRandomNumberRequest) (*GenerateRandomNumberResponse, error)
 	DVSResponsHandler(context.Context, *GenerateRandomNumberRequest) (*DVSResultResponse, error)
 }
 
@@ -349,8 +397,8 @@ type VRFMsgServerServer interface {
 type UnimplementedVRFMsgServerServer struct {
 }
 
-func (*UnimplementedVRFMsgServerServer) GenerateRandomNumber(ctx context.Context, req *GenerateRandomNumberRequest) (*GenerateRandomNumberResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GenerateRandomNumber not implemented")
+func (*UnimplementedVRFMsgServerServer) HandleVRFRandomNumberRequest(ctx context.Context, req *GenerateRandomNumberRequest) (*GenerateRandomNumberResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method HandleVRFRandomNumberRequest not implemented")
 }
 func (*UnimplementedVRFMsgServerServer) DVSResponsHandler(ctx context.Context, req *GenerateRandomNumberRequest) (*DVSResultResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DVSResponsHandler not implemented")
@@ -360,20 +408,20 @@ func RegisterVRFMsgServerServer(s grpc1.Server, srv VRFMsgServerServer) {
 	s.RegisterService(&_VRFMsgServer_serviceDesc, srv)
 }
 
-func _VRFMsgServer_GenerateRandomNumber_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _VRFMsgServer_HandleVRFRandomNumberRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GenerateRandomNumberRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(VRFMsgServerServer).GenerateRandomNumber(ctx, in)
+		return srv.(VRFMsgServerServer).HandleVRFRandomNumberRequest(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/intellix.vrf.VRFMsgServer/GenerateRandomNumber",
+		FullMethod: "/intellix.vrf.VRFMsgServer/HandleVRFRandomNumberRequest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(VRFMsgServerServer).GenerateRandomNumber(ctx, req.(*GenerateRandomNumberRequest))
+		return srv.(VRFMsgServerServer).HandleVRFRandomNumberRequest(ctx, req.(*GenerateRandomNumberRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -402,8 +450,8 @@ var _VRFMsgServer_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*VRFMsgServerServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GenerateRandomNumber",
-			Handler:    _VRFMsgServer_GenerateRandomNumber_Handler,
+			MethodName: "HandleVRFRandomNumberRequest",
+			Handler:    _VRFMsgServer_HandleVRFRandomNumberRequest_Handler,
 		},
 		{
 			MethodName: "DVSResponsHandler",
@@ -414,7 +462,7 @@ var _VRFMsgServer_serviceDesc = grpc.ServiceDesc{
 	Metadata: "intellix/vrf/msg_server.proto",
 }
 
-func (m *Task) Marshal() (dAtA []byte, err error) {
+func (m *TaskMetadata) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalToSizedBuffer(dAtA[:size])
@@ -424,12 +472,12 @@ func (m *Task) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *Task) MarshalTo(dAtA []byte) (int, error) {
+func (m *TaskMetadata) MarshalTo(dAtA []byte) (int, error) {
 	size := m.Size()
 	return m.MarshalToSizedBuffer(dAtA[:size])
 }
 
-func (m *Task) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+func (m *TaskMetadata) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	i := len(dAtA)
 	_ = i
 	var l int
@@ -464,6 +512,43 @@ func (m *Task) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *VRFData) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *VRFData) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *VRFData) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.VrfProof) > 0 {
+		i -= len(m.VrfProof)
+		copy(dAtA[i:], m.VrfProof)
+		i = encodeVarintMsgServer(dAtA, i, uint64(len(m.VrfProof)))
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.VrfValue) > 0 {
+		i -= len(m.VrfValue)
+		copy(dAtA[i:], m.VrfValue)
+		i = encodeVarintMsgServer(dAtA, i, uint64(len(m.VrfValue)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
 func (m *GenerateRandomNumberRequest) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -484,23 +569,23 @@ func (m *GenerateRandomNumberRequest) MarshalToSizedBuffer(dAtA []byte) (int, er
 	_ = i
 	var l int
 	_ = l
-	if len(m.VrfProof) > 0 {
-		i -= len(m.VrfProof)
-		copy(dAtA[i:], m.VrfProof)
-		i = encodeVarintMsgServer(dAtA, i, uint64(len(m.VrfProof)))
-		i--
-		dAtA[i] = 0x1a
+	if len(m.VrfData) > 0 {
+		for iNdEx := len(m.VrfData) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.VrfData[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintMsgServer(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
+		}
 	}
-	if len(m.VrfValue) > 0 {
-		i -= len(m.VrfValue)
-		copy(dAtA[i:], m.VrfValue)
-		i = encodeVarintMsgServer(dAtA, i, uint64(len(m.VrfValue)))
-		i--
-		dAtA[i] = 0x12
-	}
-	if m.Task != nil {
+	if m.TaskMetadata != nil {
 		{
-			size, err := m.Task.MarshalToSizedBuffer(dAtA[:i])
+			size, err := m.TaskMetadata.MarshalToSizedBuffer(dAtA[:i])
 			if err != nil {
 				return 0, err
 			}
@@ -533,16 +618,20 @@ func (m *GenerateRandomNumberResponse) MarshalToSizedBuffer(dAtA []byte) (int, e
 	_ = i
 	var l int
 	_ = l
-	{
-		size := m.RandomNumber.Size()
-		i -= size
-		if _, err := m.RandomNumber.MarshalTo(dAtA[i:]); err != nil {
-			return 0, err
+	if len(m.RandomNumber) > 0 {
+		for iNdEx := len(m.RandomNumber) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size := m.RandomNumber[iNdEx].Size()
+				i -= size
+				if _, err := m.RandomNumber[iNdEx].MarshalTo(dAtA[i:]); err != nil {
+					return 0, err
+				}
+				i = encodeVarintMsgServer(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x12
 		}
-		i = encodeVarintMsgServer(dAtA, i, uint64(size))
 	}
-	i--
-	dAtA[i] = 0x12
 	if m.TaskIndex != 0 {
 		i = encodeVarintMsgServer(dAtA, i, uint64(m.TaskIndex))
 		i--
@@ -585,7 +674,7 @@ func encodeVarintMsgServer(dAtA []byte, offset int, v uint64) int {
 	dAtA[offset] = uint8(v)
 	return base
 }
-func (m *Task) Size() (n int) {
+func (m *TaskMetadata) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -610,16 +699,12 @@ func (m *Task) Size() (n int) {
 	return n
 }
 
-func (m *GenerateRandomNumberRequest) Size() (n int) {
+func (m *VRFData) Size() (n int) {
 	if m == nil {
 		return 0
 	}
 	var l int
 	_ = l
-	if m.Task != nil {
-		l = m.Task.Size()
-		n += 1 + l + sovMsgServer(uint64(l))
-	}
 	l = len(m.VrfValue)
 	if l > 0 {
 		n += 1 + l + sovMsgServer(uint64(l))
@@ -627,6 +712,25 @@ func (m *GenerateRandomNumberRequest) Size() (n int) {
 	l = len(m.VrfProof)
 	if l > 0 {
 		n += 1 + l + sovMsgServer(uint64(l))
+	}
+	return n
+}
+
+func (m *GenerateRandomNumberRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.TaskMetadata != nil {
+		l = m.TaskMetadata.Size()
+		n += 1 + l + sovMsgServer(uint64(l))
+	}
+	if len(m.VrfData) > 0 {
+		for _, e := range m.VrfData {
+			l = e.Size()
+			n += 1 + l + sovMsgServer(uint64(l))
+		}
 	}
 	return n
 }
@@ -640,8 +744,12 @@ func (m *GenerateRandomNumberResponse) Size() (n int) {
 	if m.TaskIndex != 0 {
 		n += 1 + sovMsgServer(uint64(m.TaskIndex))
 	}
-	l = m.RandomNumber.Size()
-	n += 1 + l + sovMsgServer(uint64(l))
+	if len(m.RandomNumber) > 0 {
+		for _, e := range m.RandomNumber {
+			l = e.Size()
+			n += 1 + l + sovMsgServer(uint64(l))
+		}
+	}
 	return n
 }
 
@@ -660,7 +768,7 @@ func sovMsgServer(x uint64) (n int) {
 func sozMsgServer(x uint64) (n int) {
 	return sovMsgServer(uint64((x << 1) ^ uint64((int64(x) >> 63))))
 }
-func (m *Task) Unmarshal(dAtA []byte) error {
+func (m *TaskMetadata) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -683,10 +791,10 @@ func (m *Task) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: Task: wiretype end group for non-group")
+			return fmt.Errorf("proto: TaskMetadata: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: Task: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: TaskMetadata: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
@@ -820,7 +928,7 @@ func (m *Task) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
-func (m *GenerateRandomNumberRequest) Unmarshal(dAtA []byte) error {
+func (m *VRFData) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
 	for iNdEx < l {
@@ -843,49 +951,13 @@ func (m *GenerateRandomNumberRequest) Unmarshal(dAtA []byte) error {
 		fieldNum := int32(wire >> 3)
 		wireType := int(wire & 0x7)
 		if wireType == 4 {
-			return fmt.Errorf("proto: GenerateRandomNumberRequest: wiretype end group for non-group")
+			return fmt.Errorf("proto: VRFData: wiretype end group for non-group")
 		}
 		if fieldNum <= 0 {
-			return fmt.Errorf("proto: GenerateRandomNumberRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+			return fmt.Errorf("proto: VRFData: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		case 1:
-			if wireType != 2 {
-				return fmt.Errorf("proto: wrong wireType = %d for field Task", wireType)
-			}
-			var msglen int
-			for shift := uint(0); ; shift += 7 {
-				if shift >= 64 {
-					return ErrIntOverflowMsgServer
-				}
-				if iNdEx >= l {
-					return io.ErrUnexpectedEOF
-				}
-				b := dAtA[iNdEx]
-				iNdEx++
-				msglen |= int(b&0x7F) << shift
-				if b < 0x80 {
-					break
-				}
-			}
-			if msglen < 0 {
-				return ErrInvalidLengthMsgServer
-			}
-			postIndex := iNdEx + msglen
-			if postIndex < 0 {
-				return ErrInvalidLengthMsgServer
-			}
-			if postIndex > l {
-				return io.ErrUnexpectedEOF
-			}
-			if m.Task == nil {
-				m.Task = &Task{}
-			}
-			if err := m.Task.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
-				return err
-			}
-			iNdEx = postIndex
-		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field VrfValue", wireType)
 			}
@@ -919,7 +991,7 @@ func (m *GenerateRandomNumberRequest) Unmarshal(dAtA []byte) error {
 				m.VrfValue = []byte{}
 			}
 			iNdEx = postIndex
-		case 3:
+		case 2:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field VrfProof", wireType)
 			}
@@ -951,6 +1023,126 @@ func (m *GenerateRandomNumberRequest) Unmarshal(dAtA []byte) error {
 			m.VrfProof = append(m.VrfProof[:0], dAtA[iNdEx:postIndex]...)
 			if m.VrfProof == nil {
 				m.VrfProof = []byte{}
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipMsgServer(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *GenerateRandomNumberRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowMsgServer
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: GenerateRandomNumberRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: GenerateRandomNumberRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TaskMetadata", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsgServer
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.TaskMetadata == nil {
+				m.TaskMetadata = &TaskMetadata{}
+			}
+			if err := m.TaskMetadata.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field VrfData", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowMsgServer
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthMsgServer
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.VrfData = append(m.VrfData, &VRFData{})
+			if err := m.VrfData[len(m.VrfData)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
 			}
 			iNdEx = postIndex
 		default:
@@ -1052,7 +1244,9 @@ func (m *GenerateRandomNumberResponse) Unmarshal(dAtA []byte) error {
 			if postIndex > l {
 				return io.ErrUnexpectedEOF
 			}
-			if err := m.RandomNumber.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+			var v cosmossdk_io_math.Int
+			m.RandomNumber = append(m.RandomNumber, v)
+			if err := m.RandomNumber[len(m.RandomNumber)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

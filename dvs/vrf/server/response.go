@@ -11,8 +11,8 @@ var GatewayClient *taskgateway.Client
 
 func (s Server) DVSResponsHandler(ctx context.Context, in *types.GenerateRandomNumberRequest) (*types.DVSResultResponse, error) {
 	s.logger.Debug("ProcessResponseNumberSquared",
-		"TaskIndex", in.Task.TaskIndex,
-		"taskDetail", fmt.Sprintf("%+v", in.Task),
+		"TaskIndex", in.TaskMetadata.TaskIndex,
+		"TaskMetadata", fmt.Sprintf("%+v", in.TaskMetadata),
 	)
 	//pkgCtx := sdktypes.UnwrapContext(ctx)
 	//
@@ -22,23 +22,23 @@ func (s Server) DVSResponsHandler(ctx context.Context, in *types.GenerateRandomN
 	//}
 	//
 	//// Convert []uint32 to bytes
-	//groupNumbersBytes := make([]byte, len(in.Task.GroupNumbers))
-	//for i, num := range in.Task.GroupNumbers {
+	//groupNumbersBytes := make([]byte, len(in.TaskMetadata.GroupNumbers))
+	//for i, num := range in.TaskMetadata.GroupNumbers {
 	//	groupNumbersBytes[i] = byte(num)
 	//}
 	//
 	//squared, _ := math.NewIntFromString(string(validatedData.Data))
 	//// Construct task parameters
 	//task := csquaringmanager.IIncredibleSquaringServiceManagerTask{
-	//	NumberToBeSquared:        in.Task.Squared.BigInt(),
-	//	TaskCreatedBlock:         in.Task.Height,
+	//	NumberToBeSquared:        in.TaskMetadata.Squared.BigInt(),
+	//	TaskCreatedBlock:         in.TaskMetadata.Height,
 	//	GroupNumbers:             groupNumbersBytes,
-	//	GroupThresholdPercentage: in.Task.GroupThresholdPercentage,
+	//	GroupThresholdPercentage: in.TaskMetadata.GroupThresholdPercentage,
 	//}
 	//
 	//// Construct TaskResponse parameters
 	//taskResponse := csquaringmanager.IIncredibleSquaringServiceManagerTaskResponse{
-	//	ReferenceTaskIndex: in.Task.TaskIndex,
+	//	ReferenceTaskIndex: in.TaskMetadata.TaskIndex,
 	//	NumberSquared:      squared.BigInt(),
 	//}
 	//
