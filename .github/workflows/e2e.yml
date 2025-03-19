@@ -23,12 +23,15 @@ jobs:
         with:
           submodules: false
           ref: ${{ github.event.pull_request.head.sha || github.workflow_sha }}
+          fetch-depth: 0
       - uses: technote-space/get-diff-action@v6
         with:
           PATTERNS: |
             **/**.go
             go.mod
             go.sum
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.sha }}
       - name: setup go private modules
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

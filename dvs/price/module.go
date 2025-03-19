@@ -1,44 +1,38 @@
 package dvs
 
 import (
-	grpc1 "github.com/cosmos/gogoproto/grpc"
+	sdkservice "github.com/0xPellNetwork/pellapp-sdk/service"
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 
 	resulthandlers "intellix/dvs/price/result_handlers"
 	"intellix/dvs/price/server"
 	"intellix/dvs/price/types"
-	dvsservermanager "intellix/sdk/dvs_msg_handler"
 )
 
 // AppModule implements an application module for the dvs module.
 type AppModule struct {
-	server         server.Server
-	RequestServer  grpc1.Server
-	ResponseServer grpc1.Server
+	server server.Server
 }
 
 // NewAppModule creates a new AppModule object
-func NewAppModule(s server.Server) AppModule {
+func NewAppModule(server server.Server) AppModule {
 	return AppModule{
-		server:         s,
-		RequestServer:  dvsservermanager.GetProcessRequestHandler(),
-		ResponseServer: dvsservermanager.GetPostProcessRequestHandler(),
+		server: server,
 	}
 }
 
 // RegisterServices registers module services.
-func (am AppModule) RegisterServices() {
-	dvsProcessRequestServer := server.NewRequestServer(am.server)
-	dvsPostProcessRequestServer := server.NewResponseServer(am.server)
-
+func (am AppModule) RegisterServices(router *sdkservice.MsgRouter) {
+	configurator := router.GetConfigurator()
 	// register dvs-msg handler server
-	types.RegisterDVSRequestServer(am.RequestServer, dvsProcessRequestServer)
-	types.RegisterDVSResponseServer(am.ResponseServer, dvsPostProcessRequestServer)
+	types.RegisterDVSRequestServer(configurator, am.server)
 
 	// register dvs-msg result handler
-	if r, ok := am.RequestServer.(*dvsservermanager.ProcessRequestHandler); ok {
-		r.RegisterResultHandler(
-			&types.RequestPriceFeedOut{}, resulthandlers.NewProcessRequestPriceFeedResultHandler(),
-		)
-	}
+	configurator.RegisterResultMsgExtractor(
+		&types.RequestPriceFeedOut{}, resulthandlers.NewProcessRequestPriceFeedResultHandler(),
+	)
+}
 
+func (am AppModule) RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
+	types.RegisterInterfaces(registry)
 }

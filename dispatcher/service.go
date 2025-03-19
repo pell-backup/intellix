@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"cosmossdk.io/math"
+	"github.com/0xPellNetwork/pellapp-sdk/service/tx"
 	interactorcfg "github.com/0xPellNetwork/pelldvs-interactor/config"
 	"github.com/0xPellNetwork/pelldvs-interactor/interactor/reader"
 	interactortypes "github.com/0xPellNetwork/pelldvs-interactor/types"
@@ -29,7 +30,6 @@ import (
 	"intellix/config"
 	pricetypes "intellix/dvs/price/types"
 	processortypes "intellix/dvs/processor/types"
-	"intellix/sdk/dvs_msg_handler/tx"
 )
 
 type TaskDispatcher struct {

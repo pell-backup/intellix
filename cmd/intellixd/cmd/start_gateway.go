@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 
+	dvslog "github.com/0xPellNetwork/pelldvs-libs/log"
 	pelldvscfg "github.com/0xPellNetwork/pelldvs/config"
-	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -12,7 +12,6 @@ import (
 
 	taskdispatcher "intellix/dispatcher"
 	taskgateway "intellix/gateway"
-	sdklogger "intellix/sdk/logger"
 )
 
 func taskGatewayCommand() *cobra.Command {
@@ -22,8 +21,8 @@ func taskGatewayCommand() *cobra.Command {
 		Long: "Start the TaskGateway service, Example:\n" +
 			"intellixd start-task-gateway --config=config.yml",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			serverCtx := server.GetServerContextFromCmd(cmd)
-			logger := sdklogger.NewDVSLogAdapter(serverCtx.Logger)
+			//	serverCtx := server.GetServerContextFromCmd(cmd)
+			logger := dvslog.NewNopLogger()
 
 			home := getConfigHome()
 			if configFile == "" {

@@ -1,38 +1,35 @@
 package dvs
 
 import (
-	grpc1 "github.com/cosmos/gogoproto/grpc"
+	sdkservice "github.com/0xPellNetwork/pellapp-sdk/service"
+	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 
 	resulthandlers "intellix/dvs/processor/result_handlers"
 	"intellix/dvs/processor/server"
 	"intellix/dvs/processor/types"
-	dvsservermanager "intellix/sdk/dvs_msg_handler"
 )
 
 type AppModule struct {
-	server         server.Server
-	RequestServer  grpc1.Server
-	ResponseServer grpc1.Server
+	server server.Server
 }
 
 func NewAppModule(s server.Server) *AppModule {
 	return &AppModule{
-		server:         s,
-		RequestServer:  dvsservermanager.GetProcessRequestHandler(),
-		ResponseServer: dvsservermanager.GetPostProcessRequestHandler(),
+		server: s,
 	}
 }
 
-func (am AppModule) RegisterServices() {
-	reqServer := server.NewRequestServer(am.server)
-	respServer := server.NewResponseServer(am.server)
+func (am AppModule) RegisterServices(router *sdkservice.MsgRouter) {
+	configurator := router.GetConfigurator()
+	// register dvs-msg handler server
+	types.RegisterDVSRequestServer(configurator, am.server)
 
-	types.RegisterDVSRequestServer(am.RequestServer, reqServer)
-	types.RegisterDVSResponseServer(am.ResponseServer, respServer)
+	// register dvs-msg result handler
+	configurator.RegisterResultMsgExtractor(
+		&types.RequestScriptOut{}, resulthandlers.NewProcessorRequestResHandler(),
+	)
+}
 
-	if r, ok := am.RequestServer.(*dvsservermanager.ProcessRequestHandler); ok {
-		r.RegisterResultHandler(
-			&types.RequestScriptOut{}, resulthandlers.NewProcessorRequestResHandler(),
-		)
-	}
+func (am AppModule) RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
+	types.RegisterInterfaces(registry)
 }

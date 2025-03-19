@@ -3,13 +3,13 @@ package cmd
 import (
 	"os"
 
+	dvslog "github.com/0xPellNetwork/pelldvs-libs/log"
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
 	"intellix/pellapp"
-	"intellix/sdk/logger"
 )
 
 var configDispatcherFile string
@@ -68,7 +68,7 @@ func pellAppCommand() *cobra.Command {
 			}
 
 			app := pellapp.NewApp(dApp.InterfaceRegistry(),
-				logger.NewDVSLogAdapter(serverCtx.Logger), pellAppConfig,
+				dvslog.NewNopLogger(), pellAppConfig,
 			)
 
 			// start Operator

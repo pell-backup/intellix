@@ -59,9 +59,10 @@ After some time in development, we are now releasing version v1.0.0. This versio
 ### Improvements
 
 (test) [#39](https://github.com/IntelliXLabs/intellix/pull/39) improve: support price data source symbol converter.
-(app) [#43](https://github.com/IntelliXLabs/intellix/pull/43) feat: add v1 upgrade handler, changelog version file, and changelog check in CI 
+(app) [#43](https://github.com/IntelliXLabs/intellix/pull/43) feat: add v1 upgrade handler, changelog version file, and changelog check in CI
 (test) [#45](https://github.com/IntelliXLabs/intellix/pull/45) improve: setup default `NO_PROXY` for `operator` container to avoid proxy issues.
 (app) [#46](https://github.com/IntelliXLabs/intellix/pull/46) feat: update default denom to uitlx  
 (app) [#47](https://github.com/IntelliXLabs/intellix/pull/47) chore: change denom from ITLX to IXN
+(dev) [#55](https://github.com/IntelliXLabs/intellix/pull/55) dep: Use pellapp-sdk to build DVS application and bump cometbft version to be compatible with current Golang toolchain
 
 ### Bug Fixes

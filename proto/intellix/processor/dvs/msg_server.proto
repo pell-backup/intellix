@@ -10,7 +10,11 @@ option go_package = "intellix/dvs/processor/types";
 
 service DVSRequest {
   rpc RequestScript(RequestScriptIn) returns (RequestScriptOut) {}
+
+  rpc DVSResponsHandler(RequestScriptIn) returns (ResponseScriptOut) {}
 }
+
+message ResponseScriptOut {}
 
 message RequestScriptIn {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";

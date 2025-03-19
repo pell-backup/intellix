@@ -6,8 +6,8 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 
+	"intellix/dvs"
 	"intellix/dvs/price/types"
-	"intellix/sdk/utils"
 )
 
 type ProcessRequestPriceFeedResultHandler struct {
@@ -40,7 +40,7 @@ func (p *ProcessRequestPriceFeedResultHandler) getAbiEncodeData(msg proto.Messag
 		return nil, err
 	}
 
-	return utils.AbiEncodeResponseTaskParam(r.TaskIndex, packedPrice)
+	return dvs.AbiEncodeResponseTaskParam(r.TaskIndex, packedPrice)
 }
 
 func (p *ProcessRequestPriceFeedResultHandler) GetData(msg proto.Message) ([]byte, error) {
@@ -52,5 +52,5 @@ func (p *ProcessRequestPriceFeedResultHandler) GetDigest(msg proto.Message) ([]b
 	if err != nil {
 		return nil, err
 	}
-	return utils.DigestKeccak256(data), nil
+	return dvs.DigestKeccak256(data), nil
 }
