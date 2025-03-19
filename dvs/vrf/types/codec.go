@@ -7,7 +7,8 @@ import (
 )
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
-	msgservice.RegisterMsgServiceDesc(registry, &VRFMsgServer_serviceDesc)
+	msgservice.RegisterMsgServiceDesc(registry, &VRFMsgRequest_serviceDesc)
+	msgservice.RegisterMsgServiceDesc(registry, &VRFMsgResponse_serviceDesc)
 
 	registry.RegisterImplementations((*sdk.Msg)(nil), &GenerateRandomNumberRequest{})
 	registry.RegisterImplementations((*sdk.Msg)(nil), &GenerateRandomNumberResponse{})

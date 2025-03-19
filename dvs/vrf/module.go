@@ -1,7 +1,7 @@
 package dvs
 
 import (
-	grpc1 "github.com/cosmos/gogoproto/grpc"
+	"github.com/cosmos/gogoproto/grpc"
 	"intellix/dvs/vrf/handler"
 	"intellix/dvs/vrf/server"
 	"intellix/dvs/vrf/types"
@@ -11,8 +11,8 @@ import (
 // AppModule implements an application module for the dvs module.
 type AppModule struct {
 	server         server.Server
-	RequestServer  grpc1.Server
-	ResponseServer grpc1.Server
+	RequestServer  grpc.Server
+	ResponseServer grpc.Server
 }
 
 // NewAppModule creates a new AppModule object
@@ -27,9 +27,11 @@ func NewAppModule(s server.Server) AppModule {
 // RegisterServices registers module services.
 func (am AppModule) RegisterServices() {
 	requestServer := server.NewRequestServer(am.server)
+	responseServer := server.NewResponseServer(am.server)
 
 	// register dvs-msg handler server
-	types.RegisterVRFMsgServerServer(am.RequestServer, requestServer)
+	types.RegisterVRFMsgRequestServer(am.RequestServer, requestServer)
+	types.RegisterVRFMsgResponseServer(am.ResponseServer, responseServer)
 
 	// register dvs-msg result handler
 	if r, ok := am.RequestServer.(*dvsservermanager.ProcessRequestHandler); ok {

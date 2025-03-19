@@ -10,7 +10,7 @@ import (
 var GatewayClient *taskgateway.Client
 
 func (s Server) DVSResponsHandler(ctx context.Context, in *types.GenerateRandomNumberRequest) (*types.DVSResultResponse, error) {
-	s.logger.Debug("ProcessResponseNumberSquared",
+	s.logger.Debug("DVSResponsHandler",
 		"TaskIndex", in.TaskMetadata.TaskIndex,
 		"TaskMetadata", fmt.Sprintf("%+v", in.TaskMetadata),
 	)

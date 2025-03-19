@@ -8,8 +8,11 @@ import "amino/amino.proto";
 
 option go_package = "intellix/dvs/vrf/types";
 
-service VRFMsgServer {
+service VRFMsgRequest {
   rpc HandleVRFRandomNumberRequest(GenerateRandomNumberRequest) returns (GenerateRandomNumberResponse) {}
+}
+
+service VRFMsgResponse {
   rpc DVSResponsHandler(GenerateRandomNumberRequest) returns (DVSResultResponse) {}
 }
 

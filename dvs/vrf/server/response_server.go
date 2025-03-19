@@ -4,15 +4,15 @@ import (
 	"intellix/dvs/vrf/types"
 )
 
-type RequestServer struct {
+type ResponseServer struct {
 	Server
 }
 
 // NewRequestServer returns an implementation of the DvsProcessRequestServer interface for the provided Server.
-func NewRequestServer(server Server) types.VRFMsgRequestServer {
-	return &RequestServer{
+func NewResponseServer(server Server) types.VRFMsgResponseServer {
+	return &ResponseServer{
 		Server: server,
 	}
 }
 
-var _ types.VRFMsgRequestServer = RequestServer{}
+var _ types.VRFMsgResponseServer = ResponseServer{}
