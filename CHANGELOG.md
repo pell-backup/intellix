@@ -64,5 +64,6 @@ After some time in development, we are now releasing version v1.0.0. This versio
 (app) [#46](https://github.com/IntelliXLabs/intellix/pull/46) feat: update default denom to uitlx  
 (app) [#47](https://github.com/IntelliXLabs/intellix/pull/47) chore: change denom from ITLX to IXN
 (dev) [#55](https://github.com/IntelliXLabs/intellix/pull/55) dep: Use pellapp-sdk to build DVS application and bump cometbft version to be compatible with current Golang toolchain
+(chore) [59](https://github.com/IntelliXLabs/intellix/pull/59) chore: fix buf lint
 
 ### Bug Fixes
