@@ -6,8 +6,8 @@ WORKDIR /app
 # Setup git config
 RUN --mount=type=secret,id=github_token \
     if [ ! -s /run/secrets/github_token ]; then echo "github token is not set via secrets" >&2; exit 1; fi; \
-    git config --global url."https://$(cat /run/secrets/github_token):x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork" ; \
-    git config --global url."https://$(cat /run/secrets/github_token):x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
+    git config --global url."https://$(cat /run/secrets/github_token):x-oauth-basic@github.com/0xPellNetwork/".insteadOf "https://github.com/0xPellNetwork/" ; \
+    git config --global url."https://$(cat /run/secrets/github_token):x-oauth-basic@github.com/IntelliXLabs/".insteadOf "https://github.com/IntelliXLabs/"
 
 ######### Build pelldvs ######
 ARG PELLDVS_VERSION=v0.2.2
