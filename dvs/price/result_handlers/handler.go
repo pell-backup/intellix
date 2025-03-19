@@ -30,7 +30,7 @@ func packUint256(value *big.Int) ([]byte, error) {
 }
 
 func (p *ProcessRequestPriceFeedResultHandler) getAbiEncodeData(msg proto.Message) ([]byte, error) {
-	r, ok := msg.(*types.RequestPriceFeedOut)
+	r, ok := msg.(*types.RequestPriceFeedResponse)
 	if !ok {
 		return nil, nil
 	}

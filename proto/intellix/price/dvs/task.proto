@@ -1,13 +1,12 @@
 syntax = "proto3";
-package intellix.price;
+package intellix.price.dvs;
 
 import "gogoproto/gogo.proto";
-import "cosmos/msg/v1/msg.proto";
-import "cosmos_proto/cosmos.proto";
-import "amino/amino.proto";
 
-option go_package = "intellix/dvs/price/types";
+option go_package = "intellix/price/dvs/types";
 
+// TaskRequest represents a task execution request with payment and callback
+// details.
 message TaskRequest {
   uint32 task_index = 1;
   bytes request_id = 2;
@@ -16,6 +15,7 @@ message TaskRequest {
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
+
   bytes request_data = 5;
   string callback_address = 6;
   bytes callback_function_id = 7;
@@ -25,7 +25,7 @@ message TaskRequest {
   bool advance_decode = 11;
 }
 
-// PriceFeedParam defines the price feed parameters
+// PriceFeedParam defines the trading pair for price feed requests.
 message PriceFeedParam {
   string base_symbol = 1;
   string quote_symbol = 2;

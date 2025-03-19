@@ -13,7 +13,7 @@ import (
 	processortypes "intellix/x/processor/types"
 )
 
-func (r Server) DVSResponsHandler(ctx context.Context, in *types.RequestScriptIn) (*types.ResponseScriptOut, error) {
+func (r Server) DVSResponsHandler(ctx context.Context, in *types.RequestScriptIn) (*types.DVSResponsHandlerResponse, error) {
 	pkgCtx := sdktypes.UnwrapContext(ctx)
 	validatedData, err := pelldvs.GetDvsRequestValidatedData(pkgCtx)
 	if err != nil {
@@ -36,7 +36,7 @@ func (r Server) DVSResponsHandler(ctx context.Context, in *types.RequestScriptIn
 		return nil, err
 	}
 
-	return &types.ResponseScriptOut{}, nil
+	return &types.DVSResponsHandlerResponse{}, nil
 }
 
 func (r Server) voteData(ctx sdktypes.Context, in *types.RequestScriptIn, data []byte) error {

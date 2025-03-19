@@ -26,7 +26,7 @@ func (am AppModule) RegisterServices(router *sdkservice.MsgRouter) {
 
 	// register dvs-msg result handler
 	configurator.RegisterResultMsgExtractor(
-		&types.RequestScriptOut{}, resulthandlers.NewProcessorRequestResHandler(),
+		&types.RequestScriptResponse{}, resulthandlers.NewProcessorRequestResHandler(),
 	)
 }
 

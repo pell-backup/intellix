@@ -33,7 +33,7 @@ func TestMsgServer_VoteRequestPriceFeed(t *testing.T) {
 		RequestId:   []byte("request_id"),
 		BaseSymbol:  "usdt",
 		QuoteSymbol: "btc",
-		Price: []*types.VoteRequestPriceFeed{{
+		Prices: []*types.VoteRequestPriceFeed{{
 			Source: "source",
 			Price:  math.LegacyNewDec(100000000),
 		}},

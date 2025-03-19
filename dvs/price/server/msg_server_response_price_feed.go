@@ -17,7 +17,7 @@ import (
 	pricetypes "intellix/x/price/types"
 )
 
-func (d Server) DVSResponsHandler(ctx context.Context, in *types.RequestPriceFeedIn) (*types.ResponsePriceFeedOut, error) {
+func (d Server) DVSResponsHandler(ctx context.Context, in *types.RequestPriceFeedIn) (*types.DVSRequestDVSResponsHandlerResponse, error) {
 	pkgCtx := sdktypes.UnwrapContext(ctx)
 	//js, _ := json.Marshal(in)
 	//d.logger.Info("DvsPostProcessServer.PostProcessRequestPriceFeed called", "data", string(js))
@@ -44,7 +44,7 @@ func (d Server) DVSResponsHandler(ctx context.Context, in *types.RequestPriceFee
 		return nil, err
 	}
 
-	return &types.ResponsePriceFeedOut{}, nil
+	return &types.DVSRequestDVSResponsHandlerResponse{}, nil
 }
 
 func (d Server) sendVoteFinalizedRequestPriceTx(ctx sdktypes.Context, raw *types.RequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractdataoracle.IDataOracleTaskResponse) (*pricetypes.MsgVoteFinalizedRequestPrice, error) {

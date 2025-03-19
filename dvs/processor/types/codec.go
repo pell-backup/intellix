@@ -13,5 +13,5 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 
 	registry.RegisterImplementations((*sdk.Msg)(nil), &dvstypes.RequestPostRequestValidatedData{})
 	registry.RegisterImplementations((*sdk.Msg)(nil), &RequestScriptIn{})
-	registry.RegisterImplementations((*sdk.Msg)(nil), &ResponseScriptOut{})
+	registry.RegisterImplementations((*sdk.Msg)(nil), &DVSResponsHandlerResponse{})
 }

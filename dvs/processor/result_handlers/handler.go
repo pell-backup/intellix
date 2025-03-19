@@ -15,7 +15,7 @@ func NewProcessorRequestResHandler() *ProcessorRequestResHandler {
 }
 
 func (p *ProcessorRequestResHandler) GetData(msg proto.Message) ([]byte, error) {
-	r, ok := msg.(*types.RequestScriptOut)
+	r, ok := msg.(*types.RequestScriptResponse)
 	if !ok {
 		return nil, nil
 	}
@@ -24,7 +24,7 @@ func (p *ProcessorRequestResHandler) GetData(msg proto.Message) ([]byte, error) 
 }
 
 func (p *ProcessorRequestResHandler) GetDigest(msg proto.Message) ([]byte, error) {
-	r, ok := msg.(*types.RequestScriptOut)
+	r, ok := msg.(*types.RequestScriptResponse)
 	if !ok {
 		return nil, nil
 	}

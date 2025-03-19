@@ -1,29 +1,29 @@
 syntax = "proto3";
 package intellix.pelldvs;
 
-import "gogoproto/gogo.proto";
-import "cosmos/msg/v1/msg.proto";
-import "cosmos_proto/cosmos.proto";
 import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
 
 option go_package = "intellix/sdk/pelldvs/types";
 
+// RequestPostRequestValidatedData represents a message containing validated DVS
+// request data. Includes cryptographic proof elements and validation results
+// for decentralized verification.
 message RequestPostRequestValidatedData {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
   option (amino.name) = "intellix/dvs/post_request_validated";
-  bytes                          data = 1;
-  string                         error = 2;
-  bytes                          hash = 3;
-  repeated bytes                 non_signers_pubkeys_g1 = 4;
-  repeated bytes                 quorum_apks_g1 = 5;
-  bytes                          signers_apk_g2 = 6;
-  bytes                          signers_agg_sig_g1 = 7;
-  repeated uint32                non_signer_quorum_bitmap_indices = 8;
-  repeated uint32                quorum_apk_indices = 9;
-  repeated uint32                total_stake_indices = 10;
-  repeated NonSignerStakeIndice  non_signer_stake_indices = 11;
+  bytes data = 1;
+  string error = 2;
+  bytes hash = 3;
+  repeated bytes non_signers_pubkeys_g1s = 4;
+  repeated bytes quorum_apks_g1s = 5;
+  bytes signers_apk_g2 = 6;
+  bytes signers_agg_sig_g1 = 7;
+  repeated uint32 non_signer_quorum_bitmap_indices = 8;
+  repeated uint32 quorum_apk_indices = 9;
+  repeated uint32 total_stake_indices = 10;
+  repeated NonSignerStakeIndice non_signer_stake_indices = 11;
 }
 
-message NonSignerStakeIndice {
-  repeated uint32 non_signer_stake_indice = 1;
-}
+// NonSignerStakeIndice represents stake indices for non-signing validators.
+message NonSignerStakeIndice { repeated uint32 non_signer_stake_indices = 1; }

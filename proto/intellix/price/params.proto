@@ -10,6 +10,4 @@ option go_package = "intellix/x/price/types";
 message Params {
   option (amino.name) = "intellix/x/price/Params";
   option (gogoproto.equal) = true;
-
-  
 }

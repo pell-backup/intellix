@@ -3,14 +3,20 @@ package intellix.processor;
 
 option go_package = "intellix/x/processor/types";
 
+// ProcessorType defines the type of processor implementation.
+// Currently only supports WASM, but can be extended for other types in future.
 enum ProcessorType {
-  WASM = 0;
+  // WebAssembly based processor implementation
+  PROCESSOR_TYPE_WASM = 0;
 }
 
+// Processor represents a processing unit in the system.
+// Contains all necessary information to define and execute a processor,
+// including its type, configuration, code, and ownership details.
 message Processor {
-  ProcessorType processorType = 1;
-  bytes config = 2;
-  bytes wasmCode = 3;
-  string creator = 4;
-  uint64 id = 5;
+  ProcessorType processor_type = 1; // Type of the processor implementation
+  bytes config = 2;                 // Configuration data for the processor
+  bytes wasm_code = 3;              // WASM bytecode for processor execution
+  string creator = 4;               // Address of the processor creator
+  uint64 id = 5;                    // Unique identifier for the processor
 }

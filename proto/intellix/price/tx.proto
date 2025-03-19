@@ -6,45 +6,50 @@ import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "intellix/price/params.proto";
-import "intellix/price/vote_request_price_feed.proto";
 import "intellix/price/vote_finalized_request_price.proto";
+import "intellix/price/vote_request_price_feed.proto";
 
 option go_package = "intellix/x/price/types";
 
-// Msg defines the Msg service.
+// Msg defines the price module message service.
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
-  // UpdateParams defines a (governance) operation for updating the module
-  // parameters. The authority defaults to the x/gov module account.
+  // UpdateParams updates the module parameters via governance.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
 
-  rpc VoteRequestPriceFeed(MsgVoteRequestPriceFeed) returns (MsgVoteRequestPriceFeedResponse);
+  // VoteRequestPriceFeed submits a price feed vote.
+  rpc VoteRequestPriceFeed(MsgVoteRequestPriceFeed)
+      returns (MsgVoteRequestPriceFeedResponse);
 
-  rpc VoteFinalizedRequestPrice(MsgVoteFinalizedRequestPrice) returns (MsgVoteFinalizedRequestPriceResponse);
+  // VoteFinalizedRequestPrice submits a finalized price vote.
+  rpc VoteFinalizedRequestPrice(MsgVoteFinalizedRequestPrice)
+      returns (MsgVoteFinalizedRequestPriceResponse);
 }
 
-// MsgUpdateParams is the Msg/UpdateParams request type.
+// MsgUpdateParams represents a request to update module parameters.
 message MsgUpdateParams {
   option (cosmos.msg.v1.signer) = "authority";
   option (amino.name) = "intellix/x/price/MsgUpdateParams";
 
-  // authority is the address that controls the module (defaults to x/gov unless overwritten).
-  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // authority is the address that controls the module (defaults to x/gov unless
+  // overwritten).
+  string authority = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
   // params defines the module parameters to update.
   //
   // NOTE: All parameters must be supplied.
-  Params params = 2 [
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  Params params = 2
+      [ (gogoproto.nullable) = false, (amino.dont_omitempty) = true ];
 }
 
-// MsgUpdateParamsResponse defines the response structure for executing a
-// MsgUpdateParams message.
+// MsgUpdateParamsResponse represents an empty response for parameter update.
 message MsgUpdateParamsResponse {}
 
+// MsgVoteRequestPriceFeedResponse represents an empty response for price feed
+// vote.
 message MsgVoteRequestPriceFeedResponse {}
 
+// MsgVoteFinalizedRequestPriceResponse represents an empty response for
+// finalized price vote.
 message MsgVoteFinalizedRequestPriceResponse {}

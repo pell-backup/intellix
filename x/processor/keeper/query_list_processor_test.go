@@ -19,7 +19,7 @@ func TestListProcessor(t *testing.T) {
 	require.Len(t, list.Processor, 0)
 	id, err := k.AppendProcessor(ctx, types.Processor{
 		Creator:       "creator",
-		ProcessorType: types.ProcessorType_WASM,
+		ProcessorType: types.ProcessorType_PROCESSOR_TYPE_WASM,
 		Config:        []byte("config"),
 		WasmCode:      []byte("wasm code"),
 	})
@@ -29,7 +29,7 @@ func TestListProcessor(t *testing.T) {
 	require.Len(t, list.Processor, 1)
 	require.Equal(t, id, list.Processor[0].Id)
 	require.Equal(t, "creator", list.Processor[0].Creator)
-	require.Equal(t, types.ProcessorType_WASM, list.Processor[0].ProcessorType)
+	require.Equal(t, types.ProcessorType_PROCESSOR_TYPE_WASM, list.Processor[0].ProcessorType)
 	require.Equal(t, []byte("config"), list.Processor[0].Config)
 	require.Equal(t, []byte("wasm code"), list.Processor[0].WasmCode)
 	require.Len(t, list.Pagination.NextKey, 0)

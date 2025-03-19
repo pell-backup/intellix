@@ -16,7 +16,7 @@ import (
 	pricetypes "intellix/x/price/types"
 )
 
-func (s Server) RequestPriceFeed(ctx context.Context, request *types.RequestPriceFeedIn) (*types.RequestPriceFeedOut, error) {
+func (s Server) RequestPriceFeed(ctx context.Context, request *types.RequestPriceFeedIn) (*types.RequestPriceFeedResponse, error) {
 	pkgContext := sdktypes.UnwrapContext(ctx)
 	s.logger.Info("ProcessRequestPriceFeed", "PriceFeedParam", fmt.Sprintf("%+v", request.PriceFeed))
 
@@ -69,7 +69,7 @@ func (s Server) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task *types.
 		RequestId:   task.Task.RequestId,
 		BaseSymbol:  priceFeed.BaseSymbol,
 		QuoteSymbol: priceFeed.QuoteSymbol,
-		Price:       prices,
+		Prices:      prices,
 		Timestamp:   time.Now().Unix(),
 		BlockHeight: uint64(ctx.Height()),
 	}
@@ -126,7 +126,7 @@ func (s Server) processBlockTxs(ctx context.Context, block *cmttypes.Block, requ
 				RequestId:   msg.RequestId,
 				BaseSymbol:  msg.BaseSymbol,
 				QuoteSymbol: msg.QuoteSymbol,
-				Price:       msg.Price,
+				Prices:      msg.Prices,
 				Timestamp:   msg.Timestamp,
 				BlockHeight: uint64(block.Header.Height),
 			})
@@ -183,13 +183,13 @@ func (s Server) shouldStopCollecting(ctx sdktypes.Context, firstTxBlock, current
 	return currentBlock >= firstTxBlock+s.waitBlockCount
 }
 
-func (s Server) aggregatePrices(ctx sdktypes.Context, taskIndex uint32, requestID []byte, priceFeedTxs []pricetypes.MsgVoteRequestPriceFeed) (*types.RequestPriceFeedOut, error) {
+func (s Server) aggregatePrices(ctx sdktypes.Context, taskIndex uint32, requestID []byte, priceFeedTxs []pricetypes.MsgVoteRequestPriceFeed) (*types.RequestPriceFeedResponse, error) {
 	operatorPrices := make(map[string][]math.LegacyDec)
 
 	// calc avg the prices of different data sources within each Operator
 	for _, tx := range priceFeedTxs {
 		operatorID := tx.OperatorId
-		for _, price := range tx.Price {
+		for _, price := range tx.Prices {
 			operatorPrices[operatorID] = append(operatorPrices[operatorID], price.Price)
 		}
 	}
@@ -218,7 +218,7 @@ func (s Server) aggregatePrices(ctx sdktypes.Context, taskIndex uint32, requestI
 		blockRange.End = priceFeedTxs[len(priceFeedTxs)-1].BlockHeight
 	}
 
-	return &types.RequestPriceFeedOut{
+	return &types.RequestPriceFeedResponse{
 		RequestId:     requestID,
 		TaskIndex:     taskIndex,
 		Price:         medianPrice,

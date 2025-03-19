@@ -17,7 +17,7 @@ func TestShowProcessor(t *testing.T) {
 	require.Error(t, err)
 	id, err := k.AppendProcessor(ctx, types.Processor{
 		Creator:       "creator",
-		ProcessorType: types.ProcessorType_WASM,
+		ProcessorType: types.ProcessorType_PROCESSOR_TYPE_WASM,
 		Config:        []byte("config"),
 		WasmCode:      []byte("wasm code"),
 	})
@@ -26,7 +26,7 @@ func TestShowProcessor(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, id, processor.Processor.Id)
 	require.Equal(t, "creator", processor.Processor.Creator)
-	require.Equal(t, types.ProcessorType_WASM, processor.Processor.ProcessorType)
+	require.Equal(t, types.ProcessorType_PROCESSOR_TYPE_WASM, processor.Processor.ProcessorType)
 	require.Equal(t, []byte("config"), processor.Processor.Config)
 	require.Equal(t, []byte("wasm code"), processor.Processor.WasmCode)
 }

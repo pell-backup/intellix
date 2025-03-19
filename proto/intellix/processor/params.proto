@@ -10,6 +10,4 @@ option go_package = "intellix/x/processor/types";
 message Params {
   option (amino.name) = "intellix/x/processor/Params";
   option (gogoproto.equal) = true;
-
-  
 }

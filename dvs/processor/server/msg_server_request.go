@@ -17,7 +17,7 @@ import (
 
 var _ types.DVSRequestServer = Server{}
 
-func (s Server) RequestScript(ctx context.Context, in *types.RequestScriptIn) (*types.RequestScriptOut, error) {
+func (s Server) RequestScript(ctx context.Context, in *types.RequestScriptIn) (*types.RequestScriptResponse, error) {
 	pkgContext := sdktypes.UnwrapContext(ctx)
 	s.logger.Info("RequestScript", "in", fmt.Sprintf("%+v", in))
 
@@ -43,7 +43,7 @@ func (s Server) RequestScript(ctx context.Context, in *types.RequestScriptIn) (*
 		return nil, err
 	}
 
-	return &types.RequestScriptOut{
+	return &types.RequestScriptResponse{
 		TaskIndex:     in.TaskIndex,
 		ScriptOutData: aggrData,
 		DataDigest:    digest,

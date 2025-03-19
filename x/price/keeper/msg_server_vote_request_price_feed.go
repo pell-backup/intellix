@@ -43,7 +43,7 @@ func (k msgServer) validateMsgVoteRequestPriceFeed(msg *types.MsgVoteRequestPric
 		msg.RequestId == nil ||
 		msg.BaseSymbol == "" ||
 		msg.QuoteSymbol == "" ||
-		msg.Price == nil ||
+		msg.Prices == nil ||
 		msg.Timestamp == 0 {
 		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "invalid msg")
 	}

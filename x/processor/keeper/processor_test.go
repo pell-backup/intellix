@@ -22,7 +22,7 @@ func TestSetProcessorCount(t *testing.T) {
 
 func processor() types.Processor {
 	return types.Processor{
-		ProcessorType: types.ProcessorType_WASM,
+		ProcessorType: types.ProcessorType_PROCESSOR_TYPE_WASM,
 		Config:        []byte("config"),
 		WasmCode:      []byte("wasm code"),
 		Creator:       "creator",
@@ -43,7 +43,7 @@ func TestGetProcessor(t *testing.T) {
 	require.NoError(t, err)
 	processor, found := k.GetProcessor(ctx, id)
 	require.True(t, found)
-	require.Equal(t, processor.ProcessorType, types.ProcessorType_WASM)
+	require.Equal(t, processor.ProcessorType, types.ProcessorType_PROCESSOR_TYPE_WASM)
 	require.Equal(t, processor.Config, []byte("config"))
 	require.Equal(t, processor.WasmCode, []byte("wasm code"))
 	require.Equal(t, processor.Creator, "creator")

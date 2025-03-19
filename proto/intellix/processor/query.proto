@@ -2,9 +2,9 @@ syntax = "proto3";
 package intellix.processor;
 
 import "amino/amino.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
 import "intellix/processor/params.proto";
 import "intellix/processor/processor.proto";
 
@@ -18,41 +18,50 @@ service Query {
   }
 
   // ShowProcessor shows a processor.
-  rpc ShowProcessor(QueryShowProcessorRequest) returns (QueryShowProcessorResponse) {
+  rpc ShowProcessor(QueryShowProcessorRequest)
+      returns (QueryShowProcessorResponse) {
     option (google.api.http).get = "/intellix/processor/processor/{id}";
   }
 
   // ListProcessor lists processors.
-  rpc ListProcessor(QueryListProcessorRequest) returns (QueryListProcessorResponse) {
+  rpc ListProcessor(QueryListProcessorRequest)
+      returns (QueryListProcessorResponse) {
     option (google.api.http).get = "/intellix/processor/processor";
   }
 }
 
-// QueryParamsRequest is request type for the Query/Params RPC method.
+// QueryParamsRequest represents a request to query module parameters.
+// Currently empty as no specific parameters are needed for the query.
 message QueryParamsRequest {}
 
-// QueryParamsResponse is response type for the Query/Params RPC method.
+// QueryParamsResponse represents the response type for module parameters query.
+// Contains all the current parameter values of the module.
 message QueryParamsResponse {
   // params holds all the parameters of this module.
-  Params params = 1 [
-    (gogoproto.nullable) = false,
-    (amino.dont_omitempty) = true
-  ];
+  Params params = 1
+      [ (gogoproto.nullable) = false, (amino.dont_omitempty) = true ];
 }
 
-message QueryShowProcessorRequest {
-  uint64 id = 1;
-}
+// QueryShowProcessorRequest represents a request to query a specific processor
+// by its unique identifier.
+message QueryShowProcessorRequest { uint64 id = 1; }
 
+// QueryShowProcessorResponse represents the response type for a single
+// processor query. Contains the detailed information of the requested
+// processor.
 message QueryShowProcessorResponse {
-  Processor processor = 1 [(gogoproto.nullable) = false];
+  Processor processor = 1 [ (gogoproto.nullable) = false ];
 }
 
+// QueryListProcessorRequest represents a request to list all processors
+// with optional pagination parameters.
 message QueryListProcessorRequest {
   cosmos.base.query.v1beta1.PageRequest pagination = 1;
 }
 
+// QueryListProcessorResponse represents the response type for processors list
+// query. Contains a list of processors and pagination information.
 message QueryListProcessorResponse {
-  repeated Processor processor = 1 [(gogoproto.nullable) = false];
+  repeated Processor processor = 1 [ (gogoproto.nullable) = false ];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

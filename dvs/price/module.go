@@ -29,7 +29,7 @@ func (am AppModule) RegisterServices(router *sdkservice.MsgRouter) {
 
 	// register dvs-msg result handler
 	configurator.RegisterResultMsgExtractor(
-		&types.RequestPriceFeedOut{}, resulthandlers.NewProcessRequestPriceFeedResultHandler(),
+		&types.RequestPriceFeedResponse{}, resulthandlers.NewProcessRequestPriceFeedResultHandler(),
 	)
 }
 

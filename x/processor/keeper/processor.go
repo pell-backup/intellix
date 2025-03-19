@@ -12,7 +12,7 @@ import (
 )
 
 func (k Keeper) AppendProcessor(ctx sdk.Context, processor types.Processor) (uint64, error) {
-	if processor.ProcessorType != types.ProcessorType_WASM {
+	if processor.ProcessorType != types.ProcessorType_PROCESSOR_TYPE_WASM {
 		return 0, errors.New("processor type must be WASM")
 	}
 	if processor.WasmCode == nil {

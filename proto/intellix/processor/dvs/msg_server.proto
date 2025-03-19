@@ -1,44 +1,53 @@
 syntax = "proto3";
-package intellix.processor;
+package intellix.processor.dvs;
 
-import "gogoproto/gogo.proto";
-import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
-import "amino/amino.proto";
+import "gogoproto/gogo.proto";
 
 option go_package = "intellix/dvs/processor/types";
 
+// DVSRequest defines the service for handling decentralized verification system
+// requests.
 service DVSRequest {
-  rpc RequestScript(RequestScriptIn) returns (RequestScriptOut) {}
+  // RequestScript processes a script execution request
+  rpc RequestScript(RequestScriptIn) returns (RequestScriptResponse) {}
 
-  rpc DVSResponsHandler(RequestScriptIn) returns (ResponseScriptOut) {}
+  // DVSResponsHandler handles the response processing for DVS requests
+  rpc DVSResponsHandler(RequestScriptIn) returns (DVSResponsHandlerResponse) {}
 }
 
-message ResponseScriptOut {}
+// DVSResponsHandlerResponse represents an empty response message for script
+// execution. Currently empty as no specific response data is needed.
+message DVSResponsHandlerResponse {}
 
+// RequestScriptIn represents a request for script execution in the DVS system.
+// Contains all necessary parameters for processing a script request including
+// task information, payment details, and execution parameters.
 message RequestScriptIn {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
 
-  uint32 task_index = 1;
-  bytes request_id = 2;
-  string fee_token = 3;
-  string payment = 4 [
+  uint32 task_index = 1; // Index of the task within the request
+  bytes request_id = 2;  // Unique identifier for the request
+  string fee_token = 3;  // Token used for fee payment
+  string payment = 4 [                  // Amount to be paid for execution
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];
-  bytes request_data = 5;
-  string callback_address = 6;
-  bytes callback_function_id = 7;
-  uint32 task_created_block = 8;
-  bytes quorum_numbers = 9;
-  uint32 quorum_threshold_percentage = 10;
-  uint64 script_id = 11;
-  bytes script_param = 12;
-  bool advance_decode = 13;
+  bytes request_data = 5;         // Data to be processed
+  string callback_address = 6;    // Address to receive the execution result
+  bytes callback_function_id = 7; // Function to be called with results
+  uint32 task_created_block = 8;  // Block height when task was created
+  bytes quorum_numbers = 9;       // Quorum validation data
+  uint32 quorum_threshold_percentage = 10; // Required threshold for quorum
+  uint64 script_id = 11;    // Identifier of the script to execute
+  bytes script_param = 12;  // Parameters for script execution
+  bool advance_decode = 13; // Flag for advanced decoding mode
 }
 
-message RequestScriptOut {
-  uint32 task_index = 1;
-  bytes script_out_data = 2;
-  bytes data_digest = 3;
+// RequestScriptResponse represents the output of a script execution request.
+// Contains the execution results and verification data.
+message RequestScriptResponse {
+  uint32 task_index = 1;     // Index of the completed task
+  bytes script_out_data = 2; // Output data from script execution
+  bytes data_digest = 3;     // Hash digest of the output data for verification
 }

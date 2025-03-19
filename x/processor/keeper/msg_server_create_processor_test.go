@@ -15,7 +15,7 @@ func TestCreateProcessor(t *testing.T) {
 	msgServer := keeper.NewMsgServerImpl(k)
 	msg := types.MsgCreateProcessor{
 		Creator:       "creator",
-		ProcessorType: types.ProcessorType_WASM,
+		ProcessorType: types.ProcessorType_PROCESSOR_TYPE_WASM,
 		Config:        []byte("config"),
 		WasmCode:      []byte("wasm code"),
 	}
