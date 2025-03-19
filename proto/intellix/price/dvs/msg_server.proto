@@ -11,6 +11,8 @@ option go_package = "intellix/dvs/price/types";
 
 service DVSRequest {
   rpc RequestPriceFeed(RequestPriceFeedIn) returns (RequestPriceFeedOut) {}
+
+  rpc DVSResponsHandler(RequestPriceFeedIn) returns (ResponsePriceFeedOut) {}
 }
 
 // RequestPriceFeedIn defines task request from task-dispatcher
@@ -52,3 +54,4 @@ message BlockRange {
   // End block height for aggregation
   uint64 end = 2;
 }
+message ResponsePriceFeedOut {}

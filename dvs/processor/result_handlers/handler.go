@@ -3,8 +3,8 @@ package result_handlers
 import (
 	"github.com/cosmos/gogoproto/proto"
 
+	"intellix/dvs"
 	"intellix/dvs/processor/types"
-	"intellix/sdk/utils"
 )
 
 type ProcessorRequestResHandler struct {
@@ -20,7 +20,7 @@ func (p *ProcessorRequestResHandler) GetData(msg proto.Message) ([]byte, error) 
 		return nil, nil
 	}
 
-	return utils.AbiEncodeResponseTaskParam(r.TaskIndex, r.ScriptOutData)
+	return dvs.AbiEncodeResponseTaskParam(r.TaskIndex, r.ScriptOutData)
 }
 
 func (p *ProcessorRequestResHandler) GetDigest(msg proto.Message) ([]byte, error) {
@@ -28,9 +28,9 @@ func (p *ProcessorRequestResHandler) GetDigest(msg proto.Message) ([]byte, error
 	if !ok {
 		return nil, nil
 	}
-	data, err := utils.AbiEncodeResponseTaskParam(r.TaskIndex, r.ScriptOutData)
+	data, err := dvs.AbiEncodeResponseTaskParam(r.TaskIndex, r.ScriptOutData)
 	if err != nil {
 		return nil, err
 	}
-	return utils.DigestKeccak256(data), nil
+	return dvs.DigestKeccak256(data), nil
 }

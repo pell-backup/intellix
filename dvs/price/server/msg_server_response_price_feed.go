@@ -8,27 +8,30 @@ import (
 	"math/big"
 
 	"cosmossdk.io/math"
+	"github.com/0xPellNetwork/pellapp-sdk/pelldvs"
+	dvstypes "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types"
+	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 
+	"intellix/dvs"
 	"intellix/dvs/price/types"
 	"intellix/sdk/pelldvs"
 	dvstypes "intellix/sdk/pelldvs/types"
 	sdktypes "intellix/sdk/types"
-	"intellix/sdk/utils"
 	pricetypes "intellix/x/price/types"
 )
 
-func (d ResponseServer) ResponsePriceFeed(ctx context.Context, in *types.RequestPriceFeedIn) (*types.ResponsePriceFeedOut, error) {
+func (d Server) DVSResponsHandler(ctx context.Context, in *types.RequestPriceFeedIn) (*types.ResponsePriceFeedOut, error) {
 	pkgCtx := sdktypes.UnwrapContext(ctx)
 	//js, _ := json.Marshal(in)
-	//d.logger.Info("DvsPostProcessRequestServer.PostProcessRequestPriceFeed called", "data", string(js))
+	//d.logger.Info("DvsPostProcessServer.PostProcessRequestPriceFeed called", "data", string(js))
 
 	validatedData, err := pelldvs.GetDvsRequestValidatedData(pkgCtx)
 	if err != nil {
 		return nil, err
 	}
 
-	taskResp, err := utils.AbiDecodeResponseTaskParam(validatedData.Data)
+	taskResp, err := dvs.AbiDecodeResponseTaskParam(validatedData.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +51,8 @@ func (d ResponseServer) ResponsePriceFeed(ctx context.Context, in *types.Request
 	return &types.ResponsePriceFeedOut{}, nil
 }
 
-func (d ResponseServer) sendVoteFinalizedRequestPriceTx(ctx sdktypes.Context, raw *types.RequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractdataoracle.IDataOracleTaskResponse) (*pricetypes.MsgVoteFinalizedRequestPrice, error) {
-	addr, err := d.Server.SenderAddress()
+func (d Server) sendVoteFinalizedRequestPriceTx(ctx sdktypes.Context, raw *types.RequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractdataoracle.IDataOracleTaskResponse) (*pricetypes.MsgVoteFinalizedRequestPrice, error) {
+	addr, err := d.SenderAddress()
 	if err != nil {
 		return nil, err
 	}
@@ -70,13 +73,13 @@ func (d ResponseServer) sendVoteFinalizedRequestPriceTx(ctx sdktypes.Context, ra
 		Price:                     math.NewIntFromBigInt(new(big.Int).SetBytes(priceData.Data)),
 	}
 
-	if err := d.Server.SignAndBroadcastTx(ctx, msg); err != nil {
+	if err := d.SignAndBroadcastTx(ctx, msg); err != nil {
 		return nil, err
 	}
 	return msg, nil
 }
 
-func (d ResponseServer) sendResponseToGateway(ctx sdktypes.Context, raw *types.RequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractdataoracle.IDataOracleTaskResponse) error {
+func (d Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.RequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractdataoracle.IDataOracleTaskResponse) error {
 
 	nonSignerStakeIndices := make([][]uint32, len(validatedData.NonSignerStakeIndices))
 	for i, indices := range validatedData.NonSignerStakeIndices {
@@ -116,7 +119,8 @@ func (d ResponseServer) sendResponseToGateway(ctx sdktypes.Context, raw *types.R
 	}
 
 	reqJs, _ := json.Marshal(req)
-	d.logger.Info("DvsPostProcessRequestServer.sendResponseToGateway", "req", string(reqJs))
+	d.logger.Info("DvsPostProcessServer.sendResponseToGateway", "req", string(reqJs))
 
 	return d.Server.taskGatewayClient.RespondToPriceTask(req)
+	return d.taskGatewayClient.RespondToTask(req)
 }

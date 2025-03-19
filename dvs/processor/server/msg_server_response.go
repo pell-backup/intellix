@@ -5,27 +5,20 @@ import (
 	"intellix/dvs"
 	taskgateway "intellix/gateway/types"
 
+	"github.com/0xPellNetwork/pellapp-sdk/pelldvs"
+	dvstypes "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types"
+	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
+
+	"intellix/dvs"
 	"intellix/dvs/processor/types"
+	taskgateway "intellix/gateway"
 	"intellix/sdk/pelldvs"
 	dvstypes "intellix/sdk/pelldvs/types"
 	sdktypes "intellix/sdk/types"
-	"intellix/sdk/utils"
 	processortypes "intellix/x/processor/types"
 )
 
-type ResponseServer struct {
-	Server
-}
-
-func NewResponseServer(s Server) types.DVSResponseServer {
-	return &ResponseServer{
-		Server: s,
-	}
-}
-
-var _ types.DVSResponseServer = ResponseServer{}
-
-func (r ResponseServer) ResponseScript(ctx context.Context, in *types.RequestScriptIn) (*types.ResponseScriptOut, error) {
+func (r Server) DVSResponsHandler(ctx context.Context, in *types.RequestScriptIn) (*types.ResponseScriptOut, error) {
 	pkgCtx := sdktypes.UnwrapContext(ctx)
 	validatedData, err := pelldvs.GetDvsRequestValidatedData(pkgCtx)
 	if err != nil {
@@ -33,7 +26,7 @@ func (r ResponseServer) ResponseScript(ctx context.Context, in *types.RequestScr
 	}
 
 	// decode data from abi-encoded-data
-	scriptOutData, err := utils.AbiDecodeResponseTaskParam(validatedData.Data)
+	scriptOutData, err := dvs.AbiDecodeResponseTaskParam(validatedData.Data)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +44,7 @@ func (r ResponseServer) ResponseScript(ctx context.Context, in *types.RequestScr
 	return &types.ResponseScriptOut{}, nil
 }
 
-func (r ResponseServer) voteData(ctx sdktypes.Context, in *types.RequestScriptIn, data []byte) error {
+func (r Server) voteData(ctx sdktypes.Context, in *types.RequestScriptIn, data []byte) error {
 	msg := &processortypes.MsgVoteResponseProcessor{
 		TaskIndex:                 in.TaskIndex,
 		RequestId:                 in.RequestId,
@@ -72,7 +65,7 @@ func (r ResponseServer) voteData(ctx sdktypes.Context, in *types.RequestScriptIn
 	return nil
 }
 
-func (r ResponseServer) responseToTask(ctx sdktypes.Context, in *types.RequestScriptIn, data []byte, validatedData *dvstypes.RequestPostRequestValidatedData) error {
+func (r Server) responseToTask(ctx sdktypes.Context, in *types.RequestScriptIn, data []byte, validatedData *dvstypes.RequestPostRequestValidatedData) error {
 	var nonSignerStakeIndices [][]uint32
 	for _, v := range validatedData.NonSignerStakeIndices {
 		nonSignerStakeIndices = append(nonSignerStakeIndices, v.NonSignerStakeIndice)
