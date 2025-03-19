@@ -3,10 +3,7 @@ package dispatcher
 import "C"
 
 import (
-	"context"
 	"fmt"
-	interactortypes "github.com/0xPellNetwork/pelldvs-interactor/types"
-	"github.com/0xPellNetwork/pelldvs/rpc/client/http"
 	"intellix/gateway/types"
 	"sync"
 
@@ -74,7 +71,7 @@ func NewDispatcher(logger dvslog.Logger, pellDVSConf *pelldvscfg.Config, conf *t
 	}
 
 	for _, chainConfig := range conf.Chains {
-		if err := dispatcher.AddChain(chainConfig); err != nil {
+		if err := dispatcher.AddChainWatcher(chainConfig); err != nil {
 			return nil, fmt.Errorf("failed to add chain %d: %w", chainConfig.ChainID, err)
 		}
 	}
@@ -89,7 +86,7 @@ func NewDispatcher(logger dvslog.Logger, pellDVSConf *pelldvscfg.Config, conf *t
 	return dispatcher, nil
 }
 
-func (d *Dispatcher) AddChain(config types.ChainConfig) error {
+func (d *Dispatcher) AddChainWatcher(config types.ChainConfig) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	d.logger.Info(fmt.Sprintf("listen chain, chainID: %d, url: %s, address: %s", config.ChainID, config.RPCURL, config.ContractAddress))
@@ -120,119 +117,9 @@ func (d *Dispatcher) AddChain(config types.ChainConfig) error {
 	return nil
 }
 
-// listenForNewPriceTasks listens for new price tasks on a specific chain
-func (d *Dispatcher) dispatchTask(
-	taskData []byte,
-	groupNumbersBytes []byte,
-	chainID uint64,
-	blockNumber uint32,
-	groupThresholdPercentage uint32,
-) error {
-	// Log initial parameters
-	d.logger.Info("dispatchTask called",
-		"taskData", taskData,
-		"groupNumbersBytes", groupNumbersBytes,
-		"chainID", chainID,
-		"blockNumber", blockNumber,
-		"groupThresholdPercentage", groupThresholdPercentage,
-	)
-
-	// Convert byte slice to group numbers
-	groupNumbers := make([]uint32, len(groupNumbersBytes))
-	groupNumbersForInteractor := make([]interactortypes.GroupNumber, len(groupNumbersBytes))
-	for i, b := range groupNumbersBytes {
-		groupNumbers[i] = uint32(b)
-		groupNumbersForInteractor[i] = interactortypes.GroupNumber(b)
-	}
-
-	// Retrieve operator DVS state
-	operatorDVSState, err := d.reader.GetOperatorsDVSStateAtBlock(
-		chainID,
-		groupNumbersForInteractor,
-		blockNumber,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to retrieve operator DVS state: %w", err)
-	}
-
-	if len(operatorDVSState) == 0 {
-		return errors.New("no operator DVS state found")
-	}
-
-	d.logger.Info("operator DVS state retrieved",
-		"count", len(operatorDVSState),
-		"chainID", chainID,
-	)
-
-	// Iterate over each operator's DVS state
-	for operatorID, operatorState := range operatorDVSState {
-		// Fetch operator info
-		info, err := d.reader.GetOperatorInfoByID(operatorID)
-		if err != nil {
-			d.logger.Error("failed to get operator info",
-				"chainID", chainID,
-				"error", err,
-				"operatorID", operatorID,
-				"operatorAddress", operatorState.OperatorAddress,
-			)
-			continue
-		}
-
-		d.logger.Info("preparing to send task to DVS operator",
-			"chainID", chainID,
-			"operatorID", operatorID,
-			"operatorAddress", operatorState.OperatorAddress,
-			"socket", info.Socket,
-		)
-
-		// Create the client
-		client, err := http.New(info.Socket.String(), "")
-		if err != nil {
-			d.logger.Error("failed to create eth client",
-				"chainID", chainID,
-				"error", err,
-				"operatorID", operatorID,
-				"operatorAddress", operatorState.OperatorAddress,
-				"socket", info.Socket,
-			)
-			continue
-		}
-
-		// Send the task asynchronously
-		reqResp, err := client.RequestDVSAsync(
-			context.Background(),
-			taskData,
-			int64(blockNumber),
-			int64(chainID),
-			groupNumbers,
-			[]uint32{groupThresholdPercentage},
-		)
-		if err != nil {
-			d.logger.Error("failed to send task to PellDVS",
-				"chainID", chainID,
-				"error", err,
-				"operatorID", operatorID,
-				"operatorAddress", operatorState.OperatorAddress,
-				"socket", info.Socket,
-			)
-			continue
-		}
-
-		d.logger.Info("task sent to PellDVS successfully",
-			"chainID", chainID,
-			"operatorID", operatorID,
-			"operatorAddress", operatorState.OperatorAddress,
-			"socket", info.Socket,
-			"response", reqResp,
-		)
-	}
-
-	return nil
-}
-
 func (d *Dispatcher) Start() error {
 	for _, chain := range d.chains {
-		go d.listenForNewPriceTasks(chain)
+		go d.listenForNewTasks(chain)
 	}
 	return nil
 }

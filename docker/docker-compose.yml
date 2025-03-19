@@ -2,7 +2,7 @@ name: intellix-e2e
 
 services:
   hardhat:
-    image: pellnetwork/intellix-e2e-hardhat:${CONTRACT_VERSION:-v0.4.4}
+    image: pellnetwork/intellix-e2e-hardhat:${CONTRACT_VERSION:-v0.4.5}
     environment:
       - LOCALHOST_URL=http://eth:8545
       - ETH_RPC_URL=http://eth:8545

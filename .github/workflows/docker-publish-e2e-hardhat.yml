@@ -8,9 +8,9 @@ on:
         required: false
         default: "latest"
       contract_version:
-        description: 'Contracts version (example: v0.4.4), checkout at price-oracle-dvs'
+        description: 'Contracts version (example: v0.4.5), checkout at price-oracle-dvs'
         required: true
-        default: "v0.4.4"
+        default: "v0.4.5"
 
 jobs:
   build_and_publish:
@@ -21,7 +21,7 @@ jobs:
       packages: write
       contents: read
     env:
-      DFT_CONTRACT_VERSION: v0.4.4
+      DFT_CONTRACT_VERSION: v0.4.5
       IMAGE_NAME: pellnetwork/intellix-e2e-hardhat
 
     steps:

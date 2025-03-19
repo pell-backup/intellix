@@ -66,7 +66,7 @@ func taskGatewayCommand() *cobra.Command {
 			}
 
 			// create Submitter
-			gateway, err := submitter.NewSubmitter(logger, ctx, conf)
+			submitter, err := submitter.NewSubmitter(logger, ctx, conf)
 			if err != nil {
 				return fmt.Errorf("failed to create Submitter: %w", err)
 			}
@@ -83,11 +83,11 @@ func taskGatewayCommand() *cobra.Command {
 
 			// start Submitter
 			g.Go(func() error {
-				err = gateway.Start()
+				err = submitter.Start()
 				if err != nil {
 					return fmt.Errorf("failed to start Submitter: %w", err)
 				}
-				<-gateway.Quit()
+				<-submitter.Quit()
 
 				return nil
 			})

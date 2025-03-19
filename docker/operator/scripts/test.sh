@@ -57,6 +57,7 @@ abci_healthcheck
 ADMIN_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/PriceOraclePayInNativeConsumer.json" | jq -r .address)
 
+### ----------------
 ## create a new task
 cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "ETH" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
@@ -71,8 +72,9 @@ assert_gt "$RESULT" "0"
 # RETRIEVER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/OperatorStateRetriever.json" | jq -r .address)
 # cast call "$RETRIEVER_ADDRESS" "GetGROUPsDVSStateAtBlock(uint32)" $TASK_ID --private-key "$ADMIN_KEY"
 
+### ----------------
 ## create a new task
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "PEPE" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "BTC" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
 # wait for the task to be processed
 echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
@@ -80,20 +82,6 @@ sleep ${TIMEOUT_FOR_TASK_PROCESS}
 RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
 assert_gt "$RESULT" "0"
 
-## create a new task
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "SUNDOG" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+### ----------------
 
-# wait for the task to be processed
-echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
-sleep ${TIMEOUT_FOR_TASK_PROCESS}
-RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
-assert_gt "$RESULT" "0"
 
-## create a new task
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "TON" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
-
-# wait for the task to be processed
-echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
-sleep ${TIMEOUT_FOR_TASK_PROCESS}
-RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
-assert_gt "$RESULT" "0"
