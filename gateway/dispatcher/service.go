@@ -120,6 +120,7 @@ func (d *Dispatcher) AddChain(config types.ChainConfig) error {
 func (d *Dispatcher) Start() error {
 	for _, chain := range d.chains {
 		go d.listenForNewPriceTasks(chain)
+		go d.listenForNewVRFTasks(chain)
 	}
 	return nil
 }

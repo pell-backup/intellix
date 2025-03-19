@@ -53,22 +53,22 @@ func (d *Dispatcher) handleNewPriceTask(chainID uint64, newTask *contractdataora
 		return
 	}
 
-	quorumNumbers := make([]uint32, len(newTask.Task.GroupNumbers))
-	quorumNumbersForInteractor := make([]interactortypes.GroupNumber, len(newTask.Task.GroupNumbers))
+	groupNumbers := make([]uint32, len(newTask.Task.GroupNumbers))
+	groupNumbersForInteractor := make([]interactortypes.GroupNumber, len(newTask.Task.GroupNumbers))
 	for i, b := range newTask.Task.GroupNumbers {
-		quorumNumbers[i] = uint32(b)
-		quorumNumbersForInteractor[i] = interactortypes.GroupNumber(b)
+		groupNumbers[i] = uint32(b)
+		groupNumbersForInteractor[i] = interactortypes.GroupNumber(b)
 	}
 
 	operatorDVSState, err := d.reader.GetOperatorsDVSStateAtBlock(chainID,
-		quorumNumbersForInteractor,
+		groupNumbersForInteractor,
 		uint32(newTask.Raw.BlockNumber),
 	)
 	if err != nil {
 		d.logger.Error("Failed to get operator DVS state",
 			"chainID", chainID,
 			"blockNumber", newTask.Raw.BlockNumber,
-			"quorumNumbers", quorumNumbers,
+			"groupNumbers", groupNumbers,
 			"error", err,
 		)
 		return
@@ -78,7 +78,7 @@ func (d *Dispatcher) handleNewPriceTask(chainID uint64, newTask *contractdataora
 		d.logger.Error("No operator DVS state found",
 			"chainID", chainID,
 			"blockNumber", newTask.Raw.BlockNumber,
-			"quorumNumbers", quorumNumbers,
+			"groupNumbers", groupNumbers,
 			"error", err,
 		)
 		return
@@ -123,7 +123,7 @@ func (d *Dispatcher) handleNewPriceTask(chainID uint64, newTask *contractdataora
 			taskData,
 			int64(newTask.Raw.BlockNumber),
 			int64(chainID),
-			quorumNumbers,
+			groupNumbers,
 			[]uint32{newTask.Task.GroupThresholdPercentage},
 		)
 		if err != nil {

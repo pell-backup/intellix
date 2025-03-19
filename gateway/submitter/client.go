@@ -16,6 +16,7 @@ type Client struct {
 }
 
 const respondToPriceTaskMethod = "Submitter.RespondToPriceTask"
+const respondToVRFTaskMethod = "Submitter.RespondToVRFTask"
 
 // NewClient creates a new Submitter RPC client
 func NewClient(address string, logger log.Logger) (*Client, error) {
@@ -79,6 +80,38 @@ func (c *Client) RespondToPriceTask(req *types.RPCVoteFinalizedRequestIn) error 
 	if resp.Error != "" {
 		c.logger.Error("task RespondToPriceTask failed", "error", resp.Error)
 		return fmt.Errorf("task RespondToPriceTask failed: %s", resp.Error)
+	}
+
+	c.logger.Info("Task response sent successfully", "TaskIndex", req.TaskRaw.TaskIndex)
+
+	return nil
+}
+
+func (c *Client) RespondToVRFTask(req *types.RPCVoteFinalizedRequestIn) error {
+	resp := &types.RespondToTaskResponse{}
+
+	err := c.client.Call(respondToVRFTaskMethod, req, resp)
+	if err != nil {
+		// retry
+		if err.Error() == "connection is shut down" {
+			c.logger.Info("Connection lost, attempting to reconnect...")
+			if err := c.reconnect(); err != nil {
+				return fmt.Errorf("failed to reconnect: %v", err)
+			}
+			err = c.client.Call(respondToVRFTaskMethod, req, resp)
+			if err != nil {
+				c.logger.Error("RPC call failed after reconnection", "error", err.Error())
+				return err
+			}
+		} else {
+			c.logger.Error("RPC call failed", "error", err.Error())
+			return err
+		}
+	}
+
+	if resp.Error != "" {
+		c.logger.Error("task RespondToVRFTask failed", "error", resp.Error)
+		return fmt.Errorf("task RespondToVRFTask failed: %s", resp.Error)
 	}
 
 	c.logger.Info("Task response sent successfully", "TaskIndex", req.TaskRaw.TaskIndex)
