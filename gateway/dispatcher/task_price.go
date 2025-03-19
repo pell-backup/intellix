@@ -1,11 +1,8 @@
 package dispatcher
 
 import (
-	"context"
 	"cosmossdk.io/math"
 	"fmt"
-	interactortypes "github.com/0xPellNetwork/pelldvs-interactor/types"
-	"github.com/0xPellNetwork/pelldvs/rpc/client/http"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -53,99 +50,9 @@ func (d *Dispatcher) handleNewPriceTask(chainID uint64, newTask *contractdataora
 		return
 	}
 
-	groupNumbers := make([]uint32, len(newTask.Task.GroupNumbers))
-	groupNumbersForInteractor := make([]interactortypes.GroupNumber, len(newTask.Task.GroupNumbers))
-	for i, b := range newTask.Task.GroupNumbers {
-		groupNumbers[i] = uint32(b)
-		groupNumbersForInteractor[i] = interactortypes.GroupNumber(b)
-	}
-
-	operatorDVSState, err := d.reader.GetOperatorsDVSStateAtBlock(chainID,
-		groupNumbersForInteractor,
-		uint32(newTask.Raw.BlockNumber),
-	)
+	err = d.dispatchTask(taskData, newTask.Task.GroupNumbers, chainID, uint32(newTask.Raw.BlockNumber), newTask.Task.GroupThresholdPercentage)
 	if err != nil {
-		d.logger.Error("Failed to get operator DVS state",
-			"chainID", chainID,
-			"blockNumber", newTask.Raw.BlockNumber,
-			"groupNumbers", groupNumbers,
-			"error", err,
-		)
-		return
-	}
-
-	if len(operatorDVSState) == 0 {
-		d.logger.Error("No operator DVS state found",
-			"chainID", chainID,
-			"blockNumber", newTask.Raw.BlockNumber,
-			"groupNumbers", groupNumbers,
-			"error", err,
-		)
-		return
-	}
-
-	d.logger.Info("Operator DVS state count", "count", len(operatorDVSState))
-
-	for operatorID, operatorState := range operatorDVSState {
-		info, err := d.reader.GetOperatorInfoByID(operatorID)
-		if err != nil {
-			d.logger.Error("Failed to get operator info",
-				"chainID", chainID,
-				"error", err,
-				"operatorID", operatorID,
-				"operatorAddress", operatorState.OperatorAddress,
-			)
-			continue
-		}
-
-		d.logger.Info("prepare to send task to DVS app operator",
-			"chainID", chainID,
-			"TaskIndex", newTask.TaskIndex,
-			"RequestId", newTask.Task.RequestId,
-			"operatorID", operatorID,
-			"operatorAddress", operatorState.OperatorAddress,
-			"socket", info.Socket,
-		)
-
-		client, err := http.New(info.Socket.String(), "")
-		if err != nil {
-			d.logger.Error("Failed to create eth client",
-				"chainID", chainID,
-				"error", err,
-				"operatorID", operatorID,
-				"operatorAddress", operatorState.OperatorAddress,
-				"socket", info.Socket,
-			)
-			continue
-		}
-		reqResp, err := client.RequestDVSAsync(
-			context.Background(),
-			taskData,
-			int64(newTask.Raw.BlockNumber),
-			int64(chainID),
-			groupNumbers,
-			[]uint32{newTask.Task.GroupThresholdPercentage},
-		)
-		if err != nil {
-			d.logger.Error("Failed to send task to PellDVS",
-				"chainID", chainID, "error", err,
-				"operatorID", operatorID,
-				"operatorAddress", operatorState.OperatorAddress,
-				"socket", info.Socket,
-			)
-			continue
-		}
-
-		d.logger.Info("Task sent to PellDVS successfully",
-			"chainID", chainID,
-			"TaskIndex", newTask.TaskIndex,
-			"RequestId", newTask.Task.RequestId,
-			"operatorID", operatorID,
-			"operatorAddress", operatorState.OperatorAddress,
-			"socket", info.Socket,
-			"response", reqResp,
-		)
-
+		d.logger.Error("Failed to dispatch task", "chainID", chainID, "error", err)
 	}
 }
 

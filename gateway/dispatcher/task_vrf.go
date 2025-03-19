@@ -2,12 +2,15 @@ package dispatcher
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	interactortypes "github.com/0xPellNetwork/pelldvs-interactor/types"
 	"github.com/0xPellNetwork/pelldvs/rpc/client/http"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ontio/ontology-crypto/keypair"
 	"intellix/dvs/vrf/types"
+	"strings"
 )
 
 func (d *Dispatcher) listenForNewVRFTasks(chain *chainWatcher) {
@@ -34,35 +37,60 @@ func (d *Dispatcher) listenForNewVRFTasks(chain *chainWatcher) {
 	}
 }
 
-func (d *Dispatcher) handleNewVRFTask(chainID uint64, newTask *contractdataoracle.ContractDataOracleNewTaskCreated) {
+func (d *Dispatcher) handleNewVRFTask(chainID uint64, task *contractdataoracle.ContractDataOracleNewTaskCreated) {
 	d.logger.Info("New task created",
 		"chainID", chainID,
-		"TaskIndex", newTask.TaskIndex,
-		"RequestId", newTask.Task.RequestId,
-		"TaskType", newTask.Task.TaskType,
+		"TaskIndex", task.TaskIndex,
+		"RequestId", task.Task.RequestId,
+		"TaskType", task.Task.TaskType,
 	)
 
-	taskData, err := d.serializeNewVRFTask(chainID, newTask)
+	// Get private key
+	// TODO: use config
+	privKeyStr := "0x1506060172d45fe6b916c5f903be549d11543140bb7b28a306483e09bf14dce26c"
+	// pubkey := 1504e7cae432489d7c670139a3cb712f0766c66e52525242e5d7672f11b6c8c1f6bd5f859bd281955549ee5dc697a12028189fac013d9a7b1c4c9aab00823d3d18e6
+	if strings.HasPrefix(privKeyStr, "0x") {
+		privKeyStr = privKeyStr[2:]
+	}
+	priKeyBuf, err := hex.DecodeString(privKeyStr)
+	if err != nil {
+		d.logger.Error("Failed to decode private key", "error", err)
+	}
+	priKey, err := keypair.DeserializePrivateKey(priKeyBuf)
+	if err != nil {
+		d.logger.Error("Failed to deserialize private key", "error", err)
+	}
+
+	// Generate a VRF
+	vrfValue, vrfProof, err := computeVrf(priKey, task)
+	if err != nil {
+		d.logger.Error("Failed to generate VRF", "error", err)
+		return
+	}
+
+	// Serialize the task with the VRF
+	taskData, err := d.serializeNewVRFTask(chainID, task, vrfValue, vrfProof)
 	if err != nil {
 		d.logger.Error("Failed to serialize task", "chainID", chainID, "error", err)
 		return
 	}
 
-	groupNumbers := make([]uint32, len(newTask.Task.GroupNumbers))
-	groupNumbersForInteractor := make([]interactortypes.GroupNumber, len(newTask.Task.GroupNumbers))
-	for i, b := range newTask.Task.GroupNumbers {
+	groupNumbers := make([]uint32, len(task.Task.GroupNumbers))
+	groupNumbersForInteractor := make([]interactortypes.GroupNumber, len(task.Task.GroupNumbers))
+	for i, b := range task.Task.GroupNumbers {
 		groupNumbers[i] = uint32(b)
 		groupNumbersForInteractor[i] = interactortypes.GroupNumber(b)
 	}
 
-	operatorDVSState, err := d.reader.GetOperatorsDVSStateAtBlock(chainID,
+	operatorDVSState, err := d.reader.GetOperatorsDVSStateAtBlock(
+		chainID,
 		groupNumbersForInteractor,
-		uint32(newTask.Raw.BlockNumber),
+		uint32(task.Raw.BlockNumber),
 	)
 	if err != nil {
 		d.logger.Error("Failed to get operator DVS state",
 			"chainID", chainID,
-			"blockNumber", newTask.Raw.BlockNumber,
+			"blockNumber", task.Raw.BlockNumber,
 			"groupNumbers", groupNumbers,
 			"error", err,
 		)
@@ -72,7 +100,7 @@ func (d *Dispatcher) handleNewVRFTask(chainID uint64, newTask *contractdataoracl
 	if len(operatorDVSState) == 0 {
 		d.logger.Error("No operator DVS state found",
 			"chainID", chainID,
-			"blockNumber", newTask.Raw.BlockNumber,
+			"blockNumber", task.Raw.BlockNumber,
 			"groupNumbers", groupNumbers,
 			"error", err,
 		)
@@ -95,8 +123,8 @@ func (d *Dispatcher) handleNewVRFTask(chainID uint64, newTask *contractdataoracl
 
 		d.logger.Info("prepare to send task to DVS app operator",
 			"chainID", chainID,
-			"TaskIndex", newTask.TaskIndex,
-			"RequestId", newTask.Task.RequestId,
+			"TaskIndex", task.TaskIndex,
+			"RequestId", task.Task.RequestId,
 			"operatorID", operatorID,
 			"operatorAddress", operatorState.OperatorAddress,
 			"socket", info.Socket,
@@ -116,10 +144,10 @@ func (d *Dispatcher) handleNewVRFTask(chainID uint64, newTask *contractdataoracl
 		reqResp, err := client.RequestDVSAsync(
 			context.Background(),
 			taskData,
-			int64(newTask.Raw.BlockNumber),
+			int64(task.Raw.BlockNumber),
 			int64(chainID),
 			groupNumbers,
-			[]uint32{newTask.Task.GroupThresholdPercentage},
+			[]uint32{task.Task.GroupThresholdPercentage},
 		)
 		if err != nil {
 			d.logger.Error("Failed to send task to PellDVS",
@@ -133,8 +161,8 @@ func (d *Dispatcher) handleNewVRFTask(chainID uint64, newTask *contractdataoracl
 
 		d.logger.Info("Task sent to PellDVS successfully",
 			"chainID", chainID,
-			"TaskIndex", newTask.TaskIndex,
-			"RequestId", newTask.Task.RequestId,
+			"TaskIndex", task.TaskIndex,
+			"RequestId", task.Task.RequestId,
 			"operatorID", operatorID,
 			"operatorAddress", operatorState.OperatorAddress,
 			"socket", info.Socket,
@@ -144,16 +172,22 @@ func (d *Dispatcher) handleNewVRFTask(chainID uint64, newTask *contractdataoracl
 	}
 }
 
-func (d *Dispatcher) serializeNewVRFTask(chainID uint64, task *contractdataoracle.ContractDataOracleNewTaskCreated) ([]byte, error) {
-	d.logger.Info("serializeNewVRFTask", "chainID", chainID, "taskIndex", task.TaskIndex, "task", fmt.Sprintf("%+v", task.Task))
+func (d *Dispatcher) serializeNewVRFTask(chainID uint64, task *contractdataoracle.ContractDataOracleNewTaskCreated,
+	vrfValue, vrfProof []byte) ([]byte, error) {
+
+	d.logger.Info("serializeNewVRFTask", "chainID", chainID, "taskIndex", task.TaskIndex,
+		"task", fmt.Sprintf("%+v", task.Task), "vrfValue", hex.EncodeToString(vrfValue), "vrfProof", hex.EncodeToString(vrfProof))
+
 	taskRequest := &types.GenerateRandomNumberRequest{
-		&types.Task{
+		Task: &types.Task{
 			TaskIndex:                task.TaskIndex,
 			Height:                   task.Task.TaskCreatedBlock,
 			ChainId:                  chainID,
 			GroupNumbers:             task.Task.GroupNumbers,
 			GroupThresholdPercentage: task.Task.GroupThresholdPercentage,
 		},
+		VrfValue: vrfValue,
+		VrfProof: vrfProof,
 	}
 	return d.msgEncoder.EncodeMsgs(taskRequest)
 }

@@ -25,6 +25,8 @@ message GenerateRandomNumberRequest {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
   option (amino.name) = "dvs/squared/request";
   Task task = 1;
+  bytes vrf_value = 2;
+  bytes vrf_proof = 3;
 }
 
 message GenerateRandomNumberResponse {
