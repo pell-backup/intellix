@@ -123,16 +123,13 @@ DATA=$(
       | .data'
 )
 
-REQUEST_ID=$(
-  cast --abi-decode "RequestSent(bytes32,uint256)" "$DATA"
-)
+REQUEST_ID="${DATA:0:66}"
 
 echo "Got requestId: $REQUEST_ID"
 
 cast call \
   "$VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" \
-  "requests(bytes32)(uint256[],bool)" \
+  "requests(bytes32)(bool,uint256[])" \
   "$REQUEST_ID" \
   --rpc-url "$ETH_RPC_URL"
-
 

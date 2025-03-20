@@ -4,14 +4,20 @@ import (
 	"context"
 	"cosmossdk.io/math"
 	"encoding/json"
+	"errors"
 	"fmt"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"intellix/gateway/types"
+	"math/big"
 	"sync"
+	"time"
 )
 
-func (s *Submitter) RespondToPriceTask(req *types.RPCVoteFinalizedRequestIn, resp *types.RespondToTaskResponse) error {
-	err := s.handlePriceTaskResponse(context.Background(), req)
+func (s *Submitter) RespondToDataOracleTask(req *types.RPCVoteFinalizedRequestIn, resp *types.RespondToTaskResponse) error {
+	err := s.handleTaskResponse(context.Background(), req)
 	if err != nil {
 		resp.Error = err.Error()
 		return err
@@ -20,26 +26,26 @@ func (s *Submitter) RespondToPriceTask(req *types.RPCVoteFinalizedRequestIn, res
 	return nil
 }
 
-func (s *Submitter) handlePriceTaskResponse(ctx context.Context, response *types.RPCVoteFinalizedRequestIn) error {
+func (s *Submitter) handleTaskResponse(ctx context.Context, response *types.RPCVoteFinalizedRequestIn) error {
 	value, loaded := s.taskMap.LoadOrStore(response.TaskRaw.TaskIndex, response)
 	if loaded {
 		existingResponse := value.(*types.RPCVoteFinalizedRequestIn)
-		if s.shouldReplacePriceTaskResponse(ctx, existingResponse, response) {
+		if s.shouldReplaceTaskResponse(ctx, existingResponse, response) {
 			s.taskMap.Store(response.TaskRaw.RequestID, response)
-			return s.wrapPriceTaskSubmitToChain(ctx, response)
+			return s.wrapTaskSubmitToChain(ctx, response)
 		}
 	} else {
-		return s.wrapPriceTaskSubmitToChain(ctx, response)
+		return s.wrapTaskSubmitToChain(ctx, response)
 	}
 	return nil
 }
 
-func (s *Submitter) shouldReplacePriceTaskResponse(ctx context.Context, existing, new *types.RPCVoteFinalizedRequestIn) bool {
+func (s *Submitter) shouldReplaceTaskResponse(ctx context.Context, existing, new *types.RPCVoteFinalizedRequestIn) bool {
 	// TODO: add security threshold comparison
 	return false
 }
 
-func (s *Submitter) wrapPriceTaskSubmitToChain(ctx context.Context, request *types.RPCVoteFinalizedRequestIn) error {
+func (s *Submitter) wrapTaskSubmitToChain(ctx context.Context, request *types.RPCVoteFinalizedRequestIn) error {
 	var wg = &sync.WaitGroup{}
 	wg.Add(1)
 	var err error
@@ -51,20 +57,20 @@ func (s *Submitter) wrapPriceTaskSubmitToChain(ctx context.Context, request *typ
 			}
 			wg.Done()
 		}()
-		err = s.submitPriceTaskResultToChain(ctx, request)
+		err = s.submitTaskResultToChain(ctx, request)
 	}()
 	wg.Wait()
 	return err
 }
 
-func (s *Submitter) submitPriceTaskResultToChain(ctx context.Context, response *types.RPCVoteFinalizedRequestIn) error {
+func (s *Submitter) submitTaskResultToChain(ctx context.Context, response *types.RPCVoteFinalizedRequestIn) error {
 	chainConn, ok := s.chainConnections[uint64(response.ChainID)]
 	if !ok {
 		return fmt.Errorf("no connection found for chain ID %d", response.ChainID)
 	}
 
 	jsData, _ := json.Marshal(response)
-	s.logger.Info("Submitter.submitPriceTaskResultToChain request", "data", string(jsData))
+	s.logger.Info("Submitter.submitTaskResultToChain request", "data", string(jsData))
 
 	// Validate BLS signature components
 	if err := validateBLSComponents(response.ValidatedData); err != nil {
@@ -151,5 +157,48 @@ func (s *Submitter) submitPriceTaskResultToChain(ctx context.Context, response *
 		}
 	}
 
+	return nil
+}
+
+func (s *Submitter) getAuthOpts(chainId int64) (*bind.TransactOpts, error) {
+	// Create transaction authenticator
+	auth, err := bind.NewKeyedTransactorWithChainID(s.privateKey.PrivateKey, big.NewInt(chainId))
+	if err != nil {
+		s.logger.Error("Failed to create transaction authenticator", "error", err)
+		return nil, fmt.Errorf("failed to create transaction authenticator: %v", err)
+	}
+
+	return auth, nil
+}
+
+func (s *Submitter) queryTransactionResult(ctx context.Context, tx *ethtypes.Transaction, ethClient *ethclient.Client) error {
+	s.logger.Info("Transaction submitted", "txHash", tx.Hash().Hex())
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	receipt, err := bind.WaitMined(timeoutCtx, ethClient, tx)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			s.logger.Error("Transaction confirmation timeout",
+				"txHash", tx.Hash().Hex())
+			return fmt.Errorf("transaction confirmation timeout: %s", tx.Hash().Hex())
+		}
+		s.logger.Error("Error waiting for transaction to be mined",
+			"txHash", tx.Hash().Hex(),
+			"error", err)
+		return err
+	}
+
+	s.logger.Info("Transaction confirmed",
+		"txHash", tx.Hash().Hex(),
+		"status", receipt.Status,
+		"gasUsed", receipt.GasUsed,
+		"blockNumber", receipt.BlockNumber,
+		"blockHash", receipt.BlockHash.Hex())
+
+	if receipt.Status == 0 {
+		return fmt.Errorf("transaction failed: %s", tx.Hash().Hex())
+	}
 	return nil
 }

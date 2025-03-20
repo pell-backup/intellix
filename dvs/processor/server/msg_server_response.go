@@ -66,7 +66,7 @@ func (r Server) responseToTask(ctx sdktypes.Context, in *types.RequestScriptIn, 
 		nonSignerStakeIndices = append(nonSignerStakeIndices, v.NonSignerStakeIndice)
 	}
 
-	return r.taskGatewayClient.RespondToPriceTask(&taskgateway.RPCVoteFinalizedRequestIn{
+	return r.taskGatewayClient.RespondToDataOracleTask(&taskgateway.RPCVoteFinalizedRequestIn{
 		ChainID: ctx.ChainID(),
 		TaskRaw: &taskgateway.RPCTaskRaw{
 			TaskType:                  dvs.TaskTypeProcessor,

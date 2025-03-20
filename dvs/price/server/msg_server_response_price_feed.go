@@ -117,5 +117,5 @@ func (d Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.RequestPr
 	reqJs, _ := json.Marshal(req)
 	d.logger.Info("DvsPostProcessServer.sendResponseToGateway", "req", string(reqJs))
 
-	return d.taskGatewayClient.RespondToPriceTask(req)
+	return d.taskGatewayClient.RespondToDataOracleTask(req)
 }

@@ -42,7 +42,7 @@ func (s *Server) DVSResponsHandler(ctx context.Context, in *types.VRFTaskRequest
 		return nil, err
 	}
 
-	s.logger.Info("RespondToPriceTask Done")
+	s.logger.Info("RespondToDataOracleTask Done")
 	return &types.DVSResultResponse{}, nil
 }
 
@@ -89,5 +89,5 @@ func (d *Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.VRFTaskR
 	reqJs, _ := json.Marshal(req)
 	d.logger.Info("DvsPostProcessRequestServer.sendResponseToGateway", "req", string(reqJs))
 
-	return d.taskGatewayClient.RespondToVRFTask(req)
+	return d.taskGatewayClient.RespondToDataOracleTask(req)
 }
