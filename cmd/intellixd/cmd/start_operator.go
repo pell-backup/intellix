@@ -3,7 +3,7 @@ package cmd
 import (
 	"os"
 
-	dvslog "github.com/0xPellNetwork/pelldvs-libs/log"
+	"github.com/0xPellNetwork/pelldvs-libs/log"
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/spf13/cobra"
@@ -68,7 +68,7 @@ func pellAppCommand() *cobra.Command {
 			}
 
 			app := pellapp.NewApp(dApp.InterfaceRegistry(),
-				dvslog.NewNopLogger(), pellAppConfig,
+				log.NewLogger(os.Stdout), pellAppConfig,
 			)
 
 			// start Operator
