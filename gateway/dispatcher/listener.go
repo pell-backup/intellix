@@ -161,14 +161,12 @@ func (d *Dispatcher) serializeVRFTask(chainID uint64, newTask *contractdataoracl
 	}
 
 	// Gnerate random number
-	privKeyStr := d.config.ECCKeyPair.ECCPrivateKey
-	if strings.HasPrefix(privKeyStr, "0x") {
-		privKeyStr = privKeyStr[2:]
-	}
+	privKeyStr := strings.TrimPrefix(d.config.ECCKeyPair.ECCPrivateKey, "0x")
 	priKeyBuf, err := hex.DecodeString(privKeyStr)
 	if err != nil {
 		d.logger.Error("Failed to decode private key", "error", err)
 	}
+
 	priKey, err := keypair.DeserializePrivateKey(priKeyBuf)
 	if err != nil {
 		d.logger.Error("Failed to deserialize private key", "error", err)

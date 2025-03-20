@@ -17,14 +17,13 @@ import (
 func (s *Server) HandleVRFRandomNumberRequest(ctx context.Context, request *types.VRFTaskRequest) (*types.VRFTaskResponse, error) {
 	s.logger.Info("HandleVRFRandomNumberRequest", "in", fmt.Sprintf("%+v", request))
 
-	pubKeyStr := s.eccKeyPair.ECCPublicKey
-	if strings.HasPrefix(pubKeyStr, "0x") {
-		pubKeyStr = pubKeyStr[2:]
-	}
+	pubKeyStr := strings.TrimPrefix(s.eccKeyPair.ECCPublicKey, "0x")
 	pubKeyBuf, err := hex.DecodeString(pubKeyStr)
 	if err != nil {
 		s.logger.Error("Failed to decode public key", "error", err)
+		return nil, fmt.Errorf("Failed to decode public key")
 	}
+
 	pubKey, err := keypair.DeserializePublicKey(pubKeyBuf)
 	if err != nil {
 		s.logger.Error("Failed to deserialize public key", "error", err)
