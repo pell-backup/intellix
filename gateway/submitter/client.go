@@ -16,7 +16,7 @@ type Client struct {
 	address string
 }
 
-const respondToDataOracleTaskMethod = "Submitter.RespondToDataOracleTask"
+const RespondToTaskMethod = "Submitter.RespondToTask"
 
 // NewClient creates a new Submitter RPC client
 func NewClient(address string, logger log.Logger) (*Client, error) {
@@ -58,7 +58,7 @@ func (c *Client) reconnect() error {
 func (c *Client) RespondToDataOracleTask(req *types.RPCVoteFinalizedRequestIn) error {
 	resp := &types.RespondToTaskResponse{}
 
-	err := c.client.Call(respondToDataOracleTaskMethod, req, resp)
+	err := c.client.Call(RespondToTaskMethod, req, resp)
 	if err != nil {
 		// retry
 		if err.Error() == "connection is shut down" {
@@ -66,7 +66,7 @@ func (c *Client) RespondToDataOracleTask(req *types.RPCVoteFinalizedRequestIn) e
 			if err := c.reconnect(); err != nil {
 				return fmt.Errorf("failed to reconnect: %v", err)
 			}
-			err = c.client.Call(respondToDataOracleTaskMethod, req, resp)
+			err = c.client.Call(RespondToTaskMethod, req, resp)
 			if err != nil {
 				c.logger.Error("RPC call failed after reconnection", "error", err.Error())
 				return err
@@ -78,8 +78,8 @@ func (c *Client) RespondToDataOracleTask(req *types.RPCVoteFinalizedRequestIn) e
 	}
 
 	if resp.Error != "" {
-		c.logger.Error("task RespondToDataOracleTask failed", "error", resp.Error)
-		return fmt.Errorf("task RespondToDataOracleTask failed: %s", resp.Error)
+		c.logger.Error("task RespondToTask failed", "error", resp.Error)
+		return fmt.Errorf("task RespondToTask failed: %s", resp.Error)
 	}
 
 	c.logger.Info("TaskMetadata response sent successfully", "TaskIndex", req.TaskRaw.TaskIndex)

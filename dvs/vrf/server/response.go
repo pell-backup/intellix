@@ -44,7 +44,7 @@ func (s *Server) DVSResponsHandler(ctx context.Context, in *types.VRFTaskRequest
 		return nil, err
 	}
 
-	s.logger.Info("RespondToDataOracleTask Done")
+	s.logger.Info("RespondToTask Done")
 	return &types.DVSResultResponse{}, nil
 }
 

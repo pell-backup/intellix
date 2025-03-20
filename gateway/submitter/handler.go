@@ -18,7 +18,7 @@ import (
 	"intellix/gateway/types"
 )
 
-func (s *Submitter) RespondToDataOracleTask(req *types.RPCVoteFinalizedRequestIn, resp *types.RespondToTaskResponse) error {
+func (s *Submitter) RespondToTask(req *types.RPCVoteFinalizedRequestIn, resp *types.RespondToTaskResponse) error {
 	err := s.handleTaskResponse(context.Background(), req)
 	if err != nil {
 		resp.Error = err.Error()
