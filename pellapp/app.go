@@ -3,9 +3,9 @@ package pellapp
 import (
 	"os"
 
-	"cosmossdk.io/log"
 	"github.com/0xPellNetwork/pellapp-sdk/baseapp"
 	"github.com/0xPellNetwork/pellapp-sdk/pelldvs"
+	"github.com/0xPellNetwork/pelldvs-libs/log"
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
 	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"
 	"github.com/cosmos/cosmos-sdk/codec"

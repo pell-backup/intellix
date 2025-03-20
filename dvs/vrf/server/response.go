@@ -17,8 +17,6 @@ func (s Server) DVSResponsHandler(ctx context.Context, in *types.VRFTaskRequest)
 	s.logger.Info("DVSResponsHandler", "TaskIndex", in.TaskMetadata.TaskIndex, "TaskMetadata", fmt.Sprintf("%+v", in.TaskMetadata))
 	pkgCtx := sdktypes.UnwrapContext(ctx)
 
-	return &types.DVSResultResponse{}, nil
-
 	validatedData, err := pelldvs.GetDvsRequestValidatedData(pkgCtx)
 	if err != nil {
 		return nil, err
