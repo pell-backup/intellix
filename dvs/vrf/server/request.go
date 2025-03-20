@@ -16,6 +16,10 @@ import (
 func (s Server) HandleVRFRandomNumberRequest(ctx context.Context, request *types.VRFTaskRequest) (*types.VRFTaskResponse, error) {
 	s.logger.Info("HandleVRFRandomNumberRequest", "in", fmt.Sprintf("%+v", request))
 
+	return &types.VRFTaskResponse{
+		TaskIndex: request.TaskMetadata.TaskIndex,
+	}, nil
+
 	// TODO: use config
 	pubKeyStr := "03515b41d933f87408a1837681b62a1b49521e10e614027685eac41fe66d1f5c55"
 	if strings.HasPrefix(pubKeyStr, "0x") {

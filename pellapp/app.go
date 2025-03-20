@@ -3,9 +3,9 @@ package pellapp
 import (
 	"os"
 
+	"cosmossdk.io/log"
 	"github.com/0xPellNetwork/pellapp-sdk/baseapp"
 	"github.com/0xPellNetwork/pellapp-sdk/pelldvs"
-	"github.com/0xPellNetwork/pelldvs-libs/log"
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
 	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -151,6 +151,7 @@ func NewApp(
 		panic(err)
 	}
 
+	// price server
 	app.PriceServer, err = priceserver.NewServer(
 		app.logger, clientCtx, key, config.CosmosChainId,
 		config.GatewayAddr, config.OperatorAddr,
@@ -164,6 +165,7 @@ func NewApp(
 	priceModule.RegisterServices(app.GetMsgRouter())
 	priceModule.RegisterInterfaces(app.interfaceRegistry)
 
+	// processor server
 	app.ProcessorServer, err = processorserver.NewServer(
 		app.logger, clientCtx, key, config.CosmosChainId,
 		config.GatewayAddr, config.OperatorAddr,
@@ -177,6 +179,7 @@ func NewApp(
 	processorModule.RegisterServices(app.GetMsgRouter())
 	processorModule.RegisterInterfaces(app.interfaceRegistry)
 
+	// vrf server
 	app.VRFServer, err = vrfserver.NewServer(app.logger, config.GatewayAddr)
 	if err != nil {
 		panic(err)
