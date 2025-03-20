@@ -49,6 +49,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 - (test) [#50](https://github.com/IntelliXLabs/intellix/pull/50 ): e2e: correct interactor config for e2e tests
 - (feat) [#51](https://github.com/IntelliXLabs/intellix/pull/51 ): feat: centralize the task dispather and merge the dispather and gateway into one process and start.
 - (datasource) [#52](https://github.com/IntelliXLabs/intellix/pull/52 ): feat: add additional data sources
+- (ci) [#60](https://github.com/IntelliXLabs/intellix/pull/60 ): ci: add e2e tests after merging main code
 
 ## [Released v1.0.0]
 
