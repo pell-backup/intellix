@@ -3,17 +3,19 @@ package submitter
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/rpc"
+	"os"
+	"sync"
+
 	"github.com/0xPellNetwork/pelldvs-libs/log"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/service"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+
 	"intellix/gateway/types"
-	"net"
-	"net/rpc"
-	"os"
-	"sync"
 )
 
 type ChainConnection struct {

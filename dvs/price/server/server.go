@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	taskgateway "intellix/gateway/submitter"
 
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	"github.com/0xPellNetwork/pelldvs-libs/log"
@@ -17,6 +16,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/spf13/pflag"
 
+	taskgateway "intellix/gateway/submitter"
 	"intellix/x/price/types"
 )
 

@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"intellix/common"
 	"os"
+
+	"intellix/common"
 )
 
 type ChainConfig struct {

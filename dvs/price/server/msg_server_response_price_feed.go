@@ -3,8 +3,6 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"intellix/dvs"
-	gateway "intellix/gateway/types"
 	"math/big"
 
 	"cosmossdk.io/math"
@@ -13,7 +11,9 @@ import (
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 
+	"intellix/dvs"
 	"intellix/dvs/price/types"
+	gateway "intellix/gateway/types"
 	pricetypes "intellix/x/price/types"
 )
 

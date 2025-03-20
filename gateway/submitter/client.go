@@ -2,10 +2,11 @@ package submitter
 
 import (
 	"fmt"
-	"intellix/gateway/types"
 	"net/rpc"
 
 	"github.com/0xPellNetwork/pelldvs-libs/log"
+
+	"intellix/gateway/types"
 )
 
 // Client represents RPC client

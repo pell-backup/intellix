@@ -2,14 +2,14 @@ package server
 
 import (
 	"context"
-	"intellix/dvs"
-	taskgateway "intellix/gateway/types"
 
 	"github.com/0xPellNetwork/pellapp-sdk/pelldvs"
 	dvstypes "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types"
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 
+	"intellix/dvs"
 	"intellix/dvs/processor/types"
+	taskgateway "intellix/gateway/types"
 	processortypes "intellix/x/processor/types"
 )
 

@@ -3,8 +3,10 @@ package common
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/ontio/ontology-crypto/keypair"
 	"github.com/ontio/ontology-crypto/vrf"
+
 	"intellix/dvs/vrf/types"
 )
 

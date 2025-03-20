@@ -2,18 +2,20 @@ package submitter
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/big"
+	"sync"
+	"time"
+
+	"cosmossdk.io/math"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+
 	"intellix/gateway/types"
-	"math/big"
-	"sync"
-	"time"
 )
 
 func (s *Submitter) RespondToDataOracleTask(req *types.RPCVoteFinalizedRequestIn, resp *types.RespondToTaskResponse) error {

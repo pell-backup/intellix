@@ -3,8 +3,9 @@ package dispatcher
 import (
 	"bytes"
 	"fmt"
-	cbor "github.com/fxamacker/cbor/v2"
 	"io"
+
+	cbor "github.com/fxamacker/cbor/v2"
 )
 
 type PriceFeedParam struct {

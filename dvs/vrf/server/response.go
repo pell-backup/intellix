@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
 	"github.com/0xPellNetwork/pellapp-sdk/pelldvs"
 	dvstypes "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types"
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
+
 	"intellix/dvs"
 	"intellix/dvs/vrf/types"
 	gateway "intellix/gateway/types"

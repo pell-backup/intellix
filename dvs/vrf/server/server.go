@@ -2,11 +2,12 @@ package server
 
 import (
 	"fmt"
+
+	"github.com/0xPellNetwork/pelldvs-libs/log"
+
 	"intellix/common"
 	"intellix/dvs/vrf/types"
 	taskgateway "intellix/gateway/submitter"
-
-	"github.com/0xPellNetwork/pelldvs-libs/log"
 )
 
 // Server struct represents the server with a logger and a chain connector client.

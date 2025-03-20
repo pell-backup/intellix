@@ -1,12 +1,14 @@
 package handler
 
 import (
-	"github.com/cosmos/gogoproto/proto"
-	"github.com/ethereum/go-ethereum/accounts/abi"
-	"intellix/dvs"
-	"intellix/dvs/vrf/types"
 	"math/big"
 	"strings"
+
+	"github.com/cosmos/gogoproto/proto"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+
+	"intellix/dvs"
+	"intellix/dvs/vrf/types"
 )
 
 type VRFResultHandler struct {

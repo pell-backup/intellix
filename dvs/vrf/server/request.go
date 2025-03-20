@@ -4,13 +4,14 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
-	"github.com/ontio/ontology-crypto/keypair"
-	"intellix/common"
-	"intellix/dvs/vrf/types"
 	"math/big"
 	"strings"
 
 	"cosmossdk.io/math"
+	"github.com/ontio/ontology-crypto/keypair"
+
+	"intellix/common"
+	"intellix/dvs/vrf/types"
 )
 
 func (s *Server) HandleVRFRandomNumberRequest(ctx context.Context, request *types.VRFTaskRequest) (*types.VRFTaskResponse, error) {

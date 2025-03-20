@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	taskgateway "intellix/gateway/submitter"
 
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	"github.com/0xPellNetwork/pelldvs-libs/log"
@@ -18,6 +17,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"intellix/dvs/processor/types"
+	taskgateway "intellix/gateway/submitter"
 )
 
 var _ types.DVSRequestServer = Server{}

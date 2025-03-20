@@ -2,9 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"intellix/gateway/dispatcher"
-	"intellix/gateway/submitter"
-	"intellix/gateway/types"
 	"os"
 
 	"github.com/0xPellNetwork/pelldvs-libs/log"
@@ -13,6 +10,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"golang.org/x/sync/errgroup"
+
+	"intellix/gateway/dispatcher"
+	"intellix/gateway/submitter"
+	"intellix/gateway/types"
 )
 
 func taskGatewayCommand() *cobra.Command {

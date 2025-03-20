@@ -4,10 +4,9 @@ import "C"
 
 import (
 	"fmt"
-	"github.com/0xPellNetwork/pellapp-sdk/service/tx"
-	"intellix/gateway/types"
 	"sync"
 
+	"github.com/0xPellNetwork/pellapp-sdk/service/tx"
 	interactorcfg "github.com/0xPellNetwork/pelldvs-interactor/config"
 	"github.com/0xPellNetwork/pelldvs-interactor/interactor/reader"
 	dvslog "github.com/0xPellNetwork/pelldvs-libs/log"
@@ -21,6 +20,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/pkg/errors"
+
+	"intellix/gateway/types"
 )
 
 type Dispatcher struct {

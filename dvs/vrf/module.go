@@ -3,6 +3,7 @@ package dvs
 import (
 	sdkservice "github.com/0xPellNetwork/pellapp-sdk/service"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+
 	"intellix/dvs/vrf/handler"
 	"intellix/dvs/vrf/server"
 	"intellix/dvs/vrf/types"

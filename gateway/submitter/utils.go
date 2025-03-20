@@ -2,11 +2,13 @@ package submitter
 
 import (
 	"fmt"
+	"math/big"
+
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/ethereum/go-ethereum/common"
+
 	"intellix/gateway/types"
-	"math/big"
 )
 
 func convertAddressToString(addrStr string) (*common.Address, error) {

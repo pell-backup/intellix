@@ -2,22 +2,24 @@ package dispatcher
 
 import (
 	"context"
-	"cosmossdk.io/math"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"strings"
+
+	"cosmossdk.io/math"
 	interactortypes "github.com/0xPellNetwork/pelldvs-interactor/types"
 	"github.com/0xPellNetwork/pelldvs/rpc/client/http"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ontio/ontology-crypto/keypair"
+
 	"intellix/common"
 	"intellix/dvs"
 	pricetypes "intellix/dvs/price/types"
 	processortypes "intellix/dvs/processor/types"
 	"intellix/dvs/vrf/types"
-	"strings"
 )
 
 func (d *Dispatcher) listenForNewTasks(chain *chainWatcher) {
