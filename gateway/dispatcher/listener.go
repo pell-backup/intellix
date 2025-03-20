@@ -159,9 +159,7 @@ func (d *Dispatcher) serializeVRFTask(chainID uint64, newTask *contractdataoracl
 	}
 
 	// Gnerate random number
-	// TODO: use config
-	privKeyStr := "120227b28b159b591f822f7cb4373e3ac37031f050f38486cbd6a4173c22d3d5c90903515b41d933f87408a1837681b62a1b49521e10e614027685eac41fe66d1f5c55"
-	// pubkey := 03515b41d933f87408a1837681b62a1b49521e10e614027685eac41fe66d1f5c55
+	privKeyStr := d.config.ECCKeyPair.ECCPrivateKey
 	if strings.HasPrefix(privKeyStr, "0x") {
 		privKeyStr = privKeyStr[2:]
 	}

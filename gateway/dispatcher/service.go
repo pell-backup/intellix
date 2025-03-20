@@ -32,6 +32,8 @@ type Dispatcher struct {
 	mu            sync.Mutex
 	msgEncoder    tx.MsgEncoder
 	reader        *reader.DVSReaderServer
+
+	config *types.Config
 }
 
 type chainWatcher struct {
@@ -68,6 +70,7 @@ func NewDispatcher(logger dvslog.Logger, pellDVSConf *pelldvscfg.Config, conf *t
 		chains:     make(map[uint64]*chainWatcher),
 		msgEncoder: newTaskProtoEncoder(),
 	}
+	dispatcher.config = conf
 
 	for _, chainConfig := range conf.Chains {
 		if err := dispatcher.AddChainWatcher(chainConfig); err != nil {

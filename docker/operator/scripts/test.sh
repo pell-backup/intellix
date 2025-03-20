@@ -127,9 +127,18 @@ REQUEST_ID="${DATA:0:66}"
 
 echo "Got requestId: $REQUEST_ID"
 
-cast call \
+# Run cast and capture the output
+output=$(cast call \
   "$VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" \
   "getRequestStatus(bytes32)(bool,uint256[])" \
   "$REQUEST_ID" \
-  --rpc-url "$ETH_RPC_URL"
+  --rpc-url "$ETH_RPC_URL")
 
+echo "Output: $output"
+
+if [[ "$output" == $'false\n[]' ]]; then
+    echo "Error: Output was 'false\n[]', exiting..."
+    exit 1
+else
+    echo "Everything is okay."
+fi

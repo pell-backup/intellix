@@ -2,8 +2,8 @@ package pellapp
 
 import (
 	"fmt"
-
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
+	"intellix/common"
 )
 
 type AppConfig struct {
@@ -20,6 +20,7 @@ type AppConfig struct {
 	GasAdjustment  float64 `mapstructure:"gas_adjustment"`
 
 	PriceTickConverterConfig map[string]map[string]string `mapstructure:"price_tick_converter_config"`
+	ECCKeyPair               common.ECCKeyPair            `mapstructure:"ecc_key_pair"`
 }
 
 func (p AppConfig) Validate() error {

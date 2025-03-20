@@ -180,7 +180,7 @@ func NewApp(
 	processorModule.RegisterInterfaces(app.interfaceRegistry)
 
 	// vrf server
-	app.VRFServer, err = vrfserver.NewServer(app.logger, config.GatewayAddr)
+	app.VRFServer, err = vrfserver.NewServer(app.logger, config.GatewayAddr, config.ECCKeyPair)
 	if err != nil {
 		panic(err)
 	}
