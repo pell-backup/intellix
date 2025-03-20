@@ -129,7 +129,7 @@ echo "Got requestId: $REQUEST_ID"
 
 cast call \
   "$VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" \
-  "requests(bytes32)(bool,uint256[])" \
+  "getRequestStatus(bytes32)(bool,uint256[])" \
   "$REQUEST_ID" \
   --rpc-url "$ETH_RPC_URL"
 

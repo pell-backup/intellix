@@ -33,7 +33,7 @@ require (
 	github.com/0xPellNetwork/pelldvs-interactor v0.0.13
 	github.com/0xPellNetwork/pelldvs-libs v0.2.0
 	github.com/IntelliXLabs/iwasm v0.0.6
-	github.com/IntelliXLabs/price-oracle-dvs v0.4.5
+	github.com/IntelliXLabs/price-oracle-dvs v0.4.6
 	github.com/bufbuild/buf v1.34.0
 	github.com/cometbft/cometbft v0.38.12
 	github.com/cosmos/cosmos-db v1.1.0

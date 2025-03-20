@@ -31,10 +31,16 @@ func (c ChainConfig) Validate() error {
 	return nil
 }
 
+type ECCKeyPair struct {
+	ECCPrivateKey string `json:"eccprivate_key"`
+	ECCPublicKey  string `json:"ecc_public_key"`
+}
+
 type Config struct {
 	ServerAddr          string                 `json:"server_addr"`
 	PrivateKeyStorePath string                 `json:"private_key_store_path"`
 	Chains              map[uint64]ChainConfig `json:"chains"`
+	ECCKeyPair          ECCKeyPair             `json:"ecc_key_pair"`
 }
 
 func LoadConfig(cfgPath string) (*Config, error) {
