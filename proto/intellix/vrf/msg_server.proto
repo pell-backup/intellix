@@ -45,7 +45,8 @@ message VRFTaskRequest {
 message VRFTaskResponse {
   option (cosmos_proto.implements_interface) = "cosmos.base.v1beta1.Msg";
   uint32 task_index = 1;
-  repeated string randomNumber = 2 [
+  bytes request_id = 2;
+  repeated string randomNumber = 3 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false
   ];

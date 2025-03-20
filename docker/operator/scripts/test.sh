@@ -96,7 +96,43 @@ assert_gt "$RESULT" "0"
 ## create a new vrf task
 VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/VRFOraclePayInNativeConsumer.json" | jq -r .address)
 
-cast send "$VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestRandomWords(uint256)" 2 --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+# cast send "$VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestRandomWords(uint256)" 2 --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
+TX_HASH=$(
+  cast send "$VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" \
+    "requestRandomWords(uint256)" 2 \
+    --private-key "$ADMIN_KEY" \
+    --rpc-url "$ETH_RPC_URL" \
+    --json \
+  | jq -r .transactionHash
+)
+
+echo "transactionHash: $TX_HASH"
+
+sleep ${TIMEOUT_FOR_TASK_PROCESS}
+cast tx "$TX_HASH" --rpc-url "$ETH_RPC_URL"
+
+LOGS_JSON=$(
+  cast receipt "$TX_HASH" --rpc-url "$ETH_RPC_URL" --json
+)
+
+DATA=$(
+  echo "$LOGS_JSON" \
+    | jq -r '.logs[]
+      | select(.topics[0] == "0x7106aad702536308648985e660b725d368593a51be2b5134b4c1b2f884492c86")
+      | .data'
+)
+
+REQUEST_ID=$(
+  cast --abi-decode "RequestSent(bytes32,uint256)" "$DATA"
+)
+
+echo "Got requestId: $REQUEST_ID"
+
+cast call \
+  "$VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" \
+  "requests(bytes32)(uint256[],bool)" \
+  "$REQUEST_ID" \
+  --rpc-url "$ETH_RPC_URL"
 
 

@@ -5,8 +5,9 @@ import (
 	"intellix/gateway/dispatcher"
 	"intellix/gateway/submitter"
 	"intellix/gateway/types"
+	"os"
 
-	dvslog "github.com/0xPellNetwork/pelldvs-libs/log"
+	"github.com/0xPellNetwork/pelldvs-libs/log"
 	pelldvscfg "github.com/0xPellNetwork/pelldvs/config"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -21,8 +22,8 @@ func taskGatewayCommand() *cobra.Command {
 		Long: "Start the Submitter service, Example:\n" +
 			"intellixd start-task-gateway --config=config.yml",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			//	serverCtx := server.GetServerContextFromCmd(cmd)
-			logger := dvslog.NewNopLogger()
+
+			logger := log.NewLogger(os.Stdout)
 
 			home := getConfigHome()
 			if configFile == "" {

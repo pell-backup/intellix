@@ -4,15 +4,10 @@ import (
 	"context"
 	"cosmossdk.io/math"
 	"encoding/json"
-	"errors"
 	"fmt"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"intellix/gateway/types"
 	"sync"
-	"time"
 )
 
 func (s *Submitter) RespondToVRFTask(req *types.RPCVoteFinalizedRequestIn, resp *types.RespondToTaskResponse) error {
@@ -129,10 +124,6 @@ func (s *Submitter) submitVRFTaskResultToChain(ctx context.Context, response *ty
 		return err
 	}
 
-	// For debug purpose,
-	// set gas limit to 1000000 to bypass transaction pre-execution and force broadcast
-	// authOpts.GasLimit = 1000000
-
 	if conf, ok := s.cfg.Chains[uint64(response.ChainID)]; ok {
 		if conf.GasLimit > 0 {
 			authOpts.GasLimit = conf.GasLimit
@@ -151,43 +142,11 @@ func (s *Submitter) submitVRFTaskResultToChain(ctx context.Context, response *ty
 	}
 
 	if transaction != nil {
-		err = s.queryPriceTaskTransaction(ctx, transaction, chainConn.ethClient)
+		err = s.queryTransactionResult(ctx, transaction, chainConn.ethClient)
 		if err != nil {
 			return fmt.Errorf("chain %d: %v", response.ChainID, err)
 		}
 	}
 
-	return nil
-}
-
-func (s *Submitter) queryVRFTaskTransaction(ctx context.Context, tx *ethtypes.Transaction, ethClient *ethclient.Client) error {
-	s.logger.Info("Transaction submitted", "txHash", tx.Hash().Hex())
-
-	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
-	defer cancel()
-
-	receipt, err := bind.WaitMined(timeoutCtx, ethClient, tx)
-	if err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
-			s.logger.Error("Transaction confirmation timeout",
-				"txHash", tx.Hash().Hex())
-			return fmt.Errorf("transaction confirmation timeout: %s", tx.Hash().Hex())
-		}
-		s.logger.Error("Error waiting for transaction to be mined",
-			"txHash", tx.Hash().Hex(),
-			"error", err)
-		return err
-	}
-
-	s.logger.Info("Transaction confirmed",
-		"txHash", tx.Hash().Hex(),
-		"status", receipt.Status,
-		"gasUsed", receipt.GasUsed,
-		"blockNumber", receipt.BlockNumber,
-		"blockHash", receipt.BlockHash.Hex())
-
-	if receipt.Status == 0 {
-		return fmt.Errorf("transaction failed: %s", tx.Hash().Hex())
-	}
 	return nil
 }

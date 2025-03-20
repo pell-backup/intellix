@@ -7,13 +7,13 @@ import (
 	"github.com/0xPellNetwork/pellapp-sdk/pelldvs"
 	dvstypes "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types"
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
+	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"intellix/dvs"
-	"intellix/dvs/vrf/handler"
 	"intellix/dvs/vrf/types"
 	gateway "intellix/gateway/types"
 )
 
-func (s Server) DVSResponsHandler(ctx context.Context, in *types.VRFTaskRequest) (*types.DVSResultResponse, error) {
+func (s *Server) DVSResponsHandler(ctx context.Context, in *types.VRFTaskRequest) (*types.DVSResultResponse, error) {
 	s.logger.Info("DVSResponsHandler", "TaskIndex", in.TaskMetadata.TaskIndex, "TaskMetadata", fmt.Sprintf("%+v", in.TaskMetadata))
 	pkgCtx := sdktypes.UnwrapContext(ctx)
 
@@ -28,14 +28,16 @@ func (s Server) DVSResponsHandler(ctx context.Context, in *types.VRFTaskRequest)
 		groupNumbersBytes[i] = byte(num)
 	}
 
-	randomNumbers, err := handler.ParseData(validatedData.Data)
+	s.Logger().Info("DVSResponsHandler", "GroupNumbers", string(groupNumbersBytes), "len(validatedData.Data)", len(validatedData.Data))
+
+	taskResp, err := dvs.AbiDecodeResponseTaskParam(validatedData.Data)
 	if err != nil {
 		return nil, err
 	}
 
-	s.logger.Info("DVSResponsHandler", "randomNumbers", randomNumbers)
+	s.Logger().Info("DVSResponsHandler", "TaskResp", taskResp)
 
-	if err := s.sendResponseToGateway(pkgCtx, in, validatedData); err != nil {
+	if err := s.sendResponseToGateway(pkgCtx, in, validatedData, taskResp); err != nil {
 		s.logger.Error("DVSResponsHandler", "sendResponseToGateway", err)
 		return nil, err
 	}
@@ -44,7 +46,9 @@ func (s Server) DVSResponsHandler(ctx context.Context, in *types.VRFTaskRequest)
 	return &types.DVSResultResponse{}, nil
 }
 
-func (d Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.VRFTaskRequest, validatedData *dvstypes.RequestPostRequestValidatedData) error {
+func (d *Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.VRFTaskRequest,
+	validatedData *dvstypes.RequestPostRequestValidatedData, taskResp *contractdataoracle.IDataOracleTaskResponse) error {
+
 	nonSignerStakeIndices := make([][]uint32, len(validatedData.NonSignerStakeIndices))
 	for i, indices := range validatedData.NonSignerStakeIndices {
 		nonSignerStakeIndices[i] = indices.NonSignerStakeIndice
@@ -53,7 +57,7 @@ func (d Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.VRFTaskRe
 	req := &gateway.RPCVoteFinalizedRequestIn{
 		ChainID: ctx.ChainID(),
 		TaskRaw: &gateway.RPCTaskRaw{
-			TaskType:                  dvs.TaskTypePriceFeed,
+			TaskType:                  dvs.TaskTypeVRFRandomNumber,
 			TaskIndex:                 raw.TaskMetadata.TaskIndex,
 			RequestID:                 raw.TaskMetadata.RequestId,
 			FeeToken:                  raw.TaskMetadata.FeeToken,
@@ -79,7 +83,7 @@ func (d Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.VRFTaskRe
 			TotalStakeIndices:            validatedData.TotalStakeIndices,
 			NonSignerStakeIndices:        nonSignerStakeIndices,
 		},
-		RespToTaskData: nil,
+		RespToTaskData: taskResp.Data,
 	}
 
 	reqJs, _ := json.Marshal(req)

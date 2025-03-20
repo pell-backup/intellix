@@ -24,7 +24,7 @@ func NewAppModule(server server.Server) *AppModule {
 func (am AppModule) RegisterServices(router *sdkservice.MsgRouter) {
 	configurator := router.GetConfigurator()
 	// register dvs-msg handler server
-	types.RegisterVRFMsgRequestServer(configurator, am.server)
+	types.RegisterVRFMsgRequestServer(configurator, &am.server)
 
 	// register dvs-msg result handler
 	configurator.RegisterResultMsgExtractor(

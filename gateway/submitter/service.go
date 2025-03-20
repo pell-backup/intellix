@@ -2,6 +2,7 @@ package submitter
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/0xPellNetwork/pelldvs-libs/log"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
@@ -9,6 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common"
+	ethtypes "github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"intellix/gateway/types"
 	"math/big"
@@ -16,6 +18,7 @@ import (
 	"net/rpc"
 	"os"
 	"sync"
+	"time"
 )
 
 type ChainConnection struct {
@@ -127,4 +130,36 @@ func (s *Submitter) getAuthOpts(chainId int64) (*bind.TransactOpts, error) {
 	}
 
 	return auth, nil
+}
+
+func (s *Submitter) queryTransactionResult(ctx context.Context, tx *ethtypes.Transaction, ethClient *ethclient.Client) error {
+	s.logger.Info("Transaction submitted", "txHash", tx.Hash().Hex())
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+
+	receipt, err := bind.WaitMined(timeoutCtx, ethClient, tx)
+	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			s.logger.Error("Transaction confirmation timeout",
+				"txHash", tx.Hash().Hex())
+			return fmt.Errorf("transaction confirmation timeout: %s", tx.Hash().Hex())
+		}
+		s.logger.Error("Error waiting for transaction to be mined",
+			"txHash", tx.Hash().Hex(),
+			"error", err)
+		return err
+	}
+
+	s.logger.Info("Transaction confirmed",
+		"txHash", tx.Hash().Hex(),
+		"status", receipt.Status,
+		"gasUsed", receipt.GasUsed,
+		"blockNumber", receipt.BlockNumber,
+		"blockHash", receipt.BlockHash.Hex())
+
+	if receipt.Status == 0 {
+		return fmt.Errorf("transaction failed: %s", tx.Hash().Hex())
+	}
+	return nil
 }

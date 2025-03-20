@@ -13,7 +13,7 @@ import (
 	"cosmossdk.io/math"
 )
 
-func (s Server) HandleVRFRandomNumberRequest(ctx context.Context, request *types.VRFTaskRequest) (*types.VRFTaskResponse, error) {
+func (s *Server) HandleVRFRandomNumberRequest(ctx context.Context, request *types.VRFTaskRequest) (*types.VRFTaskResponse, error) {
 	s.logger.Info("HandleVRFRandomNumberRequest", "in", fmt.Sprintf("%+v", request))
 
 	// TODO: use config
@@ -57,10 +57,11 @@ func (s Server) HandleVRFRandomNumberRequest(ctx context.Context, request *types
 		randomNumbers = append(randomNumbers, value)
 	}
 
-	s.logger.Info("HandleVRFRandomNumberRequest", "randomNumbers", randomNumbers)
+	s.logger.Info("HandleVRFRandomNumberRequest", "randomNumbers", randomNumbers, "taskIndex", request.TaskMetadata.TaskIndex, "requestId", request.TaskMetadata.RequestId)
 
 	return &types.VRFTaskResponse{
 		TaskIndex:    request.TaskMetadata.TaskIndex,
+		RequestId:    request.TaskMetadata.RequestId,
 		RandomNumber: randomNumbers,
 	}, nil
 }

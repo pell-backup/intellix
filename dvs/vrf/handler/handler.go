@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/cosmos/gogoproto/proto"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/accounts/abi"
+	"intellix/dvs"
 	"intellix/dvs/vrf/types"
 	"math/big"
 	"strings"
@@ -16,49 +16,54 @@ func NewVRFResultHandler() *VRFResultHandler {
 	return &VRFResultHandler{}
 }
 
-func (p *VRFResultHandler) GetData(msg proto.Message) ([]byte, error) {
+func (p *VRFResultHandler) getAbiEncodeData(msg proto.Message) ([]byte, error) {
 	r, ok := msg.(*types.VRFTaskResponse)
 	if !ok {
 		return nil, nil
 	}
 
-	var sb strings.Builder
-	for i, num := range r.RandomNumber {
-		if i > 0 {
-			sb.WriteString(",")
-		}
-		sb.WriteString(num.String())
-	}
-	return []byte(sb.String()), nil
-}
-
-func (p *VRFResultHandler) GetDigest(msg proto.Message) ([]byte, error) {
-	data, err := p.GetData(msg)
+	abiJSON := `
+    [
+      {
+        "name": "foo",
+        "type": "function",
+        "inputs": [
+          {
+            "type": "uint256[]",
+            "name": "randomWords"
+          }
+        ],
+        "outputs": []
+      }
+    ]
+    `
+	myAbi, err := abi.JSON(strings.NewReader(abiJSON))
 	if err != nil {
 		return nil, err
 	}
 
-	hashBytes := crypto.Keccak256(data)
-	return hashBytes, nil
+	method := myAbi.Methods["foo"]
+	randomWords := make([]*big.Int, len(r.RandomNumber))
+	for i, v := range r.RandomNumber {
+		randomWords[i] = v.BigInt()
+	}
+
+	packedArgsOnly, err := method.Inputs.Pack(randomWords)
+	if err != nil {
+		return nil, err
+	}
+
+	return dvs.AbiEncodeResponseTaskParam(r.TaskIndex, packedArgsOnly)
 }
 
-func ParseData(data []byte) ([]*big.Int, error) {
-	s := string(data)
+func (p *VRFResultHandler) GetData(msg proto.Message) ([]byte, error) {
+	return p.getAbiEncodeData(msg)
+}
 
-	if s == "" {
-		return nil, nil
+func (p *VRFResultHandler) GetDigest(msg proto.Message) ([]byte, error) {
+	data, err := p.getAbiEncodeData(msg)
+	if err != nil {
+		return nil, err
 	}
-
-	parts := strings.Split(s, ",")
-	result := make([]*big.Int, 0, len(parts))
-
-	for _, part := range parts {
-		bi, ok := new(big.Int).SetString(part, 10)
-		if !ok {
-			return nil, fmt.Errorf("parse big.Int failed for part: %s", part)
-		}
-		result = append(result, bi)
-	}
-
-	return result, nil
+	return dvs.DigestKeccak256(data), nil
 }
