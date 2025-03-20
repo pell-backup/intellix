@@ -35,8 +35,7 @@ func pellAppCommand() *cobra.Command {
 			}
 
 			var pellAppConfig = &pellapp.AppConfig{}
-			err := vp.Unmarshal(pellAppConfig)
-			if err != nil {
+			if err := vp.Unmarshal(pellAppConfig); err != nil {
 				panic(err)
 			}
 			if pellAppConfig.RootDir == "" {
@@ -57,8 +56,7 @@ func pellAppCommand() *cobra.Command {
 				}
 			}
 
-			err = pellAppConfig.Validate()
-			if err != nil {
+			if err := pellAppConfig.Validate(); err != nil {
 				panic(err)
 			}
 

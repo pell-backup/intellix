@@ -9,20 +9,20 @@ import (
 )
 
 type AppConfig struct {
-	DvsConfig *dvsconfig.Config `mapstructure:"-"`
+	DvsConfig *dvsconfig.Config `json:"-" mapstructure:"-"`
 
-	RootDir       string `mapstructure:"root_dir"`
-	GatewayAddr   string `mapstructure:"gateway_addr"`
-	OperatorAddr  string `mapstructure:"operator_address"`
-	CosmosNodeUri string `mapstructure:"cosmos_node_uri"`
-	CosmosChainId string `mapstructure:"cosmos_chain_id"`
+	RootDir       string `json:"root_dir" mapstructure:"root_dir"`
+	GatewayAddr   string `json:"gateway_addr" mapstructure:"gateway_addr"`
+	OperatorAddr  string `json:"operator_address" mapstructure:"operator_address"`
+	CosmosNodeUri string `json:"cosmos_node_uri" mapstructure:"cosmos_node_uri"`
+	CosmosChainId string `json:"cosmos_chain_id" mapstructure:"cosmos_chain_id"`
 
-	WaitBlockCount int64   `mapstructure:"wait_block_count"`
-	GasPrices      string  `mapstructure:"gas_prices"`
-	GasAdjustment  float64 `mapstructure:"gas_adjustment"`
+	WaitBlockCount int64   `json:"wait_block_count" mapstructure:"wait_block_count"`
+	GasPrices      string  `json:"gas_prices" mapstructure:"gas_prices"`
+	GasAdjustment  float64 `json:"gas_adjustment" mapstructure:"gas_adjustment"`
 
-	PriceTickConverterConfig map[string]map[string]string `mapstructure:"price_tick_converter_config"`
-	ECCKeyPair               common.ECCKeyPair            `mapstructure:"ecc_key_pair"`
+	PriceTickConverterConfig map[string]map[string]string `json:"price_tick_converter_config" mapstructure:"price_tick_converter_config"`
+	ECCKeyPair               common.ECCKeyPair            `json:"ecc_key_pair" mapstructure:"ecc_key_pair"`
 }
 
 func (p AppConfig) Validate() error {

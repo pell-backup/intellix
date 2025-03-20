@@ -119,6 +119,7 @@ function setup_operator_config {
 }
 EOF
 
+  cat $PELLDVS_HOME/config/operator.config.json
   logt "Operator config created:"
   
   # set coinmarketcap api key

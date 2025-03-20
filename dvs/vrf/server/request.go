@@ -23,7 +23,7 @@ func (s *Server) HandleVRFRandomNumberRequest(ctx context.Context, request *type
 	}
 	pubKeyBuf, err := hex.DecodeString(pubKeyStr)
 	if err != nil {
-		s.logger.Error("Failed to decode private key", "error", err)
+		s.logger.Error("Failed to decode public key", "error", err)
 	}
 	pubKey, err := keypair.DeserializePublicKey(pubKeyBuf)
 	if err != nil {
