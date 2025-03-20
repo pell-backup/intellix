@@ -136,7 +136,7 @@ output=$(cast call \
 
 echo "Output: $output"
 
-if [[ "$output" == $'false\n[]' ]]; then
+if [[ "$output" == *false* ]]; then
     echo "Error: Output was 'false\n[]', exiting..."
     exit 1
 else
