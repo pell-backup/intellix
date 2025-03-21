@@ -16,7 +16,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/spf13/pflag"
 
-	taskgateway "intellix/gateway"
+	taskgateway "intellix/gateway/submitter"
 	"intellix/x/price/types"
 )
 
@@ -193,7 +193,7 @@ func (k *Server) prepareTxFactory(ctx sdktypes.Context) (tx.Factory, error) {
 		return tx.Factory{}, err
 	}
 
-	// 获取账户信息
+	// get account number and sequence
 	accRetriever := authtypes.AccountRetriever{}
 	acc, err := accRetriever.GetAccount(k.clientCtx, addr)
 	if err != nil {

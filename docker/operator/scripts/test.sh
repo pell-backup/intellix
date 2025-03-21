@@ -62,6 +62,7 @@ PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH
 
 export TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-20}
 
+### ----------------
 ## create a new task
 cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "ETH" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
@@ -81,8 +82,9 @@ logt "update operator sokcet address and sleep 5 seconds to wait for the dispatc
 ssh operator "bash /root/scripts/update_operator_socket.sh http://operator:26657"
 logt ""
 
+### ----------------
 ## create a new task
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "PEPE" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "BTC" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
 # wait for the task to be processed
 echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
@@ -90,20 +92,53 @@ sleep ${TIMEOUT_FOR_TASK_PROCESS}
 RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
 assert_gt "$RESULT" "0"
 
-## create a new task
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "SUNDOG" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+### ----------------
+## create a new vrf task
+VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/VRFOraclePayInNativeConsumer.json" | jq -r .address)
 
-# wait for the task to be processed
-echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
+# cast send "$VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestRandomWords(uint256)" 2 --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+
+TX_HASH=$(
+  cast send "$VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" \
+    "requestRandomWords(uint256)" 2 \
+    --private-key "$ADMIN_KEY" \
+    --rpc-url "$ETH_RPC_URL" \
+    --json \
+  | jq -r .transactionHash
+)
+
+echo "transactionHash: $TX_HASH"
+
 sleep ${TIMEOUT_FOR_TASK_PROCESS}
-RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
-assert_gt "$RESULT" "0"
+cast tx "$TX_HASH" --rpc-url "$ETH_RPC_URL"
 
-## create a new task
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "TON" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+LOGS_JSON=$(
+  cast receipt "$TX_HASH" --rpc-url "$ETH_RPC_URL" --json
+)
 
-# wait for the task to be processed
-echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
-sleep ${TIMEOUT_FOR_TASK_PROCESS}
-RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
-assert_gt "$RESULT" "0"
+DATA=$(
+  echo "$LOGS_JSON" \
+    | jq -r '.logs[]
+      | select(.topics[0] == "0x7106aad702536308648985e660b725d368593a51be2b5134b4c1b2f884492c86")
+      | .data'
+)
+
+REQUEST_ID="${DATA:0:66}"
+
+echo "Got requestId: $REQUEST_ID"
+
+# Run cast and capture the output
+output=$(cast call \
+  "$VRF_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" \
+  "getRequestStatus(bytes32)(bool,uint256[])" \
+  "$REQUEST_ID" \
+  --rpc-url "$ETH_RPC_URL")
+
+echo "Output: $output"
+
+if [[ "$output" == *false* ]]; then
+    echo "Error: Output was 'false\n[]', exiting..."
+    exit 1
+else
+    echo "Everything is okay."
+fi

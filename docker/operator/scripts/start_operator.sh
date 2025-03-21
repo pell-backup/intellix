@@ -111,10 +111,15 @@ function setup_operator_config {
     "coinmarketcap": {
       "USD": "USD"
     }
+  },
+  "ecc_key_pair": {
+    "ecc_private_key": "",
+    "ecc_public_key": "03515b41d933f87408a1837681b62a1b49521e10e614027685eac41fe66d1f5c55"
   }
 }
 EOF
 
+  cat $PELLDVS_HOME/config/operator.config.json
   logt "Operator config created:"
   
   # set coinmarketcap api key

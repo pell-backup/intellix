@@ -9,7 +9,7 @@ import (
 
 	"intellix/dvs"
 	"intellix/dvs/processor/types"
-	taskgateway "intellix/gateway"
+	taskgateway "intellix/gateway/types"
 	processortypes "intellix/x/processor/types"
 )
 
@@ -66,10 +66,10 @@ func (r Server) responseToTask(ctx sdktypes.Context, in *types.RequestScriptIn, 
 		nonSignerStakeIndices = append(nonSignerStakeIndices, v.NonSignerStakeIndice)
 	}
 
-	return r.taskGatewayClient.RespondToTask(&taskgateway.RPCVoteFinalizedRequestIn{
+	return r.taskGatewayClient.RespondToDataOracleTask(&taskgateway.RPCVoteFinalizedRequestIn{
 		ChainID: ctx.ChainID(),
 		TaskRaw: &taskgateway.RPCTaskRaw{
-			TaskType:                  taskgateway.TaskTypeProcessor,
+			TaskType:                  dvs.TaskTypeProcessor,
 			TaskIndex:                 in.TaskIndex,
 			RequestID:                 in.RequestId,
 			FeeToken:                  in.FeeToken,
