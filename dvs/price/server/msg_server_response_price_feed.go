@@ -13,7 +13,7 @@ import (
 
 	"intellix/dvs"
 	"intellix/dvs/price/types"
-	gateway "intellix/gateway/types"
+	taskgateway "intellix/gateway"
 	pricetypes "intellix/x/price/types"
 )
 
@@ -82,10 +82,10 @@ func (d Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.RequestPr
 		nonSignerStakeIndices[i] = indices.NonSignerStakeIndice
 	}
 
-	req := &gateway.RPCVoteFinalizedRequestIn{
+	req := &taskgateway.RPCVoteFinalizedRequestIn{
 		ChainID: ctx.ChainID(),
-		TaskRaw: &gateway.RPCTaskRaw{
-			TaskType:                  dvs.TaskTypePriceFeed,
+		TaskRaw: &taskgateway.RPCTaskRaw{
+			TaskType:                  taskgateway.TaskTypePriceFeed,
 			TaskIndex:                 raw.Task.TaskIndex,
 			RequestID:                 raw.Task.RequestId,
 			FeeToken:                  raw.Task.FeeToken,
@@ -98,7 +98,7 @@ func (d Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.RequestPr
 			QuorumThresholdPercentage: raw.Task.QuorumThresholdPercentage,
 			AdvanceDecode:             raw.Task.AdvanceDecode,
 		},
-		ValidatedData: &gateway.RPCValidatedData{
+		ValidatedData: &taskgateway.RPCValidatedData{
 			Data:                         validatedData.Data,
 			Error:                        validatedData.Error,
 			Hash:                         validatedData.Hash,
@@ -117,5 +117,5 @@ func (d Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.RequestPr
 	reqJs, _ := json.Marshal(req)
 	d.logger.Info("DvsPostProcessServer.sendResponseToGateway", "req", string(reqJs))
 
-	return d.taskGatewayClient.RespondToDataOracleTask(req)
+	return d.taskGatewayClient.RespondToTask(req)
 }

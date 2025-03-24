@@ -6,6 +6,7 @@ import "cosmos/base/v1beta1/coin.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "intellix/price/dvs/task.proto";
+import "intellix/pelldvs/dvs_post_process_validated.proto";
 
 option go_package = "intellix/x/price/types";
 

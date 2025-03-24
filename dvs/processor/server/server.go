@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/pflag"
 
 	"intellix/dvs/processor/types"
-	taskgateway "intellix/gateway/submitter"
+	taskgateway "intellix/gateway"
 )
 
 var _ types.DVSRequestServer = Server{}

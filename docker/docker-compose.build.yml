@@ -8,9 +8,9 @@ services:
       args:
         - HTTP_PROXY=$HTTP_PROXY
         - HTTPS_PROXY=$HTTPS_PROXY
-        - CONTRACT_VERSION=${CONTRACT_VERSION:-v0.4.6}
+        - CONTRACT_VERSION=${CONTRACT_VERSION:-v0.4.4}
       tags:
-        - pellnetwork/intellix-e2e-hardhat:${CONTRACT_VERSION:-v0.4.6}
+        - pellnetwork/intellix-e2e-hardhat:${CONTRACT_VERSION:-v0.4.4}
       secrets:
         - github_token
 

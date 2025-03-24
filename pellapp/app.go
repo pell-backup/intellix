@@ -16,12 +16,10 @@ import (
 	sdktypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 
-	price "intellix/dvs/price"
+	dvs "intellix/dvs/price"
 	priceserver "intellix/dvs/price/server"
-	processor "intellix/dvs/processor"
+	processordvs "intellix/dvs/processor"
 	processorserver "intellix/dvs/processor/server"
-	vrf "intellix/dvs/vrf"
-	vrfserver "intellix/dvs/vrf/server"
 )
 
 const (
@@ -41,10 +39,8 @@ type App struct {
 
 	dvsNode *pelldvs.Node
 
-	PriceServer     priceserver.Server
-	ProcessorServer processorserver.Server
-	VRFServer       vrfserver.Server
-
+	PriceServer              priceserver.Server
+	ProcessorServer          processorserver.Server
 	ProcessRequestServer     grpc1.Server
 	PostProcessRequestServer grpc1.Server
 
@@ -129,7 +125,7 @@ func NewApp(
 
 	// TODO: configurable
 	config.DvsConfig.RPC.ListenAddress = "tcp://0.0.0.0:26657"
-	// price client
+	// dvs client
 	logger.Info("NewNode", "config.DvsConfig.RPC.ListenAddress", config.DvsConfig.RPC.ListenAddress)
 	app.dvsNode, err = pelldvs.NewNode(app.logger, app, config.DvsConfig)
 	if err != nil {
@@ -151,7 +147,6 @@ func NewApp(
 		panic(err)
 	}
 
-	// price server
 	app.PriceServer, err = priceserver.NewServer(
 		app.logger, clientCtx, key, config.CosmosChainId,
 		config.GatewayAddr, config.OperatorAddr,
@@ -161,11 +156,10 @@ func NewApp(
 		panic(err)
 	}
 
-	priceModule := price.NewAppModule(app.PriceServer)
+	priceModule := dvs.NewAppModule(app.PriceServer)
 	priceModule.RegisterServices(app.GetMsgRouter())
 	priceModule.RegisterInterfaces(app.interfaceRegistry)
 
-	// processor server
 	app.ProcessorServer, err = processorserver.NewServer(
 		app.logger, clientCtx, key, config.CosmosChainId,
 		config.GatewayAddr, config.OperatorAddr,
@@ -175,19 +169,9 @@ func NewApp(
 		panic(err)
 	}
 
-	processorModule := processor.NewAppModule(app.ProcessorServer)
+	processorModule := processordvs.NewAppModule(app.ProcessorServer)
 	processorModule.RegisterServices(app.GetMsgRouter())
 	processorModule.RegisterInterfaces(app.interfaceRegistry)
-
-	// vrf server
-	app.VRFServer, err = vrfserver.NewServer(app.logger, config.GatewayAddr, config.ECCKeyPair)
-	if err != nil {
-		panic(err)
-	}
-
-	dvsModule := vrf.NewAppModule(app.VRFServer)
-	dvsModule.RegisterServices(app.GetMsgRouter())
-	dvsModule.RegisterInterfaces(app.interfaceRegistry)
 
 	return app
 }

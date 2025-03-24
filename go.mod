@@ -33,7 +33,7 @@ require (
 	github.com/0xPellNetwork/pelldvs-interactor v0.0.13
 	github.com/0xPellNetwork/pelldvs-libs v0.2.0
 	github.com/IntelliXLabs/iwasm v0.0.6
-	github.com/IntelliXLabs/price-oracle-dvs v0.4.6
+	github.com/IntelliXLabs/price-oracle-dvs v0.4.3
 	github.com/bufbuild/buf v1.34.0
 	github.com/cometbft/cometbft v0.38.12
 	github.com/cosmos/cosmos-db v1.1.0
@@ -49,7 +49,6 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.20.0
-	github.com/ontio/ontology-crypto v1.2.1
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cast v1.7.0
 	github.com/spf13/cobra v1.8.1
@@ -95,7 +94,6 @@ require (
 	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/bgentry/speakeasy v0.1.1-0.20220910012023-760eaf8b6816 // indirect
 	github.com/bits-and-blooms/bitset v1.20.0 // indirect
-	github.com/btcsuite/btcd v0.22.0-beta // indirect
 	github.com/bufbuild/protocompile v0.14.0 // indirect
 	github.com/bufbuild/protoplugin v0.0.0-20240323223605-e2735f6c31ee // indirect
 	github.com/bufbuild/protovalidate-go v0.6.2 // indirect
@@ -201,7 +199,6 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/itchyny/base58-go v0.1.0 // indirect
 	github.com/jdx/go-netrc v1.0.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
