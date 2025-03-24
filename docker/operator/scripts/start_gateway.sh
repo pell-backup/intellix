@@ -144,8 +144,6 @@ function setup_gateway_config {
   "chains": {
     "1337": {
       "eth_endpoint": "$ETH_WS_URL",
-      "contract_address": "$DATA_ORACLE_ADDRESS",
-      "chain_id": 1337,
       "gas_limit": 1000000,
       "chain_id": $SERVICE_CHAIN_ID,
       "rpc_url": "$SERVICE_CHAIN_RPC_URL",

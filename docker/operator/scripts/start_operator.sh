@@ -62,23 +62,6 @@ function gateway_healthcheck {
   set -e
 }
 
-function setup_dispatcher_config {
-  mkdir -p $PELLDVS_HOME/config
-  DATA_ORACLE_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/DataOracle-Proxy.json" | jq -r .address)
-  cat <<EOF > $PELLDVS_HOME/config/dispatcher.config.json
-{
-  "dvs_address": "tcp://$OPERATOR_RPC_SERVER",
-  "chains": [
-    {
-      "chain_id": 1337,
-      "eth_url": "$ETH_WS_URL",
-      "contract_address": "$DATA_ORACLE_ADDRESS"
-    }
-  ]
-}
-EOF
-}
-
 function gen_cosmos_key {
   # TODO: generate new key and use admin to faceut
   mkdir -p "$PELLDVS_HOME/keyring-test/"
@@ -173,11 +156,6 @@ fi
 
 logt "Setup operator config"
 setup_operator_config
-
-logt "Setup dispatcher config"
-setup_dispatcher_config
-
-touch /root/dispatcher_initialized
 
 logt "Starting operator..."
 start_operator
