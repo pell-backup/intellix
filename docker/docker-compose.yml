@@ -63,6 +63,8 @@ services:
       - ETH_RPC_URL=http://eth:8545
       - ETH_WS_URL=ws://eth:8545
     entrypoint: [ "bash", "/root/scripts/start_abci.sh" ]
+    ports:
+      - "9999:${EVENT_WS_PORT:-9999}"
     volumes:
       - ./operator/scripts:/root/scripts
 

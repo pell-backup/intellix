@@ -1,8 +1,6 @@
 package app
 
 import (
-	"io"
-
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
 	clienthelpers "cosmossdk.io/client/v2/helpers"
 	"cosmossdk.io/depinject"
@@ -76,6 +74,8 @@ import (
 	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	"io"
+	"net/http"
 
 	"intellix/docs"
 	pricemodulekeeper "intellix/x/price/keeper"
@@ -274,6 +274,24 @@ func New(
 
 	// register the upgrade handlers
 	app.RegisterUpgradeHandlers()
+
+	// Set the WsEventMempool as the mempool
+	hub := NewHub()
+	go hub.run()
+	mempool := NewWsEventMempool(hub, logger)
+	app.SetMempool(mempool)
+
+	// Start the WebSocket endpoint
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		serveWs(hub, w, r)
+	})
+	// Start the HTTP server on port 9999
+	go func() {
+		// TODO: use the server config to set the port
+		if err := http.ListenAndServe(":9999", nil); err != nil {
+			logger.Error(err.Error())
+		}
+	}()
 
 	/****  Module Options ****/
 

@@ -174,6 +174,7 @@ func (k *Server) SignAndBroadcastTx(ctx sdktypes.Context, msg sdk.Msg) error {
 		return fmt.Errorf("tx failed with code %d: %s", res.Code, res.RawLog)
 	}
 
+	k.logger.Info("broadcast tx success, tx hash: " + res.TxHash)
 	return nil
 }
 
