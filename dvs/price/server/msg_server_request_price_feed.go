@@ -3,19 +3,21 @@ package server
 import (
 	"context"
 	"fmt"
+	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
+	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
+	cmttypes "github.com/cometbft/cometbft/types"
+	"github.com/cosmos/gogoproto/proto"
+	utils "intellix/dvs"
+
+	"intellix/pkg/tx_listener"
+	processortypes "intellix/x/processor/types"
 	"sort"
 	"sync"
 	"time"
 
 	"cosmossdk.io/math"
-<<<<<<< HEAD:dvs/price/server/request_server_price_feed.go
-	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
-	"github.com/cosmos/gogoproto/proto"
 
 	"intellix/dvs/price/types"
-	"intellix/pkg/tx_listener"
-	sdktypes "intellix/sdk/types"
-	"intellix/sdk/utils"
 	pricetypes "intellix/x/price/types"
 )
 
@@ -24,47 +26,19 @@ func (d *RequestServer) RequestPriceFeed(ctx context.Context, request *types.Req
 	d.logger.Info("ProcessRequestPriceFeed", "PriceFeedParam", fmt.Sprintf("%+v", request.PriceFeed))
 
 	// fetch raw price from chain
+	// fetch raw price from chain
 	rawPrices, err := fetchRawPrices(pkgContext, d.Logger(), request.PriceFeed.BaseSymbol, request.PriceFeed.QuoteSymbol, ToPriceTickConverterByDataSource(d.tickConverterConfig))
 	if err != nil {
 		d.logger.Error("ProcessRequestPriceFeed fetchRawPrices error: " + err.Error())
-=======
-	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
-	cmttypes "github.com/cometbft/cometbft/types"
-	"github.com/cosmos/cosmos-sdk/x/authz"
-
-	"intellix/dvs/price/types"
-	pricetypes "intellix/x/price/types"
-)
-
-func (s Server) RequestPriceFeed(ctx context.Context, request *types.RequestPriceFeedIn) (*types.RequestPriceFeedOut, error) {
-	pkgContext := sdktypes.UnwrapContext(ctx)
-	s.logger.Info("ProcessRequestPriceFeed", "PriceFeedParam", fmt.Sprintf("%+v", request.PriceFeed))
-
-	// fetch raw price from chain
-	rawPrices, err := fetchRawPrices(pkgContext, s.Logger(), request.PriceFeed.BaseSymbol, request.PriceFeed.QuoteSymbol, ToPriceTickConverterByDataSource(s.tickConverterConfig))
-	if err != nil {
-		s.logger.Error("ProcessRequestPriceFeed fetchRawPrices error: " + err.Error())
->>>>>>> main:dvs/price/server/msg_server_request_price_feed.go
 		return nil, fmt.Errorf("failed to fetch raw prices: %w", err)
 	}
-
 	// sign data and broadcast VoteRequestPriceFeed
-<<<<<<< HEAD:dvs/price/server/request_server_price_feed.go
 	if err := d.broadcastVoteRequestPriceFeed(pkgContext, request, request.GetPriceFeed(), rawPrices); err != nil {
-		d.logger.Error("ProcessRequestPriceFeed broadcastVoteRequestPriceFeed error: " + err.Error())
-=======
-	err = s.broadcastVoteRequestPriceFeed(pkgContext, request, request.GetPriceFeed(), rawPrices)
-	if err != nil {
->>>>>>> main:dvs/price/server/msg_server_request_price_feed.go
 		return nil, fmt.Errorf("failed to broadcast VoteRequestPriceFeed: %w", err)
 	}
 
 	// listen and collect [N-N+M] block
-<<<<<<< HEAD:dvs/price/server/request_server_price_feed.go
 	priceFeedTxs, err := d.startCollectEnoughPriceFeedTxs(pkgContext, request.Task.RequestId)
-=======
-	priceFeedTxs, err := s.collectVoteRequestPriceFeedTxs(pkgContext, request.Task.RequestId)
->>>>>>> main:dvs/price/server/msg_server_request_price_feed.go
 	if err != nil {
 		d.logger.Error("ProcessRequestPriceFeed collectVoteRequestPriceFeedTxs error: " + err.Error())
 		return nil, fmt.Errorf("failed to collect VoteRequestPriceFeed transactions: %w", err)
@@ -76,35 +50,33 @@ func (s Server) RequestPriceFeed(ctx context.Context, request *types.RequestPric
 	d.logger.Info("ProcessRequestPriceFeed collectVoteRequestPriceFeedTxs success", "lengeth", len(priceFeedTxs), "priceFeedTxs", fmt.Sprintf("%+v", priceFeedTxs))
 
 	// aggregate [N-N+M] block prices
-<<<<<<< HEAD:dvs/price/server/request_server_price_feed.go
 	return d.aggregatePrices(pkgContext, request.Task.TaskIndex, request.Task.RequestId, priceFeedTxs)
 }
 
-func (d *RequestServer) getMsgBytes(msg *pricetypes.MsgVoteRequestPriceFeed) []byte {
-	m := &pricetypes.MsgVoteRequestPriceFeed{
-		TaskIndex:   msg.TaskIndex,
-		OperatorId:  msg.OperatorId,
-		RequestId:   msg.RequestId,
-		BaseSymbol:  msg.BaseSymbol,
-		QuoteSymbol: msg.QuoteSymbol,
-		Price:       msg.Price,
-		Timestamp:   msg.Timestamp,
-		BlockHeight: msg.BlockHeight,
-		Sender:      msg.Sender,
+func (r *RequestServer) getMsgBytes(msg *processortypes.MsgVoteRequestProcessor) []byte {
+	b := &processortypes.MsgVoteRequestProcessor{
+		TaskIndex:                 msg.TaskIndex,
+		RequestId:                 msg.RequestId,
+		FeeToken:                  msg.FeeToken,
+		Payment:                   msg.Payment,
+		RequestData:               msg.RequestData,
+		CallbackAddress:           msg.CallbackAddress,
+		CallbackFunctionId:        msg.CallbackFunctionId,
+		TaskCreatedBlock:          msg.TaskCreatedBlock,
+		QuorumNumbers:             msg.QuorumNumbers,
+		QuorumThresholdPercentage: msg.QuorumThresholdPercentage,
+		ScriptId:                  msg.ScriptId,
+		ScriptResp:                msg.ScriptResp,
+		Sender:                    msg.Sender,
+		OperatorId:                msg.OperatorId,
 	}
-	b, _ := proto.Marshal(m)
-	return b
+
+	bytes, _ := proto.Marshal(b)
+	return bytes
 }
 
 func (d *RequestServer) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task *types.RequestPriceFeedIn, priceFeed *types.PriceFeedParam, rawPrices map[string]math.LegacyDec) error {
 	d.Logger().Info("broadcastVoteRequestPriceFeed",
-=======
-	return s.aggregatePrices(pkgContext, request.Task.TaskIndex, request.Task.RequestId, priceFeedTxs)
-}
-
-func (s Server) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task *types.RequestPriceFeedIn, priceFeed *types.PriceFeedParam, rawPrices map[string]math.LegacyDec) error {
-	s.Logger().Info("broadcastVoteRequestPriceFeed",
->>>>>>> main:dvs/price/server/msg_server_request_price_feed.go
 		"rawPrices", fmt.Sprintf("%+v", rawPrices),
 		"task", fmt.Sprintf("%+v", task),
 		"priceFeed", fmt.Sprintf("%+v", priceFeed),
@@ -117,7 +89,7 @@ func (s Server) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task *types.
 			Price:  price,
 		})
 	}
-	addr, err := s.SenderAddress()
+	addr, err := d.Server.SenderAddress()
 	if err != nil {
 		return fmt.Errorf("failed to broadcast VoteRequestPriceFeed for data error: %w", err)
 	}
@@ -125,7 +97,7 @@ func (s Server) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task *types.
 	msg := pricetypes.MsgVoteRequestPriceFeed{
 		Sender:      addr.String(),
 		TaskIndex:   task.Task.TaskIndex,
-		OperatorId:  s.GetOperatorAddress(ctx),
+		OperatorId:  d.Server.GetOperatorAddress(ctx),
 		RequestId:   task.Task.RequestId,
 		BaseSymbol:  priceFeed.BaseSymbol,
 		QuoteSymbol: priceFeed.QuoteSymbol,
@@ -133,23 +105,16 @@ func (s Server) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task *types.
 		Timestamp:   time.Now().Unix(),
 		BlockHeight: uint64(ctx.Height()),
 	}
-<<<<<<< HEAD:dvs/price/server/request_server_price_feed.go
 	bls := utils.SignWithBLS(d.blsKeyPair, d.getMsgBytes(&msg))
 	msg.BlsSignature = bls
 
 	if err := d.Server.SignAndBroadcastTx(ctx, &msg); err != nil {
 		d.Logger().Error("broadcastVoteRequestPriceFeed SignAndBroadcastTx error: " + err.Error())
-=======
-	if err := s.SignAndBroadcastTx(ctx, &msg); err != nil {
-		s.Logger().Error("broadcastVoteRequestPriceFeed SignAndBroadcastTx error: " + err.Error())
->>>>>>> main:dvs/price/server/msg_server_request_price_feed.go
 		return fmt.Errorf("failed to broadcast VoteRequestPriceFeed for data error: %w", err)
 	}
-
 	return nil
 }
 
-<<<<<<< HEAD:dvs/price/server/request_server_price_feed.go
 func (d *RequestServer) startCollectEnoughPriceFeedTxs(ctx sdktypes.Context, requestId []byte) ([]*pricetypes.MsgVoteRequestPriceFeed, error) {
 	var (
 		key       = string(requestId)
@@ -183,70 +148,6 @@ func (d *RequestServer) startCollectEnoughPriceFeedTxs(ctx sdktypes.Context, req
 	if ok {
 		d.PriceListener.ClearBlocksByKey(key)
 		return blockData, nil
-=======
-func (s Server) collectVoteRequestPriceFeedTxs(ctx sdktypes.Context, requestID []byte) ([]pricetypes.MsgVoteRequestPriceFeed, error) {
-	var priceFeedTxs []pricetypes.MsgVoteRequestPriceFeed
-	firstTxBlock := int64(0)
-
-	for {
-		block, err := s.GetLatestBlock(ctx)
-		if err != nil {
-			s.logger.Error("collectVoteRequestPriceFeed GetLatestBlock error: " + err.Error())
-			return nil, fmt.Errorf("failed to get latest block: %w", err)
-		}
-
-		newTxs := s.processBlockTxs(ctx, block, requestID)
-		priceFeedTxs = append(priceFeedTxs, newTxs...)
-
-		if firstTxBlock == 0 && len(newTxs) > 0 {
-			firstTxBlock = block.Header.Height
-		}
-
-		// check N-N+M
-		if s.shouldStopCollecting(ctx, firstTxBlock, block.Header.Height) {
-			s.logger.Info("collectVoteRequestPriceFeed stop collecting", "block_height", block.Header.Height)
-			break
-		}
-
-		// wait for next block
-		time.Sleep(time.Millisecond * 10)
-	}
-
-	return priceFeedTxs, nil
-}
-
-func (s Server) processBlockTxs(ctx context.Context, block *cmttypes.Block, requestID []byte) []pricetypes.MsgVoteRequestPriceFeed {
-	var priceFeedTxs []pricetypes.MsgVoteRequestPriceFeed
-	//s.logger.Info("Processing block", "height", block.Header.Height, "tx_count", len(block.Data.Txs))
-
-	for _, tx := range block.Data.Txs {
-		// only collect VoteRequestPriceFeed && current requestId data
-		//s.logger.Info("Processing transaction", "tx_hash", tx.Hash())
-		if msg, ok := s.isVoteRequestPriceFeedTx(tx); ok && bytes.Equal(msg.RequestId, requestID) {
-			priceFeedTxs = append(priceFeedTxs, pricetypes.MsgVoteRequestPriceFeed{
-				TaskIndex:   msg.TaskIndex,
-				OperatorId:  msg.OperatorId,
-				RequestId:   msg.RequestId,
-				BaseSymbol:  msg.BaseSymbol,
-				QuoteSymbol: msg.QuoteSymbol,
-				Price:       msg.Price,
-				Timestamp:   msg.Timestamp,
-				BlockHeight: uint64(block.Header.Height),
-			})
-		}
-	}
-
-	return priceFeedTxs
-}
-
-func (s Server) isVoteRequestPriceFeedTx(tx cmttypes.Tx) (*pricetypes.MsgVoteRequestPriceFeed, bool) {
-	// check tx is VoteRequestPriceFeed
-	decoder := s.clientCtx.TxConfig.TxDecoder()
-	data, err := decoder(tx)
-	if err != nil {
-		s.logger.Error("TxDecoder decode tx error: " + err.Error())
-		return nil, false
->>>>>>> main:dvs/price/server/msg_server_request_price_feed.go
 	}
 
 	// subscribe events and blocks
@@ -266,7 +167,6 @@ func (s Server) isVoteRequestPriceFeedTx(tx cmttypes.Tx) (*pricetypes.MsgVoteReq
 	defer func() {
 		cancel()
 
-<<<<<<< HEAD:dvs/price/server/request_server_price_feed.go
 		d.PriceListener.UnsubscribeEvents(eventCh)
 		d.PriceListener.UnsubscribeBlocks(blockCh)
 
@@ -278,16 +178,36 @@ func (s Server) isVoteRequestPriceFeedTx(tx cmttypes.Tx) (*pricetypes.MsgVoteReq
 	}()
 
 	go d.collectEvents(collectCtx, operatorMaps, eventCh, &eventData, eventWaitChan) // listen events
-	go d.collectBlocks(collectCtx, blockHeight, blockCh, &blockData, blockWaitChan)  // listen blocks
 
 	select {
-	case <-blockWaitChan:
-		return blockData, nil
 	case <-eventWaitChan:
 		return eventData, nil
 	case <-ctx.Done():
 		return nil, fmt.Errorf("failed to start collect enough price feed block timeout")
 	}
+}
+
+func (d *RequestServer) PriceBlockHandler(ctx context.Context, block *cmttypes.Block) (string, *pricetypes.MsgVoteRequestPriceFeed, error) {
+	for _, tx := range block.Data.Txs {
+		// only collect VoteRequestPriceFeed
+		//d.logger.Info("Processing transaction", "tx_hash", tx.Hash())
+		if msg, ok := d.isVoteRequestPriceFeedTx(tx); ok {
+			return string(msg.RequestId), &pricetypes.MsgVoteRequestPriceFeed{
+				TaskIndex:    msg.TaskIndex,
+				OperatorId:   msg.OperatorId,
+				RequestId:    msg.RequestId,
+				BaseSymbol:   msg.BaseSymbol,
+				QuoteSymbol:  msg.QuoteSymbol,
+				Price:        msg.Price,
+				Timestamp:    msg.Timestamp,
+				BlockHeight:  uint64(block.Header.Height),
+				BlsSignature: msg.BlsSignature,
+				Sender:       msg.Sender,
+			}, nil
+		}
+	}
+
+	return "", nil, fmt.Errorf("no vote request price feed tx")
 }
 
 func (d *RequestServer) verifyOperatorEvents(ctx sdktypes.Context, datas []tx_listener.EventData[*pricetypes.MsgVoteRequestPriceFeed]) ([]*pricetypes.MsgVoteRequestPriceFeed, bool) {
@@ -395,29 +315,44 @@ func (d *RequestServer) collectBlocks(ctx context.Context, blockHeight int64, ch
 }
 
 func (d *RequestServer) aggregatePrices(ctx sdktypes.Context, taskIndex uint32, requestID []byte, priceFeedTxs []*pricetypes.MsgVoteRequestPriceFeed) (*types.RequestPriceFeedOut, error) {
-=======
-	// Try to handle authz message
-	if authzMsg, ok := msg.(*authz.MsgExec); ok {
-		// Get the inner messages from authz
-		innerMsgs, err := authzMsg.GetMessages()
-		if err != nil {
-			s.logger.Error("Failed to get inner messages from authz", "error", err)
-			return nil, false
-		}
-		if len(innerMsgs) == 0 {
-			return nil, false
-		}
-		// Use the first inner message
-		msg = innerMsgs[0]
-	}
+	operatorPrices := make(map[string][]math.LegacyDec)
 
-	voteMsg, ok := msg.(*pricetypes.MsgVoteRequestPriceFeed)
-	if !ok {
-		//s.logger.Error("msg is not MsgVoteRequestPriceFeed", "msg", fmt.Sprintf("%+v", msg))
-		return nil, false
+	// calc avg the prices of different data sources within each Operator
+	for _, tx := range priceFeedTxs {
+		operatorID := tx.OperatorId
+		for _, price := range tx.Price {
+			operatorPrices[operatorID] = append(operatorPrices[operatorID], price.Price)
+		}
 	}
-
-	return voteMsg, true
+	var averagePrices []math.LegacyDec
+	for _, prices := range operatorPrices {
+		sum := math.LegacyZeroDec()
+		for _, price := range prices {
+			sum = sum.Add(price)
+		}
+		average := sum.Quo(math.LegacyNewDec(int64(len(prices))))
+		averagePrices = append(averagePrices, average)
+	}
+	// median of the average prices of different Operators
+	sort.Slice(averagePrices, func(i, j int) bool {
+		return averagePrices[i].LT(averagePrices[j])
+	})
+	medianPrice := averagePrices[len(averagePrices)/2]
+	blockRange := &types.BlockRange{}
+	if len(priceFeedTxs) > 0 {
+		blockRange.Start = priceFeedTxs[0].BlockHeight
+		blockRange.End = priceFeedTxs[len(priceFeedTxs)-1].BlockHeight
+	}
+	return &types.RequestPriceFeedOut{
+		RequestId:     requestID,
+		TaskIndex:     taskIndex,
+		Price:         medianPrice,
+		Timestamp:     time.Now().Unix(),
+		SourceCount:   int32(len(priceFeedTxs)),
+		OperatorCount: int32(len(operatorPrices)),
+		BlockHeight:   uint64(ctx.Height()),
+		BlockRange:    blockRange,
+	}, nil
 }
 
 func (s Server) shouldStopCollecting(ctx sdktypes.Context, firstTxBlock, currentBlock int64) bool {
@@ -428,7 +363,6 @@ func (s Server) shouldStopCollecting(ctx sdktypes.Context, firstTxBlock, current
 }
 
 func (s Server) aggregatePrices(ctx sdktypes.Context, taskIndex uint32, requestID []byte, priceFeedTxs []pricetypes.MsgVoteRequestPriceFeed) (*types.RequestPriceFeedOut, error) {
->>>>>>> main:dvs/price/server/msg_server_request_price_feed.go
 	operatorPrices := make(map[string][]math.LegacyDec)
 
 	// calc avg the prices of different data sources within each Operator

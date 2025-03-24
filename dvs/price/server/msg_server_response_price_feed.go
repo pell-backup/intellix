@@ -11,7 +11,6 @@ import (
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 
-	"intellix/dvs"
 	"intellix/dvs/price/types"
 	taskgateway "intellix/gateway"
 	pricetypes "intellix/x/price/types"

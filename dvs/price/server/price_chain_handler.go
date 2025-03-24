@@ -112,26 +112,3 @@ func (d *RequestServer) isVoteRequestPriceFeedTx(tx cmttypes.Tx) (*pricetypes.Ms
 
 	return voteMsg, true
 }
-
-func (d *RequestServer) PriceBlockHandler(ctx context.Context, block *cmttypes.Block) (string, *pricetypes.MsgVoteRequestPriceFeed, error) {
-	for _, tx := range block.Data.Txs {
-		// only collect VoteRequestPriceFeed
-		//d.logger.Info("Processing transaction", "tx_hash", tx.Hash())
-		if msg, ok := d.isVoteRequestPriceFeedTx(tx); ok {
-			return string(msg.RequestId), &pricetypes.MsgVoteRequestPriceFeed{
-				TaskIndex:    msg.TaskIndex,
-				OperatorId:   msg.OperatorId,
-				RequestId:    msg.RequestId,
-				BaseSymbol:   msg.BaseSymbol,
-				QuoteSymbol:  msg.QuoteSymbol,
-				Price:        msg.Price,
-				Timestamp:    msg.Timestamp,
-				BlockHeight:  uint64(block.Header.Height),
-				BlsSignature: msg.BlsSignature,
-				Sender:       msg.Sender,
-			}, nil
-		}
-	}
-
-	return "", nil, fmt.Errorf("no vote request price feed tx")
-}
