@@ -53,9 +53,15 @@ func (s *CoinbaseFetchPriceService) fetchCoinPrice(base, quote string, tickConve
 	}
 	s.logger.Info("Fetched price from Coinbase", "base", base, "quote", quote, "price", price)
 
-	dec, err := math.LegacyNewDecFromStr(coinbaseResp.Data.Amount)
+	// Convert to Dec type
+	priceStr := coinbaseResp.Data.Amount
+
+	// Truncate decimal places if needed
+	priceStr = TruncatePriceDecimal(priceStr, s.logger)
+
+	dec, err := math.LegacyNewDecFromStr(priceStr)
 	if err != nil {
-		s.logger.Error("Error converting price to Dec", "error", err)
+		s.logger.Error("Error converting price to Dec", "error", err, "price", priceStr)
 		return err
 	}
 	priceChan <- &PriceInfo{DataSource: dataSourceCoinbase, Price: dec}

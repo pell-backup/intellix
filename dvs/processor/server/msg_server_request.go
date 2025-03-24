@@ -7,11 +7,16 @@ import (
 	"sync"
 	"time"
 
+<<<<<<< HEAD:dvs/processor/server/request_server.go
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
+=======
+	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
+>>>>>>> main:dvs/processor/server/msg_server_request.go
 	"github.com/IntelliXLabs/iwasm/api"
 	"github.com/cosmos/gogoproto/proto"
 
 	"intellix/dvs/processor/types"
+<<<<<<< HEAD:dvs/processor/server/request_server.go
 	"intellix/pkg/tx_listener"
 	sdktypes "intellix/sdk/types"
 	"intellix/sdk/utils"
@@ -43,27 +48,35 @@ func NewRequestServer(s Server) types.DVSRequestServer {
 var _ types.DVSRequestServer = &RequestServer{}
 
 func (r *RequestServer) RequestScript(ctx context.Context, in *types.RequestScriptIn) (*types.RequestScriptOut, error) {
-	pkgContext := sdktypes.UnwrapContext(ctx)
-	r.logger.Info("RequestScript", "in", fmt.Sprintf("%+v", in))
+=======
+	processortypes "intellix/x/processor/types"
+)
 
-	instance, runtime, scriptConfig, err := r.loadWasmScript(pkgContext, in.ScriptId)
+var _ types.DVSRequestServer = Server{}
+
+func (s Server) RequestScript(ctx context.Context, in *types.RequestScriptIn) (*types.RequestScriptOut, error) {
+>>>>>>> main:dvs/processor/server/msg_server_request.go
+	pkgContext := sdktypes.UnwrapContext(ctx)
+	s.logger.Info("RequestScript", "in", fmt.Sprintf("%+v", in))
+
+	instance, runtime, scriptConfig, err := s.loadWasmScript(pkgContext, in.ScriptId)
 	if err != nil {
 		return nil, err
 	}
 	defer runtime.Dispose()
 	defer instance.Dispose()
 
-	data, err := r.fetchDataByExecWasmFetchingScript(pkgContext, instance, scriptConfig, in.ScriptParam)
+	data, err := s.fetchDataByExecWasmFetchingScript(pkgContext, instance, scriptConfig, in.ScriptParam)
 	if err != nil {
 		return nil, err
 	}
 
-	aggrDataIn, err := r.waitForEnoughOperateVote(pkgContext, in, data)
+	aggrDataIn, err := s.waitForEnoughOperateVote(pkgContext, in, data)
 	if err != nil {
 		return nil, err
 	}
 
-	aggrData, digest, err := r.aggrDataByExecWasmAggrScript(pkgContext, instance, scriptConfig, aggrDataIn)
+	aggrData, digest, err := s.aggrDataByExecWasmAggrScript(pkgContext, instance, scriptConfig, aggrDataIn)
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +88,13 @@ func (r *RequestServer) RequestScript(ctx context.Context, in *types.RequestScri
 	}, nil
 }
 
+<<<<<<< HEAD:dvs/processor/server/request_server.go
 func (r *RequestServer) loadWasmScript(ctx sdktypes.Context, scriptId uint64) (api.InstanceResult, api.RuntimeResult, []byte, error) {
 	conn := r.clientCtx.GRPCClient
+=======
+func (s Server) loadWasmScript(ctx sdktypes.Context, scriptId uint64) (api.InstanceResult, api.RuntimeResult, []byte, error) {
+	conn := s.clientCtx.GRPCClient
+>>>>>>> main:dvs/processor/server/msg_server_request.go
 	queryClient := processortypes.NewQueryClient(conn)
 
 	req := &processortypes.QueryShowProcessorRequest{
@@ -105,7 +123,11 @@ func (r *RequestServer) loadWasmScript(ctx sdktypes.Context, scriptId uint64) (a
 	return instance, runtime, resp.Processor.Config, err
 }
 
+<<<<<<< HEAD:dvs/processor/server/request_server.go
 func (r *RequestServer) fetchDataByExecWasmFetchingScript(ctx sdktypes.Context, instance api.InstanceResult, scriptConfig []byte, scriptParam []byte) ([]byte, error) {
+=======
+func (s Server) fetchDataByExecWasmFetchingScript(ctx sdktypes.Context, instance api.InstanceResult, scriptConfig []byte, scriptParam []byte) ([]byte, error) {
+>>>>>>> main:dvs/processor/server/msg_server_request.go
 	dataRes, err := instance.PrepareData(scriptConfig, scriptParam)
 	if err != nil {
 		return nil, err
@@ -116,7 +138,11 @@ func (r *RequestServer) fetchDataByExecWasmFetchingScript(ctx sdktypes.Context, 
 	return data, err
 }
 
+<<<<<<< HEAD:dvs/processor/server/request_server.go
 func (r *RequestServer) waitForEnoughOperateVote(ctx sdktypes.Context, in *types.RequestScriptIn, srcData []byte) ([][]byte, error) {
+=======
+func (s Server) waitForEnoughOperateVote(ctx sdktypes.Context, in *types.RequestScriptIn, srcData []byte) ([][]byte, error) {
+>>>>>>> main:dvs/processor/server/msg_server_request.go
 	// broadcast VoteRequestScript
 	voteIn := processortypes.MsgVoteRequestProcessor{
 		TaskIndex:                 in.TaskIndex,
@@ -132,6 +158,7 @@ func (r *RequestServer) waitForEnoughOperateVote(ctx sdktypes.Context, in *types
 		ScriptId:                  in.ScriptId,
 		ScriptResp:                srcData,
 	}
+<<<<<<< HEAD:dvs/processor/server/request_server.go
 
 	// sign
 	sign := utils.SignWithBLS(r.Server.blsKeyPair, r.getMsgBytes(&voteIn))
@@ -154,6 +181,38 @@ func (r *RequestServer) waitForEnoughOperateVote(ctx sdktypes.Context, in *types
 	if len(events) == 0 {
 		r.logger.Error("waitForEnoughOperateVote no enough events")
 		return nil, fmt.Errorf("no enough events")
+=======
+	if err := s.SignAndBroadcastTx(ctx, &voteIn); err != nil {
+		s.logger.Error("waitForEnoughOperateVote SignAndBroadcastTx error: " + err.Error())
+		return nil, fmt.Errorf("failed to broadcast VoteRequestProcessorIn for data error: %w", err)
+	}
+
+	// listen and collect [N-N+M] block
+	var voteTxs []processortypes.MsgVoteRequestProcessor
+	firstTxBlock := int64(0)
+	for {
+		block, err := s.GetLatestBlock(ctx)
+		if err != nil {
+			s.logger.Error("collectVoteRequestPriceFeed GetLatestBlock error: " + err.Error())
+			return nil, fmt.Errorf("failed to get latest block: %w", err)
+		}
+
+		newTxs := s.processBlockTxs(ctx, block, in.RequestId)
+		voteTxs = append(voteTxs, newTxs...)
+
+		if firstTxBlock == 0 && len(newTxs) > 0 {
+			firstTxBlock = block.Header.Height
+		}
+
+		// check N-N+M
+		if s.shouldStopCollecting(ctx, firstTxBlock, block.Header.Height) {
+			s.logger.Info("collectVoteRequestPriceFeed stop collecting", "block_height", block.Header.Height)
+			break
+		}
+
+		// wait for next block
+		time.Sleep(time.Millisecond * 10)
+>>>>>>> main:dvs/processor/server/msg_server_request.go
 	}
 
 	var resp [][]byte
@@ -164,6 +223,7 @@ func (r *RequestServer) waitForEnoughOperateVote(ctx sdktypes.Context, in *types
 	return resp, nil
 }
 
+<<<<<<< HEAD:dvs/processor/server/request_server.go
 func (r *RequestServer) collectVoteRequestProcessor(ctx sdktypes.Context, in *types.RequestScriptIn) ([]*processortypes.MsgVoteRequestProcessor, error) {
 	var (
 		key       = string(in.RequestId)
@@ -193,6 +253,27 @@ func (r *RequestServer) collectVoteRequestProcessor(ctx sdktypes.Context, in *ty
 	if ok {
 		r.ProcessorListener.ClearBlocksByKey(key)
 		return blockData, nil
+=======
+func (s Server) processBlockTxs(ctx context.Context, block *cmttypes.Block, requestID []byte) []processortypes.MsgVoteRequestProcessor {
+	var priceFeedTxs []processortypes.MsgVoteRequestProcessor
+	//d.logger.Info("Processing block", "height", block.Header.Height, "tx_count", len(block.Data.Txs))
+
+	for _, tx := range block.Data.Txs {
+		if msg, ok := s.isVoteRequestTx(tx); ok && bytes.Equal(msg.RequestId, requestID) {
+			priceFeedTxs = append(priceFeedTxs, *msg)
+		}
+	}
+
+	return priceFeedTxs
+}
+
+func (s Server) isVoteRequestTx(tx cmttypes.Tx) (*processortypes.MsgVoteRequestProcessor, bool) {
+	decoder := s.clientCtx.TxConfig.TxDecoder()
+	data, err := decoder(tx)
+	if err != nil {
+		s.logger.Error("TxDecoder decode tx error: " + err.Error())
+		return nil, false
+>>>>>>> main:dvs/processor/server/msg_server_request.go
 	}
 
 	// subscribe events and blocks
@@ -214,6 +295,7 @@ func (r *RequestServer) collectVoteRequestProcessor(ctx sdktypes.Context, in *ty
 		r.ProcessorListener.UnsubscribeEvents(eventCh)
 		r.ProcessorListener.UnsubscribeBlocks(blockCh)
 
+<<<<<<< HEAD:dvs/processor/server/request_server.go
 		close(eventWaitChan)
 		close(blockWaitChan)
 
@@ -231,9 +313,25 @@ func (r *RequestServer) collectVoteRequestProcessor(ctx sdktypes.Context, in *ty
 		return eventData, nil
 	case <-ctx.Done():
 		return nil, fmt.Errorf("context done")
+=======
+	// Try to handle authz message
+	if authzMsg, ok := msg.(*authz.MsgExec); ok {
+		// Get the inner messages from authz
+		innerMsgs, err := authzMsg.GetMessages()
+		if err != nil {
+			s.logger.Error("Failed to get inner messages from authz", "error", err)
+			return nil, false
+		}
+		if len(innerMsgs) == 0 {
+			return nil, false
+		}
+		// Use the first inner message
+		msg = innerMsgs[0]
+>>>>>>> main:dvs/processor/server/msg_server_request.go
 	}
 }
 
+<<<<<<< HEAD:dvs/processor/server/request_server.go
 func (r *RequestServer) collectEvents(ctx context.Context, operatorMaps map[string]*avsitypes.Operator, eventCh *tx_listener.EventChannel[*processortypes.MsgVoteRequestProcessor], eventData *[]*processortypes.MsgVoteRequestProcessor, waitChan chan struct{}) {
 	eventDataByOperatorId := make(map[string]*processortypes.MsgVoteRequestProcessor)
 	for _, data := range *eventData {
@@ -361,6 +459,16 @@ func (r *RequestServer) checkAndChooseEnoughBlocks(ctx context.Context, blockHei
 }
 
 func (r *RequestServer) aggrDataByExecWasmAggrScript(ctx sdktypes.Context, instance api.InstanceResult, scriptConfig []byte, datas [][]byte) ([]byte, []byte, error) {
+=======
+func (s Server) shouldStopCollecting(ctx sdktypes.Context, firstTxBlock, currentBlock int64) bool {
+	if firstTxBlock == 0 {
+		return false
+	}
+	return currentBlock >= firstTxBlock+s.waitBlockCount
+}
+
+func (s Server) aggrDataByExecWasmAggrScript(ctx sdktypes.Context, instance api.InstanceResult, scriptConfig []byte, datas [][]byte) ([]byte, []byte, error) {
+>>>>>>> main:dvs/processor/server/msg_server_request.go
 	dataRes, err := instance.Aggregate(scriptConfig, datas, []byte("first"))
 	if err != nil {
 		return nil, nil, err

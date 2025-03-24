@@ -1,18 +1,15 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/0xPellNetwork/pelldvs-libs/log"
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	taskdispatcher "intellix/dispatcher"
-	app "intellix/pellapp"
-	"intellix/sdk/logger"
-	pkglogger "intellix/sdk/logger"
+	"intellix/pellapp"
 )
 
 var configDispatcherFile string
@@ -32,13 +29,12 @@ func pellAppCommand() *cobra.Command {
 			}
 
 			vp := viper.New()
-
 			vp.SetConfigFile(configFile)
 			if err := vp.ReadInConfig(); err != nil {
 				panic(err)
 			}
 
-			var pellAppConfig = &app.AppConfig{}
+			var pellAppConfig = &pellapp.AppConfig{}
 			err := vp.Unmarshal(pellAppConfig)
 			if err != nil {
 				panic(err)
@@ -71,47 +67,12 @@ func pellAppCommand() *cobra.Command {
 				panic(err)
 			}
 
-			a := app.NewApp(dApp.InterfaceRegistry(),
-				logger.NewDVSLogAdapter(serverCtx.Logger), pellAppConfig,
+			app := pellapp.NewApp(dApp.InterfaceRegistry(),
+				log.NewLogger(os.Stdout), pellAppConfig,
 			)
 
-			config := serverCtx.Config
-			if configDispatcherFile == "" {
-				configDispatcherFile = home + "/config/dispatcher.config.json"
-			}
-
-			viper.SetConfigFile(configDispatcherFile)
-			if err := viper.ReadInConfig(); err != nil {
-				return err
-			}
-			if err := viper.Unmarshal(config); err != nil {
-				return err
-			}
-
-			var conf = &taskdispatcher.Config{}
-			err = viper.Unmarshal(conf)
-			if err != nil {
-				return err
-			}
-			if err := conf.Validate(); err != nil {
-				return err
-			}
-
-			// start task dispatcher
-			dvsLogger := pkglogger.NewDVSLogAdapter(serverCtx.Logger)
-
-			td, err := taskdispatcher.NewTaskDispatcher(dvsLogger.With("module", "task-dispacther"), a.DVSClient, conf.Chains)
-			if err != nil {
-				return fmt.Errorf("failed to create TaskDispatcher: %w", err)
-			}
-
-			err = td.Start()
-			if err != nil {
-				return fmt.Errorf("failed to start TaskDispatcher: %w", err)
-			}
-
-			//start Operator
-			if err = a.Start(); err != nil {
+			// start Operator
+			if err = app.Start(); err != nil {
 				return err
 			}
 

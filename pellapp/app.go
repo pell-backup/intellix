@@ -3,6 +3,8 @@ package pellapp
 import (
 	"os"
 
+	"github.com/0xPellNetwork/pellapp-sdk/baseapp"
+	"github.com/0xPellNetwork/pellapp-sdk/pelldvs"
 	"github.com/0xPellNetwork/pelldvs-libs/log"
 	dvsconfig "github.com/0xPellNetwork/pelldvs/config"
 	rpclocal "github.com/0xPellNetwork/pelldvs/rpc/client/local"
@@ -15,14 +17,9 @@ import (
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 
 	dvs "intellix/dvs/price"
-	dvsserver "intellix/dvs/price/server"
-	dvstypes "intellix/dvs/price/types"
+	priceserver "intellix/dvs/price/server"
 	processordvs "intellix/dvs/processor"
-	processordvsserver "intellix/dvs/processor/server"
-	processordvstypes "intellix/dvs/processor/types"
-	"intellix/sdk/baseapp"
-	dvsservermanager "intellix/sdk/dvs_msg_handler"
-	"intellix/sdk/pelldvs"
+	processorserver "intellix/dvs/processor/server"
 )
 
 const (
@@ -42,8 +39,8 @@ type App struct {
 
 	dvsNode *pelldvs.Node
 
-	DvsServer                dvsserver.Server
-	ProcessorDvsServer       processordvsserver.Server
+	PriceServer              priceserver.Server
+	ProcessorServer          processorserver.Server
 	ProcessRequestServer     grpc1.Server
 	PostProcessRequestServer grpc1.Server
 
@@ -109,15 +106,17 @@ func NewApp(
 	logger log.Logger,
 	config *AppConfig,
 ) *App {
+	cdc := codec.NewProtoCodec(interfaceRegistry)
+
 	var app = &App{
 		// TODO: use depinject
-		BaseApp:           baseapp.NewBaseApp(logger),
+		BaseApp:           baseapp.NewBaseApp(Name, logger, cdc),
 		interfaceRegistry: interfaceRegistry,
 		logger:            logger,
+		appCodec:          cdc,
 	}
 
 	app.RegisterInterface()
-	app.appCodec = app.AppCodec()
 	var err error
 
 	config.DvsConfig.RootDir = config.RootDir
@@ -148,7 +147,7 @@ func NewApp(
 		panic(err)
 	}
 
-	app.DvsServer, err = dvsserver.NewServer(
+	app.PriceServer, err = priceserver.NewServer(
 		app.logger, clientCtx, key, config.CosmosChainId,
 		config.CosmosWsEndpoint, config.GatewayAddr, config.OperatorAddr,
 		config.WaitBlockCount, config.GasPrices,
@@ -158,7 +157,11 @@ func NewApp(
 		panic(err)
 	}
 
-	app.ProcessorDvsServer, err = processordvsserver.NewServer(
+	priceModule := dvs.NewAppModule(app.PriceServer)
+	priceModule.RegisterServices(app.GetMsgRouter())
+	priceModule.RegisterInterfaces(app.interfaceRegistry)
+
+	app.ProcessorServer, err = processorserver.NewServer(
 		app.logger, clientCtx, key, config.CosmosChainId,
 		config.CosmosWsEndpoint, config.GatewayAddr, config.OperatorAddr,
 		config.WaitBlockCount, config.GasPrices,
@@ -168,18 +171,9 @@ func NewApp(
 		panic(err)
 	}
 
-	// init dvsservermanager
-	dvsservermanager.InitDvsMsgHelper(app.appCodec)
-	app.PostProcessRequestServer = dvsservermanager.GetPostProcessRequestHandler()
-	app.ProcessRequestServer = dvsservermanager.GetProcessRequestHandler()
-
-	//dvs server manager
-	dvs.NewAppModule(app.DvsServer).RegisterServices()
-	dvstypes.RegisterInterfaces(app.interfaceRegistry)
-
-	// processor server
-	processordvs.NewAppModule(app.ProcessorDvsServer).RegisterServices()
-	processordvstypes.RegisterInterfaces(app.interfaceRegistry)
+	processorModule := processordvs.NewAppModule(app.ProcessorServer)
+	processorModule.RegisterServices(app.GetMsgRouter())
+	processorModule.RegisterInterfaces(app.interfaceRegistry)
 
 	return app
 }

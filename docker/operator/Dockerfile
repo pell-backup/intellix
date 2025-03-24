@@ -1,16 +1,18 @@
 FROM golang:1.23-bullseye AS build
 
-ARG GITHUB_TOKEN
 ARG HTTP_PROXY
 ARG HTTPS_PROXY
 
 ## Setup env
 WORKDIR /app
 
-ARG GITHUB_TOKEN
+# Setup git config
+RUN --mount=type=secret,id=github_token \
+    if [ ! -s /run/secrets/github_token ]; then echo "github token is not set via secrets" >&2; exit 1; fi; \
+    git config --global url."https://$(cat /run/secrets/github_token):x-oauth-basic@github.com/0xPellNetwork/".insteadOf "https://github.com/0xPellNetwork/" ; \
+    git config --global url."https://$(cat /run/secrets/github_token):x-oauth-basic@github.com/IntelliXLabs/".insteadOf "https://github.com/IntelliXLabs/"
+
 ARG PELLDVS_VERSION
-RUN if [ -z "$GITHUB_TOKEN" ]; then echo "GITHUB_TOKEN is not set" && exit 1; fi
-RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/0xPellNetwork".insteadOf "https://github.com/0xPellNetwork"
 RUN git clone https://github.com/0xPellNetwork/pelldvs.git --branch $PELLDVS_VERSION --depth 1
 
 ## Build pelldvs
@@ -18,8 +20,6 @@ WORKDIR /app/pelldvs
 RUN --mount=type=cache,target="/go/pkg/mod" \
     --mount=type=cache,target="/root/.cache/go-build" \
     make pelldvs-build
-
-RUN git config --global url."https://${GITHUB_TOKEN}:x-oauth-basic@github.com/IntelliXLabs".insteadOf "https://github.com/IntelliXLabs"
 
 ########## Build intellixd ##########
 ARG DEBUG_ENABLED

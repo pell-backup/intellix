@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"cosmossdk.io/math"
-	dvslog "github.com/0xPellNetwork/pelldvs-libs/log"
+	"github.com/0xPellNetwork/pelldvs-libs/log"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 	"github.com/cometbft/cometbft/libs/service"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -35,22 +35,22 @@ type TaskGateway struct {
 	serverAddr string
 	listener   net.Listener
 
-	cfg *TaskGatewayCfg
+	cfg *Config
 	ctx context.Context
 
-	logger     dvslog.Logger
+	logger     log.Logger
 	privateKey *keystore.Key
 
-	chainConnections map[int64]*ChainConnection
+	chainConnections map[uint64]*ChainConnection
 	taskMap          sync.Map
 	nonceMap         sync.Map
 }
 
-func NewTaskGateway(logger dvslog.Logger, ctx context.Context, cfg *TaskGatewayCfg) (*TaskGateway, error) {
-	chainConns := make(map[int64]*ChainConnection)
-
+func NewTaskGateway(logger log.Logger, ctx context.Context, cfg *Config) (*TaskGateway, error) {
+	logger = logger.With("comp", "gateway")
+	chainConns := make(map[uint64]*ChainConnection)
 	for chainID, chainCfg := range cfg.Chains {
-		ethClient, err := ethclient.Dial(chainCfg.EthEndpoint)
+		ethClient, err := ethclient.Dial(chainCfg.RPCURL)
 		if err != nil {
 			return nil, fmt.Errorf("failed to connect to chain %d: %v", chainID, err)
 		}
@@ -181,7 +181,7 @@ func (tg *TaskGateway) wrapSubmitToChain(ctx context.Context, request *RPCVoteFi
 }
 
 func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinalizedRequestIn) error {
-	chainConn, ok := tg.chainConnections[response.ChainID]
+	chainConn, ok := tg.chainConnections[uint64(response.ChainID)]
 	if !ok {
 		return fmt.Errorf("no connection found for chain ID %d", response.ChainID)
 	}
@@ -250,7 +250,7 @@ func (tg *TaskGateway) submitToChain(ctx context.Context, response *RPCVoteFinal
 	// set gas limit to 1000000 to bypass transaction pre-execution and force broadcast
 	// authOpts.GasLimit = 1000000
 
-	if conf, ok := tg.cfg.Chains[response.ChainID]; ok {
+	if conf, ok := tg.cfg.Chains[uint64(response.ChainID)]; ok {
 		if conf.GasLimit > 0 {
 			authOpts.GasLimit = conf.GasLimit
 		}

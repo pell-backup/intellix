@@ -1,4 +1,4 @@
-name: intellixlabs-intellix
+name: intellix-e2e
 
 services:
   hardhat:
@@ -8,10 +8,11 @@ services:
       args:
         - HTTP_PROXY=$HTTP_PROXY
         - HTTPS_PROXY=$HTTPS_PROXY
-        - GITHUB_TOKEN=$GITHUB_TOKEN
         - CONTRACT_VERSION=${CONTRACT_VERSION:-v0.4.4}
       tags:
-        - hardhat:${CONTRACT_VERSION:-v0.4.3}
+        - pellnetwork/intellix-e2e-hardhat:${CONTRACT_VERSION:-v0.4.4}
+      secrets:
+        - github_token
 
   pelldvs:
     build:
@@ -20,9 +21,10 @@ services:
       args:
         - HTTP_PROXY=$HTTP_PROXY
         - HTTPS_PROXY=$HTTPS_PROXY
-        - GITHUB_TOKEN=$GITHUB_TOKEN
         - PELLDVS_VERSION=${PELLDVS_VERSION:-v0.2.2}
-        - EMULATOR_VERSION=${EMULATOR_VERSION:-v0.1.1}
+        - EMULATOR_VERSION=${EMULATOR_VERSION:-v0.1.5}
+      secrets:
+        - github_token
 
   operator:
     build:
@@ -31,6 +33,11 @@ services:
       args:
         - HTTP_PROXY=$HTTP_PROXY
         - HTTPS_PROXY=$HTTPS_PROXY
-        - GITHUB_TOKEN=$GITHUB_TOKEN
         - PELLDVS_VERSION=${PELLDVS_VERSION:-v0.2.2}
         - DEBUG_ENABLED=${DEBUG_ENABLED:-false}
+      secrets:
+        - github_token
+
+secrets:
+  github_token:
+    environment: GITHUB_TOKEN

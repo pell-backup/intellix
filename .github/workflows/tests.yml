@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   tests:
-    runs-on: ubuntu-latest
+    runs-on: [ "self-hosted", "Linux", "X64", "ci" ]
     steps:
       - name: Setup new work dir
         id: setup_new_work_dir

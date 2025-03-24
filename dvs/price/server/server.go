@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	"github.com/0xPellNetwork/pelldvs-libs/log"
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 	cmttypes "github.com/cometbft/cometbft/types"
@@ -17,7 +18,6 @@ import (
 	"github.com/spf13/pflag"
 
 	taskgateway "intellix/gateway"
-	sdktypes "intellix/sdk/types"
 	"intellix/x/price/types"
 )
 
