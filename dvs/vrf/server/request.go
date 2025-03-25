@@ -14,9 +14,14 @@ import (
 	"intellix/dvs/vrf/types"
 )
 
+// HandleVRFRandomNumberRequest handles the VRF random number request
+// It verifies the VRF proof and returns the random number
+// The random number is truncated to 255 bits to ensure it is within the defined range
+// The random number is then returned in the response
 func (s *Server) HandleVRFRandomNumberRequest(ctx context.Context, request *types.VRFTaskRequest) (*types.VRFTaskResponse, error) {
 	s.logger.Info("HandleVRFRandomNumberRequest", "in", fmt.Sprintf("%+v", request))
 
+	// Decode the public key from config
 	pubKeyStr := strings.TrimPrefix(s.eccKeyPair.ECCPublicKey, "0x")
 	pubKeyBuf, err := hex.DecodeString(pubKeyStr)
 	if err != nil {
@@ -24,14 +29,17 @@ func (s *Server) HandleVRFRandomNumberRequest(ctx context.Context, request *type
 		return nil, fmt.Errorf("Failed to decode public key")
 	}
 
+	// Deserialize the public key
 	pubKey, err := keypair.DeserializePublicKey(pubKeyBuf)
 	if err != nil {
 		s.logger.Error("Failed to deserialize public key", "error", err)
 		return nil, err
 	}
 
+	// Verify the VRF proof and return the random number
 	var randomNumbers []math.Int
 	for _, v := range request.VrfData {
+		// Verify the VRF proof
 		verified, err := common.VerifyVRF(pubKey, request.TaskMetadata, v.VrfValue, v.VrfProof)
 		if err != nil {
 			s.logger.Error("Failed to verify VRF", "error", err)

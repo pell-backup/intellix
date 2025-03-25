@@ -18,6 +18,7 @@ import (
 	"intellix/gateway/types"
 )
 
+// Submitter is the service that submits the task response to the chain
 func (s *Submitter) RespondToTask(req *types.RPCVoteFinalizedRequestIn, resp *types.RespondToTaskResponse) error {
 	err := s.handleTaskResponse(context.Background(), req)
 	if err != nil {
@@ -28,6 +29,7 @@ func (s *Submitter) RespondToTask(req *types.RPCVoteFinalizedRequestIn, resp *ty
 	return nil
 }
 
+// handleTaskResponse handles the task response
 func (s *Submitter) handleTaskResponse(ctx context.Context, response *types.RPCVoteFinalizedRequestIn) error {
 	value, loaded := s.taskMap.LoadOrStore(response.TaskRaw.TaskIndex, response)
 	if loaded {
@@ -42,11 +44,13 @@ func (s *Submitter) handleTaskResponse(ctx context.Context, response *types.RPCV
 	return nil
 }
 
+// shouldReplaceTaskResponse checks if the task response should be replaced
 func (s *Submitter) shouldReplaceTaskResponse(ctx context.Context, existing, new *types.RPCVoteFinalizedRequestIn) bool {
 	// TODO: add security threshold comparison
 	return false
 }
 
+// wrapTaskSubmitToChain wraps the task submit to chain
 func (s *Submitter) wrapTaskSubmitToChain(ctx context.Context, request *types.RPCVoteFinalizedRequestIn) error {
 	var wg = &sync.WaitGroup{}
 	wg.Add(1)
@@ -65,6 +69,7 @@ func (s *Submitter) wrapTaskSubmitToChain(ctx context.Context, request *types.RP
 	return err
 }
 
+// submitTaskResultToChain submits the task result to the chain
 func (s *Submitter) submitTaskResultToChain(ctx context.Context, response *types.RPCVoteFinalizedRequestIn) error {
 	chainConn, ok := s.chainConnections[uint64(response.ChainID)]
 	if !ok {
@@ -162,6 +167,7 @@ func (s *Submitter) submitTaskResultToChain(ctx context.Context, response *types
 	return nil
 }
 
+// getAuthOpts creates a transaction authenticator
 func (s *Submitter) getAuthOpts(chainId int64) (*bind.TransactOpts, error) {
 	// Create transaction authenticator
 	auth, err := bind.NewKeyedTransactorWithChainID(s.privateKey.PrivateKey, big.NewInt(chainId))
@@ -173,6 +179,7 @@ func (s *Submitter) getAuthOpts(chainId int64) (*bind.TransactOpts, error) {
 	return auth, nil
 }
 
+// queryTransactionResult queries the transaction result
 func (s *Submitter) queryTransactionResult(ctx context.Context, tx *ethtypes.Transaction, ethClient *ethclient.Client) error {
 	s.logger.Info("Transaction submitted", "txHash", tx.Hash().Hex())
 

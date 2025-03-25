@@ -15,6 +15,7 @@ import (
 	gateway "intellix/gateway/types"
 )
 
+// DVSResponsHandler handles the response from the DVS
 func (s *Server) DVSResponsHandler(ctx context.Context, in *types.VRFTaskRequest) (*types.DVSResultResponse, error) {
 	s.logger.Info("DVSResponsHandler", "TaskIndex", in.TaskMetadata.TaskIndex, "TaskMetadata", fmt.Sprintf("%+v", in.TaskMetadata))
 	pkgCtx := sdktypes.UnwrapContext(ctx)
@@ -48,6 +49,7 @@ func (s *Server) DVSResponsHandler(ctx context.Context, in *types.VRFTaskRequest
 	return &types.DVSResultResponse{}, nil
 }
 
+// sendResponseToGateway sends the response to the gateway
 func (d *Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.VRFTaskRequest,
 	validatedData *dvstypes.RequestPostRequestValidatedData, taskResp *contractdataoracle.IDataOracleTaskResponse) error {
 

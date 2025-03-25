@@ -16,6 +16,7 @@ import (
 	"intellix/gateway/types"
 )
 
+// taskGatewayCommand returns the cobra command for starting the Submitter service
 func taskGatewayCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "start-task-gateway",

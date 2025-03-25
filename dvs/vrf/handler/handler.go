@@ -18,6 +18,7 @@ func NewVRFResultHandler() *VRFResultHandler {
 	return &VRFResultHandler{}
 }
 
+// getAbiEncodeData returns the abi-encoded data for the given message
 func (p *VRFResultHandler) getAbiEncodeData(msg proto.Message) ([]byte, error) {
 	r, ok := msg.(*types.VRFTaskResponse)
 	if !ok {
@@ -58,10 +59,12 @@ func (p *VRFResultHandler) getAbiEncodeData(msg proto.Message) ([]byte, error) {
 	return dvs.AbiEncodeResponseTaskParam(r.TaskIndex, packedArgsOnly)
 }
 
+// GetData returns the abi-encoded data for the given message
 func (p *VRFResultHandler) GetData(msg proto.Message) ([]byte, error) {
 	return p.getAbiEncodeData(msg)
 }
 
+// GetDigest returns the digest for the given message
 func (p *VRFResultHandler) GetDigest(msg proto.Message) ([]byte, error) {
 	data, err := p.getAbiEncodeData(msg)
 	if err != nil {

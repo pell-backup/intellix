@@ -22,6 +22,7 @@ import (
 	"intellix/dvs/vrf/types"
 )
 
+// Dispatcher listens for new tasks on a chain and dispatches them to the appropriate DVS operators
 func (d *Dispatcher) listenForNewTasks(chain *chainWatcher) {
 	d.logger.Info("Starting task listener", "chainID", chain.chainID)
 
@@ -46,6 +47,7 @@ func (d *Dispatcher) listenForNewTasks(chain *chainWatcher) {
 	}
 }
 
+// handleNewTask handles a new task event
 func (d *Dispatcher) handleNewTask(chainID uint64, newTask *contractdataoracle.ContractDataOracleNewTaskCreated) {
 	d.logger.Info("New task created",
 		"chainID", chainID,
@@ -66,6 +68,7 @@ func (d *Dispatcher) handleNewTask(chainID uint64, newTask *contractdataoracle.C
 	}
 }
 
+// serializeTaskByType serializes a task based on its type
 func (d *Dispatcher) serializeTaskByType(chainID uint64, task *contractdataoracle.ContractDataOracleNewTaskCreated) ([]byte, error) {
 	d.logger.Info("Serializing task by type",
 		"chainID", chainID,
@@ -98,6 +101,7 @@ func (d *Dispatcher) serializeTaskByType(chainID uint64, task *contractdataoracl
 	return d.msgEncoder.EncodeMsgs(taskRequest)
 }
 
+// serializePriceTask serializes a price task
 func (d *Dispatcher) serializePriceTask(chainID uint64, newTask *contractdataoracle.ContractDataOracleNewTaskCreated) (sdk.Msg, error) {
 	task := newTask.Task
 	priceFeed, err := ParsePriceFeed(task.RequestData)
@@ -127,6 +131,7 @@ func (d *Dispatcher) serializePriceTask(chainID uint64, newTask *contractdataora
 	return taskRequest, nil
 }
 
+// serializeScriptTask serializes a script task
 func (d *Dispatcher) serializeScriptTask(chainID uint64, newTask *contractdataoracle.ContractDataOracleNewTaskCreated) (sdk.Msg, error) {
 	task := newTask.Task
 	scriptData, err := ParseScript(task.RequestData)
@@ -152,6 +157,7 @@ func (d *Dispatcher) serializeScriptTask(chainID uint64, newTask *contractdataor
 	return taskRequest, nil
 }
 
+// serializeVRFTask serializes a VRF task
 func (d *Dispatcher) serializeVRFTask(chainID uint64, newTask *contractdataoracle.ContractDataOracleNewTaskCreated) (sdk.Msg, error) {
 	task := newTask.Task
 	param, err := ParseVRFTaskParam(task.RequestData)
@@ -160,13 +166,14 @@ func (d *Dispatcher) serializeVRFTask(chainID uint64, newTask *contractdataoracl
 		return nil, err
 	}
 
-	// Gnerate random number
+	// Decode private key
 	privKeyStr := strings.TrimPrefix(d.config.ECCKeyPair.ECCPrivateKey, "0x")
 	priKeyBuf, err := hex.DecodeString(privKeyStr)
 	if err != nil {
 		d.logger.Error("Failed to decode private key", "error", err)
 	}
 
+	// Deserialize private key
 	priKey, err := keypair.DeserializePrivateKey(priKeyBuf)
 	if err != nil {
 		d.logger.Error("Failed to deserialize private key", "error", err)
@@ -190,11 +197,14 @@ func (d *Dispatcher) serializeVRFTask(chainID uint64, newTask *contractdataoracl
 	}
 
 	for i := 0; i < int(param.NumWords); i++ {
+		// Generate VRF by task metadata
 		vrfValue, vrfProof, err := common.ComputeVRF(priKey, taskMetadata)
 		if err != nil {
 			d.logger.Error("Failed to generate VRF", "error", err)
 			return nil, err
 		}
+
+		// Append VRF data
 		vrfData = append(vrfData, &types.VRFData{
 			VrfValue: vrfValue,
 			VrfProof: vrfProof,

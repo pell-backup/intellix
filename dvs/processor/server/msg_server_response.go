@@ -66,6 +66,7 @@ func (r Server) responseToTask(ctx sdktypes.Context, in *types.RequestScriptIn, 
 		nonSignerStakeIndices = append(nonSignerStakeIndices, v.NonSignerStakeIndice)
 	}
 
+	// send to gateway
 	return r.taskGatewayClient.RespondToDataOracleTask(&taskgateway.RPCVoteFinalizedRequestIn{
 		ChainID: ctx.ChainID(),
 		TaskRaw: &taskgateway.RPCTaskRaw{

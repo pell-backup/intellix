@@ -82,6 +82,7 @@ func (d Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.RequestPr
 		nonSignerStakeIndices[i] = indices.NonSignerStakeIndice
 	}
 
+	// send to gateway
 	req := &gateway.RPCVoteFinalizedRequestIn{
 		ChainID: ctx.ChainID(),
 		TaskRaw: &gateway.RPCTaskRaw{
