@@ -149,8 +149,9 @@ func NewApp(
 
 	app.PriceServer, err = priceserver.NewServer(
 		app.logger, clientCtx, key, config.CosmosChainId,
-		config.GatewayAddr, config.OperatorAddr,
-		config.WaitBlockCount, config.GasPrices, config.GasAdjustment, config.PriceTickConverterConfig,
+		config.CosmosWsEndpoint, config.GatewayAddr, config.OperatorAddr,
+		config.WaitBlockCount, config.GasPrices,
+		config.BlsKeyPath, config.BlsKeyPassword, config.GasAdjustment, config.PriceTickConverterConfig,
 	)
 	if err != nil {
 		panic(err)
@@ -162,8 +163,9 @@ func NewApp(
 
 	app.ProcessorServer, err = processorserver.NewServer(
 		app.logger, clientCtx, key, config.CosmosChainId,
-		config.GatewayAddr, config.OperatorAddr,
-		config.WaitBlockCount, config.GasPrices, config.GasAdjustment,
+		config.CosmosWsEndpoint, config.GatewayAddr, config.OperatorAddr,
+		config.WaitBlockCount, config.GasPrices,
+		config.BlsKeyPath, config.BlsKeyPassword, config.GasAdjustment,
 	)
 	if err != nil {
 		panic(err)

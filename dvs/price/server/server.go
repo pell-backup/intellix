@@ -3,9 +3,11 @@ package server
 import (
 	"context"
 	"fmt"
+	"intellix/x/processor/types"
 
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	"github.com/0xPellNetwork/pelldvs-libs/log"
+	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -15,9 +17,9 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/spf13/pflag"
-
 	taskgateway "intellix/gateway"
-	"intellix/x/price/types"
+	tx_listener "intellix/pkg/x_listener"
+	pricetypes "intellix/x/price/types"
 )
 
 type Server struct {
@@ -26,12 +28,15 @@ type Server struct {
 	cosmosChainId string
 	key           *keyring.Record
 
+	wsEndpoint      string
 	operatorAddress string
 	gasPrices       string
 	gasAdjustment   float64
 	waitBlockCount  int64 // price feed wait block count
+	blsKeyPair      *bls.KeyPair
 
 	taskGatewayClient   *taskgateway.Client
+	PriceListener       tx_listener.ChainListenerIFace[string, *pricetypes.MsgVoteRequestPriceFeed, *pricetypes.MsgVoteRequestPriceFeed]
 	tickConverterConfig map[string]map[string]string
 }
 
@@ -41,9 +46,11 @@ func NewServer(
 	key *keyring.Record,
 	cosmosChainId string,
 
+	wsEndpoint string,
 	gatewayAddr string,
 	operatorAddress string,
 	waitBlockCount int64,
+	blsKeyPath, blsKeyPassword string,
 
 	gasPrices string,
 	gasAdjustment float64,
@@ -65,6 +72,7 @@ func NewServer(
 		key:           key,
 		cosmosChainId: cosmosChainId,
 
+		wsEndpoint:          wsEndpoint,
 		operatorAddress:     operatorAddress,
 		waitBlockCount:      waitBlockCount,
 		gasPrices:           gasPrices,
@@ -85,6 +93,14 @@ func NewServer(
 		return Server{}, err
 	}
 	k.taskGatewayClient = taskGatewayClient
+
+	k.PriceListener = tx_listener.NewChainListener(
+		k.logger, k.clientCtx,
+		k.wsEndpoint,
+		"tm.event='Tx' AND eventType='finalized_price_feed'", 1000,
+		k.PriceEventHandler, k.PriceBlockHandler, k.PriceMempoolEventHandler,
+	)
+	k.PriceListener.Start()
 
 	return k, nil
 }
@@ -146,7 +162,7 @@ func (k *Server) SignAndBroadcastTx(ctx sdktypes.Context, msg sdk.Msg) error {
 
 	address, err := k.key.GetAddress()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get address: %w", err)
 	}
 	execMsg := authz.NewMsgExec(address, []sdk.Msg{msg})
 

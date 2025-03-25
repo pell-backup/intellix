@@ -3,10 +3,12 @@ package app
 import (
 	"context"
 	"cosmossdk.io/log"
+	"encoding/json"
 	"fmt"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/mempool"
 	"github.com/gorilla/websocket"
+	"google.golang.org/protobuf/encoding/protojson"
 	"net/http"
 )
 
@@ -14,11 +16,11 @@ var _ mempool.ExtMempool = (*WsEventMempool)(nil)
 
 // WsEventMempool implements the mempool.ExtMempool interface and embeds a WebSocket hub
 type WsEventMempool struct {
-	hub    *Hub
+	hub    *MempoolEventHub
 	logger log.Logger
 }
 
-func NewWsEventMempool(hub *Hub, logger log.Logger) *WsEventMempool {
+func NewWsEventMempool(hub *MempoolEventHub, logger log.Logger) *WsEventMempool {
 	return &WsEventMempool{
 		hub:    hub,
 		logger: logger,
@@ -36,8 +38,23 @@ func (m *WsEventMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 		return err
 	}
 
+	var jsonMsgs []json.RawMessage
+	for _, msg := range msgs {
+		b, err := protojson.Marshal(msg)
+		if err != nil {
+			return err
+		}
+		jsonMsgs = append(jsonMsgs, b)
+	}
+
+	// Marshal the messages to JSON
+	jsonBytes, err := json.Marshal(jsonMsgs)
+	if err != nil {
+		return err
+	}
+
 	// Broadcast the event message to all connected WebSocket clients
-	m.hub.broadcast <- []byte(fmt.Sprint(msgs))
+	m.hub.broadcast <- jsonBytes
 
 	// Return an error or nil based on business logic
 	return nil
@@ -50,28 +67,28 @@ func (WsEventMempool) SelectBy(context.Context, [][]byte, func(sdk.Tx) bool) {}
 func (WsEventMempool) CountTx() int                                          { return 0 }
 func (WsEventMempool) Remove(sdk.Tx) error                                   { return nil }
 
-// -------------------- WebSocket hub & Client implementation --------------------
+// -------------------- WebSocket hub & MempoolWSClient implementation --------------------
 
-// Hub manages all WebSocket client connections and handles broadcast messages.
-type Hub struct {
-	clients    map[*Client]bool
+// MempoolEventHub manages all WebSocket client connections and handles broadcast messages.
+type MempoolEventHub struct {
+	clients    map[*MempoolWSClient]bool
 	broadcast  chan []byte
-	register   chan *Client
-	unregister chan *Client
+	register   chan *MempoolWSClient
+	unregister chan *MempoolWSClient
 }
 
-// NewHub initializes and returns a new Hub instance.
-func NewHub() *Hub {
-	return &Hub{
-		clients:    make(map[*Client]bool),
+// NewMempoolEventHub initializes and returns a new MempoolEventHub instance.
+func NewMempoolEventHub() *MempoolEventHub {
+	return &MempoolEventHub{
+		clients:    make(map[*MempoolWSClient]bool),
 		broadcast:  make(chan []byte),
-		register:   make(chan *Client),
-		unregister: make(chan *Client),
+		register:   make(chan *MempoolWSClient),
+		unregister: make(chan *MempoolWSClient),
 	}
 }
 
 // run continuously handles client registration, unregistration, and broadcasting messages.
-func (h *Hub) run() {
+func (h *MempoolEventHub) run() {
 	for {
 		select {
 		case client := <-h.register:
@@ -94,16 +111,16 @@ func (h *Hub) run() {
 	}
 }
 
-// Client represents a WebSocket client connection.
-type Client struct {
-	hub  *Hub
+// MempoolWSClient represents a WebSocket client connection.
+type MempoolWSClient struct {
+	hub  *MempoolEventHub
 	conn *websocket.Conn
 	send chan []byte
 }
 
 // readPump handles incoming messages from the WebSocket connection.
 // In this example, it simply reads messages and unregisters the client on error.
-func (c *Client) readPump() {
+func (c *MempoolWSClient) readPump() {
 	defer func() {
 		c.hub.unregister <- c
 		c.conn.Close()
@@ -117,7 +134,7 @@ func (c *Client) readPump() {
 }
 
 // writePump sends messages from the hub to the WebSocket client.
-func (c *Client) writePump() {
+func (c *MempoolWSClient) writePump() {
 	for {
 		select {
 		case message, ok := <-c.send:
@@ -138,14 +155,14 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-// serveWs upgrades the HTTP connection to a WebSocket connection and creates a new Client.
-func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
+// serveMempoolEventWs upgrades the HTTP connection to a WebSocket connection and creates a new MempoolWSClient.
+func serveMempoolEventWs(hub *MempoolEventHub, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Println("Upgrade error:", err)
 		return
 	}
-	client := &Client{
+	client := &MempoolWSClient{
 		hub:  hub,
 		conn: conn,
 		send: make(chan []byte, 256),

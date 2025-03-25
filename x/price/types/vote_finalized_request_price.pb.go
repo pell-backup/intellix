@@ -12,7 +12,6 @@ import (
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
 	_ "intellix/dvs/price/types"
-	_ "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types"
 	io "io"
 	math "math"
 	math_bits "math/bits"

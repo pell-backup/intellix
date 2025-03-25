@@ -26,6 +26,7 @@ func (k msgServer) VoteRequestProcessor(goCtx context.Context, req *types.MsgVot
 		sdk.NewEvent(
 			types.EventTypeVoteRequestProcessor,
 			sdk.NewAttribute(types.AttributeKeyTaskIndex, fmt.Sprintf("%d", req.TaskIndex)),
+			sdk.NewAttribute(types.AttributeKeyOperatorId, req.OperatorId),
 			sdk.NewAttribute(types.AttributeKeyRequestId, string(req.RequestId)),
 		),
 	)
@@ -60,7 +61,7 @@ func (k msgServer) saveMsgVoteRequestProcessor(ctx sdk.Context, msg *types.MsgVo
 		return errorsmod.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
 
-	if err := store.Set(types.MsgVoteRequestProcessorKey(msg.TaskIndex, msg.RequestId), data); err != nil {
+	if err := store.Set(types.MsgVoteRequestProcessorKey(msg.RequestId, msg.OperatorId), data); err != nil {
 		return errorsmod.Wrap(sdkerrors.ErrIO, err.Error())
 	}
 	return nil

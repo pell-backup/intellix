@@ -3,9 +3,12 @@ package server
 import (
 	"context"
 	"fmt"
+	tx_listener "intellix/pkg/x_listener"
+	processortypes "intellix/x/processor/types"
 
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	"github.com/0xPellNetwork/pelldvs-libs/log"
+	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/tx"
@@ -15,7 +18,6 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/spf13/pflag"
-
 	"intellix/dvs/processor/types"
 	taskgateway "intellix/gateway"
 )
@@ -30,10 +32,14 @@ type Server struct {
 
 	taskGatewayClient *taskgateway.Client
 
+	wsEndpoint      string
 	operatorAddress string
 	gasPrices       string
 	gasAdjustment   float64
 	waitBlockCount  int64 // price feed wait block count
+	blsKeyPair      *bls.KeyPair
+
+	ProcessorListener tx_listener.ChainListenerIFace[string, *processortypes.MsgVoteRequestProcessor, *processortypes.MsgVoteRequestProcessor]
 }
 
 func NewServer(
@@ -42,9 +48,11 @@ func NewServer(
 	key *keyring.Record,
 	cosmosChainId string,
 
+	wsEndpoint string,
 	gatewayAddr string,
 	operatorAddress string,
 	waitBlockCount int64,
+	blsKeyPath, blsKeyPassword string,
 
 	gasPrices string,
 	gasAdjustment float64,
@@ -65,10 +73,19 @@ func NewServer(
 		key:           key,
 		cosmosChainId: cosmosChainId,
 
+		wsEndpoint:      wsEndpoint,
 		operatorAddress: operatorAddress,
 		waitBlockCount:  waitBlockCount,
 		gasPrices:       gasPrices,
 		gasAdjustment:   gasAdjustment,
+	}
+
+	if blsKeyPath != "" && blsKeyPassword != "" {
+		var err error
+		k.blsKeyPair, err = bls.ReadPrivateKeyFromFile(blsKeyPath, blsKeyPassword)
+		if err != nil {
+			return Server{}, fmt.Errorf("failed to load BLS key pair: %w", err)
+		}
 	}
 
 	if operatorAddress != "" {
@@ -84,6 +101,15 @@ func NewServer(
 		return Server{}, err
 	}
 	k.taskGatewayClient = taskGatewayClient
+
+	// Processor event listener
+	//k.ProcessorListener = tx_listener.NewChainListener(
+	//	k.logger, k.clientCtx,
+	//	k.wsEndpoint,
+	//	"tm.event='Tx' AND eventType='vote_request_processor'", 1000,
+	//	k.ProcessorEventHandler, k.ProcessorBlockHandler, k.PriceMempoolEventHandler,
+	//)
+	//k.ProcessorListener.Start()
 
 	return k, nil
 }

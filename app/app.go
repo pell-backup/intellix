@@ -276,15 +276,18 @@ func New(
 	app.RegisterUpgradeHandlers()
 
 	// Set the WsEventMempool as the mempool
-	hub := NewHub()
+	hub := NewMempoolEventHub()
 	go hub.run()
+
 	mempool := NewWsEventMempool(hub, logger)
 	app.SetMempool(mempool)
 
 	// Start the WebSocket endpoint
+	// TODO: use the server config to set the port
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		serveWs(hub, w, r)
+		serveMempoolEventWs(hub, w, r)
 	})
+
 	// Start the HTTP server on port 9999
 	go func() {
 		// TODO: use the server config to set the port

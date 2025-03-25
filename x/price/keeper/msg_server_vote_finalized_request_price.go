@@ -46,7 +46,7 @@ func (k msgServer) saveFinalizedRequestPrice(ctx sdk.Context, msg *types.MsgVote
 		return errorsmod.Wrap(sdkerrors.ErrJSONMarshal, err.Error())
 	}
 
-	if err := store.Set(types.FinalizedRequestPrice(msg.TaskIndex), data); err != nil {
+	if err := store.Set(types.FinalizedRequestPrice(msg.RequestId), data); err != nil {
 		return errorsmod.Wrap(sdkerrors.ErrIO, err.Error())
 	}
 	return nil

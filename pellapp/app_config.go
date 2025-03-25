@@ -9,11 +9,15 @@ import (
 type AppConfig struct {
 	DvsConfig *dvsconfig.Config `mapstructure:"-"`
 
-	RootDir       string `mapstructure:"root_dir"`
-	GatewayAddr   string `mapstructure:"gateway_addr"`
-	OperatorAddr  string `mapstructure:"operator_address"`
-	CosmosNodeUri string `mapstructure:"cosmos_node_uri"`
-	CosmosChainId string `mapstructure:"cosmos_chain_id"`
+	RootDir          string `mapstructure:"root_dir"`
+	GatewayAddr      string `mapstructure:"gateway_addr"`
+	OperatorAddr     string `mapstructure:"operator_address"`
+	CosmosNodeUri    string `mapstructure:"cosmos_node_uri"`
+	CosmosWsEndpoint string `mapstructure:"cosmos_ws_endpoint"`
+	CosmosChainId    string `mapstructure:"cosmos_chain_id"`
+
+	BlsKeyPath     string `mapstructure:"bls_key_path"`
+	BlsKeyPassword string `mapstructure:"bls_key_password"`
 
 	WaitBlockCount int64   `mapstructure:"wait_block_count"`
 	GasPrices      string  `mapstructure:"gas_prices"`

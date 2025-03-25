@@ -1,7 +1,5 @@
 package types
 
-import "fmt"
-
 const (
 	// ModuleName defines the module name
 	ModuleName = "price"
@@ -30,13 +28,13 @@ func KeyPrefix(p string) []byte {
 	return []byte(p)
 }
 
-func PriceFeedVoteKey(taskIndex uint32, operatorId string) []byte {
+func PriceFeedVoteKey(requestId []byte, operatorId string) []byte {
 	return append(
-		append(KeyPrefix(PriceFeedVoteKeyPrefix), []byte(fmt.Sprintf("%d", taskIndex))...),
+		append(KeyPrefix(PriceFeedVoteKeyPrefix), requestId...),
 		[]byte(operatorId)...,
 	)
 }
 
-func FinalizedRequestPrice(taskIndex uint32) []byte {
-	return append(KeyPrefix(FinalizedPriceFeedKeyPrefix), []byte(fmt.Sprintf("%d", taskIndex))...)
+func FinalizedRequestPrice(requestId []byte) []byte {
+	return append(KeyPrefix(FinalizedPriceFeedKeyPrefix), requestId...)
 }
