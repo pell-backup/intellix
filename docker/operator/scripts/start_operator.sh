@@ -28,6 +28,7 @@ function load_defaults {
 
   export COINMARKETCAP_API_KEY=${COINMARKETCAP_API_KEY:-""}
   export API_KEYS_PATH=${API_KEYS_PATH:-"/root/.intellix/api_keys"}
+  export WS_MEMPOOL_ENDPOINT=${WS_MEMPOOL_ENDPOINT:-"ws://abci:9999/ws"}
 }
 
 function dvs_healthcheck {
@@ -111,15 +112,16 @@ function setup_operator_config {
     "coinmarketcap": {
       "USD": "USD"
     }
-  }
+  },
+  "ws_mempool_endpoint": "$WS_MEMPOOL_ENDPOINT",
 }
 EOF
 
   logt "Operator config created:"
-  
+
   # set coinmarketcap api key
   COINMARKETCAP_API_KEY=$(echo $COINMARKETCAP_API_KEY | sed 's/^"\(.*\)"$/\1/')
-  
+
   mkdir -p "$API_KEYS_PATH"
   if [ -n "$COINMARKETCAP_API_KEY" ]; then
     echo "$COINMARKETCAP_API_KEY" > "$API_KEYS_PATH/coinmarketcap.key"
@@ -127,7 +129,7 @@ EOF
   else
     logt "No CoinMarketCap API key provided"
   fi
-  
+
   logt "API keys path: $API_KEYS_PATH"
 }
 
