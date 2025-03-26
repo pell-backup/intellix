@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"intellix/x/processor/types"
 
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	"github.com/0xPellNetwork/pelldvs-libs/log"
@@ -17,9 +16,11 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/spf13/pflag"
+
 	taskgateway "intellix/gateway"
 	tx_listener "intellix/pkg/x_listener"
 	pricetypes "intellix/x/price/types"
+	"intellix/x/processor/types"
 )
 
 type Server struct {

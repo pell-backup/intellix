@@ -4,20 +4,20 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
-	cmttypes "github.com/cometbft/cometbft/types"
-	pkgutils "intellix/pkg/utils"
-	pricetypes "intellix/x/price/types"
 	"sort"
 	"sync"
 	"time"
 
 	"cosmossdk.io/math"
+	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
+	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/gogoproto/proto"
 
 	"intellix/dvs/price/types"
+	pkgutils "intellix/pkg/utils"
 	tx_listener "intellix/pkg/x_listener"
+	pricetypes "intellix/x/price/types"
 )
 
 func (d Server) RequestPriceFeed(ctx context.Context, request *types.RequestPriceFeedIn) (*types.RequestPriceFeedOut, error) {

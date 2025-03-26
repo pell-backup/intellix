@@ -2,12 +2,13 @@ package tx_listener
 
 import (
 	"context"
-	pricetypes "intellix/x/price/types"
-	processortypes "intellix/x/processor/types"
 	"time"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmttypes "github.com/cometbft/cometbft/types"
+
+	pricetypes "intellix/x/price/types"
+	processortypes "intellix/x/processor/types"
 )
 
 type EventHandler[K comparable, T any] func(ctx context.Context, event abci.Event) (K, T, error)

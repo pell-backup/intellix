@@ -2,14 +2,15 @@ package app
 
 import (
 	"context"
-	"cosmossdk.io/log"
 	"encoding/json"
 	"fmt"
+	"net/http"
+
+	"cosmossdk.io/log"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/mempool"
 	"github.com/gorilla/websocket"
 	"google.golang.org/protobuf/encoding/protojson"
-	"net/http"
 )
 
 var _ mempool.ExtMempool = (*WsEventMempool)(nil)
@@ -62,10 +63,13 @@ func (m *WsEventMempool) Insert(ctx context.Context, tx sdk.Tx) error {
 
 // Other interface methods can be implemented as needed
 
-func (WsEventMempool) Select(context.Context, [][]byte) mempool.Iterator     { return nil }
+func (WsEventMempool) Select(context.Context, [][]byte) mempool.Iterator { return nil }
+
 func (WsEventMempool) SelectBy(context.Context, [][]byte, func(sdk.Tx) bool) {}
-func (WsEventMempool) CountTx() int                                          { return 0 }
-func (WsEventMempool) Remove(sdk.Tx) error                                   { return nil }
+
+func (WsEventMempool) CountTx() int { return 0 }
+
+func (WsEventMempool) Remove(sdk.Tx) error { return nil }
 
 // -------------------- WebSocket hub & MempoolWSClient implementation --------------------
 

@@ -3,8 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	tx_listener "intellix/pkg/x_listener"
-	processortypes "intellix/x/processor/types"
 
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	"github.com/0xPellNetwork/pelldvs-libs/log"
@@ -18,8 +16,11 @@ import (
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
 	"github.com/spf13/pflag"
+
 	"intellix/dvs/processor/types"
 	taskgateway "intellix/gateway"
+	tx_listener "intellix/pkg/x_listener"
+	processortypes "intellix/x/processor/types"
 )
 
 var _ types.DVSRequestServer = Server{}

@@ -1,6 +1,9 @@
 package app
 
 import (
+	"io"
+	"net/http"
+
 	_ "cosmossdk.io/api/cosmos/tx/config/v1" // import for side-effects
 	clienthelpers "cosmossdk.io/client/v2/helpers"
 	"cosmossdk.io/depinject"
@@ -75,8 +78,6 @@ import (
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	"github.com/spf13/viper"
-	"io"
-	"net/http"
 
 	"intellix/docs"
 	pricemodulekeeper "intellix/x/price/keeper"

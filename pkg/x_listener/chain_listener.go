@@ -3,18 +3,19 @@ package tx_listener
 import (
 	"context"
 	"encoding/json"
-	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/gorilla/websocket"
-	"intellix/x/price/types"
-	processortypes "intellix/x/processor/types"
 	"sync"
 	"time"
 
 	"github.com/0xPellNetwork/pelldvs-libs/log"
+	abci "github.com/cometbft/cometbft/abci/types"
 	tmclient "github.com/cometbft/cometbft/rpc/client/http"
 	tmctypes "github.com/cometbft/cometbft/rpc/core/types"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/gorilla/websocket"
+
+	"intellix/x/price/types"
+	processortypes "intellix/x/processor/types"
 )
 
 type ChainListenerIFace[K comparable, E any, B any] interface {
