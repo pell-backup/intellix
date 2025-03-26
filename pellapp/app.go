@@ -149,7 +149,7 @@ func NewApp(
 
 	app.PriceServer, err = priceserver.NewServer(
 		app.logger, clientCtx, key, config.CosmosChainId,
-		config.CosmosWsEndpoint, config.GatewayAddr, config.OperatorAddr,
+		config.CosmosWsEndpoint, config.WsMempoolEndpoint, config.GatewayAddr, config.OperatorAddr,
 		config.WaitBlockCount, config.GasPrices,
 		config.BlsKeyPath, config.BlsKeyPassword, config.GasAdjustment, config.PriceTickConverterConfig,
 	)
@@ -163,7 +163,7 @@ func NewApp(
 
 	app.ProcessorServer, err = processorserver.NewServer(
 		app.logger, clientCtx, key, config.CosmosChainId,
-		config.CosmosWsEndpoint, config.GatewayAddr, config.OperatorAddr,
+		config.CosmosWsEndpoint, config.WsMempoolEndpoint, config.GatewayAddr, config.OperatorAddr,
 		config.WaitBlockCount, config.GasPrices,
 		config.BlsKeyPath, config.BlsKeyPassword, config.GasAdjustment,
 	)

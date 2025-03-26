@@ -74,6 +74,7 @@ import (
 	ibcfeekeeper "github.com/cosmos/ibc-go/v8/modules/apps/29-fee/keeper"
 	ibctransferkeeper "github.com/cosmos/ibc-go/v8/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+	"github.com/spf13/viper"
 	"io"
 	"net/http"
 
@@ -283,16 +284,28 @@ func New(
 	app.SetMempool(mempool)
 
 	// Start the WebSocket endpoint
-	// TODO: use the server config to set the port
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		serveMempoolEventWs(hub, w, r)
 	})
 
-	// Start the HTTP server on port 9999
+	// Start the ws event mempool server
 	go func() {
-		// TODO: use the server config to set the port
-		if err := http.ListenAndServe(":9999", nil); err != nil {
-			logger.Error(err.Error())
+		// Set the port from the environment variable
+		const envPortKey = "WS_EVENT_MEMPOOL_PORT"
+		if err := viper.BindEnv(envPortKey); err != nil {
+			logger.Error("failed to bind environment variable", "error", err)
+		}
+
+		port := viper.GetString(envPortKey)
+		if port == "" {
+			port = "9999"
+		}
+
+		addr := ":" + port
+		logger.Info("Starting HTTP server", "address", addr)
+
+		if err := http.ListenAndServe(addr, nil); err != nil {
+			logger.Error("HTTP server failed", "error", err)
 		}
 	}()
 

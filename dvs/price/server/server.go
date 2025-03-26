@@ -28,12 +28,13 @@ type Server struct {
 	cosmosChainId string
 	key           *keyring.Record
 
-	wsEndpoint      string
-	operatorAddress string
-	gasPrices       string
-	gasAdjustment   float64
-	waitBlockCount  int64 // price feed wait block count
-	blsKeyPair      *bls.KeyPair
+	wsEndpoint        string
+	wsMempoolEndpoint string
+	operatorAddress   string
+	gasPrices         string
+	gasAdjustment     float64
+	waitBlockCount    int64 // price feed wait block count
+	blsKeyPair        *bls.KeyPair
 
 	taskGatewayClient   *taskgateway.Client
 	PriceListener       tx_listener.ChainListenerIFace[string, *pricetypes.MsgVoteRequestPriceFeed, *pricetypes.MsgVoteRequestPriceFeed]
@@ -47,6 +48,7 @@ func NewServer(
 	cosmosChainId string,
 
 	wsEndpoint string,
+	wsMempoolEndpoint string,
 	gatewayAddr string,
 	operatorAddress string,
 	waitBlockCount int64,
@@ -73,6 +75,7 @@ func NewServer(
 		cosmosChainId: cosmosChainId,
 
 		wsEndpoint:          wsEndpoint,
+		wsMempoolEndpoint:   wsMempoolEndpoint,
 		operatorAddress:     operatorAddress,
 		waitBlockCount:      waitBlockCount,
 		gasPrices:           gasPrices,
@@ -96,7 +99,7 @@ func NewServer(
 
 	k.PriceListener = tx_listener.NewChainListener(
 		k.logger, k.clientCtx,
-		k.wsEndpoint,
+		k.wsEndpoint, k.wsMempoolEndpoint,
 		"tm.event='Tx' AND eventType='finalized_price_feed'", 1000,
 		k.PriceEventHandler, k.PriceBlockHandler, k.PriceMempoolEventHandler, nil,
 	)

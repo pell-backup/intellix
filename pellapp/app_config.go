@@ -24,6 +24,7 @@ type AppConfig struct {
 	GasAdjustment  float64 `mapstructure:"gas_adjustment"`
 
 	PriceTickConverterConfig map[string]map[string]string `mapstructure:"price_tick_converter_config"`
+	WsMempoolEndpoint        string                       `mapstructure:"ws_mempool_endpoint"`
 }
 
 func (p AppConfig) Validate() error {

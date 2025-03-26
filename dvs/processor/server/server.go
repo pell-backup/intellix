@@ -32,12 +32,13 @@ type Server struct {
 
 	taskGatewayClient *taskgateway.Client
 
-	wsEndpoint      string
-	operatorAddress string
-	gasPrices       string
-	gasAdjustment   float64
-	waitBlockCount  int64 // price feed wait block count
-	blsKeyPair      *bls.KeyPair
+	wsEndpoint        string
+	wsMempoolEndpoint string
+	operatorAddress   string
+	gasPrices         string
+	gasAdjustment     float64
+	waitBlockCount    int64 // price feed wait block count
+	blsKeyPair        *bls.KeyPair
 
 	ProcessorListener tx_listener.ChainListenerIFace[string, *processortypes.MsgVoteRequestProcessor, *processortypes.MsgVoteRequestProcessor]
 }
@@ -49,6 +50,7 @@ func NewServer(
 	cosmosChainId string,
 
 	wsEndpoint string,
+	wsMempoolEndpoint string,
 	gatewayAddr string,
 	operatorAddress string,
 	waitBlockCount int64,
@@ -73,11 +75,12 @@ func NewServer(
 		key:           key,
 		cosmosChainId: cosmosChainId,
 
-		wsEndpoint:      wsEndpoint,
-		operatorAddress: operatorAddress,
-		waitBlockCount:  waitBlockCount,
-		gasPrices:       gasPrices,
-		gasAdjustment:   gasAdjustment,
+		wsEndpoint:        wsEndpoint,
+		wsMempoolEndpoint: wsMempoolEndpoint,
+		operatorAddress:   operatorAddress,
+		waitBlockCount:    waitBlockCount,
+		gasPrices:         gasPrices,
+		gasAdjustment:     gasAdjustment,
 	}
 
 	if blsKeyPath != "" && blsKeyPassword != "" {
@@ -105,7 +108,7 @@ func NewServer(
 	// Processor event listener
 	k.ProcessorListener = tx_listener.NewChainListener(
 		k.logger, k.clientCtx,
-		k.wsEndpoint,
+		k.wsEndpoint, k.wsMempoolEndpoint,
 		"tm.event='Tx' AND eventType='vote_request_processor'", 1000,
 		k.ProcessorEventHandler, k.ProcessorBlockHandler, nil, k.ProcessorMempoolEventHandler,
 	)

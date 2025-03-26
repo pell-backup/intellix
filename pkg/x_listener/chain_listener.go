@@ -44,9 +44,10 @@ type ChainListener[K comparable, E any, B any] struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	clientCtx      client.Context
-	wsEndpoint     string // websocket endpoint
-	subscribeQuery string // event query string
+	clientCtx         client.Context
+	wsEndpoint        string // websocket endpoint
+	wsMempoolEndpoint string // mempool websocket endpoint
+	subscribeQuery    string // event query string
 
 	eventHandler                 EventHandler[K, E]                 // new event handler
 	blockHandler                 BlockHandler[K, B]                 // new block handler
@@ -70,6 +71,7 @@ func NewChainListener[K comparable, E any, B any](
 	logger log.Logger,
 	clientCtx client.Context,
 	wsEndpoint string,
+	wsMempoolEndpoint string,
 	subscribeQuery string,
 	maxHistory int,
 	eventHandler EventHandler[K, E],
@@ -90,6 +92,7 @@ func NewChainListener[K comparable, E any, B any](
 		cancel:                       cancel,
 		clientCtx:                    clientCtx,
 		wsEndpoint:                   wsEndpoint,
+		wsMempoolEndpoint:            wsMempoolEndpoint,
 		subscribeQuery:               subscribeQuery,
 		maxHistory:                   maxHistory,
 		eventHandler:                 eventHandler,
@@ -192,6 +195,10 @@ func (l *ChainListener[K, E, B]) startMempoolWebsocketListener(ctx context.Conte
 			var err error
 
 			// handle msg use priceMempoolEventHandler
+			if l == nil || l.priceMempoolEventHandler == nil {
+				continue
+			}
+
 			key, value, err = l.priceMempoolEventHandler(ctx, &v)
 			if err != nil {
 				continue
@@ -221,6 +228,10 @@ func (l *ChainListener[K, E, B]) startMempoolWebsocketListener(ctx context.Conte
 			var err error
 
 			// handle msg use processorMempoolEventHandler
+			if l == nil || l.processorMempoolEventHandler == nil {
+				continue
+			}
+
 			key, value, err = l.processorMempoolEventHandler(ctx, &v)
 			if err != nil {
 				continue
