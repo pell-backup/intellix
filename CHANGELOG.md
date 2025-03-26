@@ -36,7 +36,13 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
-## [Unreleased v1.1.0]
+## [Unreleased v1.1.1]
+
+### Dependencies
+
+- (logger) [#61](https://github.com/IntelliXLabs/intellix/pull/61 ): logger: use correct logger  
+
+## [Released v1.1.0]
 
 ### Features
 
