@@ -18,6 +18,7 @@ import (
 	processortypes "intellix/x/processor/types"
 )
 
+// EventHandler is a function that handles new events
 type ChainListenerIFace[K comparable, E any, B any] interface {
 	Start()
 	Stop()
@@ -38,6 +39,7 @@ type ChainListenerIFace[K comparable, E any, B any] interface {
 	ClearBlocksByKey(key K)
 }
 
+// EventHandler is a function that handles new events
 type ChainListener[K comparable, E any, B any] struct {
 	sync.RWMutex
 	logger log.Logger
@@ -68,6 +70,7 @@ type ChainListener[K comparable, E any, B any] struct {
 	blockChannels []*BlockChannel[B]
 }
 
+// NewChainListener creates a new ChainListener
 func NewChainListener[K comparable, E any, B any](
 	logger log.Logger,
 	clientCtx client.Context,
@@ -109,6 +112,7 @@ func NewChainListener[K comparable, E any, B any](
 	}
 }
 
+// Start starts the ChainListener
 func (l *ChainListener[K, E, B]) Start() {
 	l.Lock()
 	defer l.Unlock()
@@ -140,6 +144,7 @@ func (l *ChainListener[K, E, B]) Stop() {
 	l.blocks = nil
 }
 
+// startWebsocketListener starts the websocket listener
 func (l *ChainListener[K, E, B]) startWebsocketListener(ctx context.Context) {
 	cli, err := tmclient.New(l.wsEndpoint, "/websocket")
 	if err != nil {
@@ -168,8 +173,9 @@ func (l *ChainListener[K, E, B]) startWebsocketListener(ctx context.Context) {
 	}
 }
 
+// startMempoolWebsocketListener starts the mempool websocket listener
 func (l *ChainListener[K, E, B]) startMempoolWebsocketListener(ctx context.Context) {
-	conn, _, err := websocket.DefaultDialer.Dial("ws://abci:9999/ws", nil)
+	conn, _, err := websocket.DefaultDialer.Dial(l.wsMempoolEndpoint, nil)
 	if err != nil {
 		l.logger.Error("MempoolWebsocketListener dial websocket fail", "err", err)
 	}
@@ -251,6 +257,7 @@ func (l *ChainListener[K, E, B]) startMempoolWebsocketListener(ctx context.Conte
 	}
 }
 
+// startBlockScanner starts the block scanner
 func (l *ChainListener[K, E, B]) startBlockScanner(ctx context.Context) {
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
@@ -274,6 +281,7 @@ func (l *ChainListener[K, E, B]) startBlockScanner(ctx context.Context) {
 	}
 }
 
+// startCleanupTask starts the cleanup task
 func (l *ChainListener[K, E, B]) startCleanupTask(ctx context.Context) {
 	ticker := time.NewTicker(l.cleanupInterval)
 	defer ticker.Stop()
@@ -288,6 +296,7 @@ func (l *ChainListener[K, E, B]) startCleanupTask(ctx context.Context) {
 	}
 }
 
+// cleanup cleans up old data
 func (l *ChainListener[K, E, B]) cleanup() {
 	l.Lock()
 	defer l.Unlock()
@@ -344,6 +353,7 @@ func (l *ChainListener[K, E, B]) QueryBlocks(key K) []BlockData[B] {
 	return l.blocks[key]
 }
 
+// SubscribeEvents subscribes to new events
 func (l *ChainListener[K, E, B]) SubscribeEvents(maxQueueSize int) *EventChannel[E] {
 	if maxQueueSize <= 0 {
 		maxQueueSize = 100
@@ -361,6 +371,7 @@ func (l *ChainListener[K, E, B]) SubscribeEvents(maxQueueSize int) *EventChannel
 	return channel
 }
 
+// SubscribeBlocks subscribes to new blocks
 func (l *ChainListener[K, E, B]) SubscribeBlocks(maxQueueSize int) *BlockChannel[B] {
 	if maxQueueSize <= 0 {
 		maxQueueSize = 100
@@ -378,6 +389,7 @@ func (l *ChainListener[K, E, B]) SubscribeBlocks(maxQueueSize int) *BlockChannel
 	return channel
 }
 
+// UnsubscribeEvents unsubscribes from events
 func (l *ChainListener[K, E, B]) UnsubscribeEvents(ch *EventChannel[E]) {
 	l.Lock()
 	defer l.Unlock()
@@ -393,6 +405,7 @@ func (l *ChainListener[K, E, B]) UnsubscribeEvents(ch *EventChannel[E]) {
 	}
 }
 
+// UnsubscribeBlocks unsubscribes from blocks
 func (l *ChainListener[K, E, B]) UnsubscribeBlocks(ch *BlockChannel[B]) {
 	l.Lock()
 	defer l.Unlock()
@@ -408,18 +421,21 @@ func (l *ChainListener[K, E, B]) UnsubscribeBlocks(ch *BlockChannel[B]) {
 	}
 }
 
+// ClearEvents clears all events
 func (l *ChainListener[K, E, B]) ClearEvents() {
 	l.Lock()
 	l.events = make(map[K][]EventData[E])
 	l.Unlock()
 }
 
+// ClearBlocks clears all blocks
 func (l *ChainListener[K, E, B]) ClearBlocks() {
 	l.Lock()
 	l.blocks = make(map[K][]BlockData[B])
 	l.Unlock()
 }
 
+// ClearEventsByKey clears events by key
 func (l *ChainListener[K, E, B]) ClearEventsByKey(key K) {
 	l.Lock()
 	defer l.Unlock()
@@ -427,6 +443,7 @@ func (l *ChainListener[K, E, B]) ClearEventsByKey(key K) {
 	delete(l.events, key)
 }
 
+// ClearBlocksByKey clears blocks by key
 func (l *ChainListener[K, E, B]) ClearBlocksByKey(key K) {
 	l.Lock()
 	defer l.Unlock()
@@ -434,6 +451,7 @@ func (l *ChainListener[K, E, B]) ClearBlocksByKey(key K) {
 	delete(l.blocks, key)
 }
 
+// handleNewEvent handles new events
 func (l *ChainListener[K, E, B]) handleNewEvent(ctx context.Context, tmEvent tmctypes.ResultEvent) {
 	if txData, ok := tmEvent.Data.(cmttypes.EventDataTx); ok {
 		for _, event := range txData.Result.Events {
@@ -467,6 +485,7 @@ func (l *ChainListener[K, E, B]) handleNewEvent(ctx context.Context, tmEvent tmc
 	}
 }
 
+// saveAndBroadcastEvent saves and broadcasts the event
 func (l *ChainListener[K, E, B]) saveAndBroadcastEvent(key K, eventData EventData[E]) {
 	l.Lock()
 	if len(l.events) >= l.maxHistory {
@@ -499,6 +518,7 @@ func (l *ChainListener[K, E, B]) saveAndBroadcastEvent(key K, eventData EventDat
 	}
 }
 
+// handleNewBlock handles new blocks
 func (l *ChainListener[K, E, B]) handleNewBlock(ctx context.Context, block *cmttypes.Block) {
 	key, data, err := l.blockHandler(ctx, block)
 	if err != nil {

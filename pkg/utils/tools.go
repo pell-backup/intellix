@@ -8,6 +8,7 @@ import (
 	"github.com/0xPellNetwork/pelldvs/crypto/bls"
 )
 
+// SignWithBLS signs the message with the BLS key pair
 func SignWithBLS(blsKeyPair *bls.KeyPair, msgBytes []byte) []byte {
 	if blsKeyPair == nil {
 		return nil
@@ -21,6 +22,7 @@ func SignWithBLS(blsKeyPair *bls.KeyPair, msgBytes []byte) []byte {
 	return signature.G1Point.Serialize()
 }
 
+// VerifyBLSSignature verifies the BLS signature
 func VerifyBLSSignature(pubKey *avsitypes.OperatorPubkeys, msgBytes []byte, signature []byte) error {
 	if pubKey == nil {
 		return fmt.Errorf("public key is nil")

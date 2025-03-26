@@ -34,6 +34,7 @@ func (k msgServer) VoteRequestProcessor(goCtx context.Context, req *types.MsgVot
 	return &types.MsgVoteRequestProcessorResponse{}, nil
 }
 
+// validateMsgVoteRequestProcessor validates the MsgVoteRequestProcessor
 func (k msgServer) validateMsgVoteRequestProcessor(msg *types.MsgVoteRequestProcessor) error {
 	if msg.Sender == "" {
 		return fmt.Errorf("sender cannot be empty")

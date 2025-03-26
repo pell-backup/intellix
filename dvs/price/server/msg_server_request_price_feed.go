@@ -18,6 +18,7 @@ import (
 	pricetypes "intellix/x/price/types"
 )
 
+// RequestPriceFeed is the entry point for the RequestPriceFeed RPC method.
 func (d Server) RequestPriceFeed(ctx context.Context, request *types.RequestPriceFeedIn) (*types.RequestPriceFeedOut, error) {
 	pkgContext := sdktypes.UnwrapContext(ctx)
 	d.logger.Info("ProcessRequestPriceFeed", "PriceFeedParam", fmt.Sprintf("%+v", request.PriceFeed))
@@ -51,6 +52,7 @@ func (d Server) RequestPriceFeed(ctx context.Context, request *types.RequestPric
 	return d.aggregatePrices(pkgContext, request.Task.TaskIndex, request.Task.RequestId, priceFeedTxs)
 }
 
+// getMsgBytes returns the bytes of the given MsgVoteRequestPriceFeed.
 func (d Server) getMsgBytes(msg *pricetypes.MsgVoteRequestPriceFeed) []byte {
 	m := &pricetypes.MsgVoteRequestPriceFeed{
 		TaskIndex:   msg.TaskIndex,
@@ -67,6 +69,7 @@ func (d Server) getMsgBytes(msg *pricetypes.MsgVoteRequestPriceFeed) []byte {
 	return b
 }
 
+// broadcastVoteRequestPriceFeed broadcasts a VoteRequestPriceFeed message to the chain.
 func (d Server) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task *types.RequestPriceFeedIn, priceFeed *types.PriceFeedParam, rawPrices map[string]math.LegacyDec) error {
 	d.Logger().Info("broadcastVoteRequestPriceFeed",
 		"rawPrices", fmt.Sprintf("%+v", rawPrices),
@@ -108,6 +111,7 @@ func (d Server) broadcastVoteRequestPriceFeed(ctx sdktypes.Context, task *types.
 	return nil
 }
 
+// startCollectEnoughPriceFeedTxs listens for VoteRequestPriceFeed transactions and blocks until enough transactions are collected.
 func (d Server) startCollectEnoughPriceFeedTxs(ctx sdktypes.Context, requestId []byte) ([]*pricetypes.MsgVoteRequestPriceFeed, error) {
 	var (
 		key       = string(requestId)
@@ -206,6 +210,7 @@ func (d Server) verifyOperatorEvents(ctx sdktypes.Context, datas []tx_listener.E
 	return out, len(operatorVerifyMaps) == len(operatorMaps)
 }
 
+// checkAndChooseEnoughBlocks checks if enough blocks are collected and returns the blocks.
 func (d Server) checkAndChooseEnoughBlocks(ctx context.Context, currentBlockHeight int64, blockDatas []tx_listener.BlockData[*pricetypes.MsgVoteRequestPriceFeed]) ([]*pricetypes.MsgVoteRequestPriceFeed, bool) {
 	if len(blockDatas) == 0 {
 		return nil, false
@@ -226,6 +231,7 @@ func (d Server) checkAndChooseEnoughBlocks(ctx context.Context, currentBlockHeig
 	return out, maxHeightBlocks >= currentBlockHeight+d.waitBlockCount
 }
 
+// collectEvents listens for VoteRequestPriceFeed events and blocks until enough events are collected.
 func (d Server) collectEvents(ctx context.Context, operatorMaps map[string]*avsitypes.Operator, ch *tx_listener.EventChannel[*pricetypes.MsgVoteRequestPriceFeed], eventData *[]*pricetypes.MsgVoteRequestPriceFeed, waitChan chan struct{}) {
 	eventDataByOperatorId := make(map[string]*pricetypes.MsgVoteRequestPriceFeed)
 	for _, data := range *eventData {
@@ -264,6 +270,7 @@ func (d Server) collectEvents(ctx context.Context, operatorMaps map[string]*avsi
 
 }
 
+// collectBlocks listens for VoteRequestPriceFeed blocks and blocks until enough blocks are collected.
 func (d Server) collectBlocks(ctx context.Context, blockHeight int64, ch *tx_listener.BlockChannel[*pricetypes.MsgVoteRequestPriceFeed], blockData *[]*pricetypes.MsgVoteRequestPriceFeed, waitChan chan struct{}) {
 	var mu = sync.Mutex{}
 	select {
@@ -287,6 +294,7 @@ func (d Server) collectBlocks(ctx context.Context, blockHeight int64, ch *tx_lis
 	}
 }
 
+// aggregatePrices aggregates the prices of the given VoteRequestPriceFeed transactions.
 func (s Server) aggregatePrices(ctx sdktypes.Context, taskIndex uint32, requestID []byte, priceFeedTxs []*pricetypes.MsgVoteRequestPriceFeed) (*types.RequestPriceFeedOut, error) {
 	operatorPrices := make(map[string][]math.LegacyDec)
 

@@ -8,6 +8,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+// AbiEncodeResponseTaskParam encodes the response task parameter
 func AbiEncodeResponseTaskParam(taskIndex uint32, data []byte) ([]byte, error) {
 	taskResponseType, err := abi.NewType("tuple", "", []abi.ArgumentMarshaling{
 		{
@@ -38,6 +39,7 @@ func AbiEncodeResponseTaskParam(taskIndex uint32, data []byte) ([]byte, error) {
 	return bytes, nil
 }
 
+// DigestKeccak256 returns the keccak256 hash of the data
 func DigestKeccak256(data []byte) []byte {
 	var taskResponseDigest [32]byte
 	hasher := sha3.NewLegacyKeccak256()
@@ -47,6 +49,7 @@ func DigestKeccak256(data []byte) []byte {
 	return taskResponseDigest[:]
 }
 
+// AbiDecodeResponseTaskParam decodes the response task parameter
 func AbiDecodeResponseTaskParam(data []byte) (*contractdataoracle.IDataOracleTaskResponse, error) {
 	taskResponseType, err := abi.NewType("tuple", "", []abi.ArgumentMarshaling{
 		{

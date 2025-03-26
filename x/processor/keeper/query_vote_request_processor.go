@@ -10,6 +10,7 @@ import (
 	"intellix/x/processor/types"
 )
 
+// QueryVoteRequestProcessor queries vote request processor
 func (k Keeper) QueryVoteRequestProcessor(goCtx context.Context, req *types.QueryVoteRequestProcessorRequest) (*types.QueryVoteRequestProcessorResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(goCtx)
 
@@ -41,6 +42,7 @@ func (k Keeper) QueryVoteRequestProcessor(goCtx context.Context, req *types.Quer
 	}, nil
 }
 
+// GetVoteRequestProcessor returns vote request processor
 func (k Keeper) GetVoteRequestProcessor(ctx sdk.Context, requestId []byte, operatorId string) (*types.MsgVoteRequestProcessor, bool) {
 	store := k.storeService.OpenKVStore(ctx)
 

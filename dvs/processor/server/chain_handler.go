@@ -11,6 +11,7 @@ import (
 	processortypes "intellix/x/processor/types"
 )
 
+// ProcessorEventHandler handles processor event
 func (r Server) ProcessorEventHandler(ctx context.Context, event abci.Event) (string, *processortypes.MsgVoteRequestProcessor, error) {
 	var requestId string
 	var operatorId string
@@ -34,6 +35,7 @@ func (r Server) ProcessorEventHandler(ctx context.Context, event abci.Event) (st
 	return requestId, processor, nil
 }
 
+// ProcessorMempoolEventHandler handles processor event in mempool
 func (r Server) queryVoteRequestProcessor(ctx context.Context, requestId []byte, operatorId string) (*processortypes.MsgVoteRequestProcessor, error) {
 	conn := r.clientCtx.GRPCClient
 	queryClient := processortypes.NewQueryClient(conn)
@@ -67,6 +69,7 @@ func (r Server) queryVoteRequestProcessor(ctx context.Context, requestId []byte,
 	}, nil
 }
 
+// ProcessorBlockHandler handles processor block event
 func (r Server) ProcessorBlockHandler(ctx context.Context, block *cmttypes.Block) (string, *processortypes.MsgVoteRequestProcessor, error) {
 	for _, tx := range block.Data.Txs {
 		if msg, ok := r.isVoteRequestTx(tx); ok {
@@ -76,10 +79,12 @@ func (r Server) ProcessorBlockHandler(ctx context.Context, block *cmttypes.Block
 	return "", nil, nil
 }
 
+// ProcessorMempoolEventHandler handles processor event in mempool
 func (d Server) ProcessorMempoolEventHandler(ctx context.Context, msg *processortypes.MsgVoteRequestProcessor) (string, *processortypes.MsgVoteRequestProcessor, error) {
 	return string(msg.RequestId), msg, nil
 }
 
+// isVoteRequestTx checks if the tx is VoteRequestProcessor
 func (r Server) isVoteRequestTx(tx cmttypes.Tx) (*processortypes.MsgVoteRequestProcessor, bool) {
 	decoder := r.clientCtx.TxConfig.TxDecoder()
 	data, err := decoder(tx)

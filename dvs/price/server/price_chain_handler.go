@@ -12,6 +12,7 @@ import (
 	pricetypes "intellix/x/price/types"
 )
 
+// PriceEventHandler handles price feed event
 func (d Server) PriceEventHandler(ctx context.Context, event abci.Event) (string, *pricetypes.MsgVoteRequestPriceFeed, error) {
 	var (
 		operatorId, requestId string
@@ -38,10 +39,12 @@ func (d Server) PriceEventHandler(ctx context.Context, event abci.Event) (string
 	return requestId, priceFeed, nil
 }
 
+// PriceMempoolEventHandler handles price feed event in mempool
 func (d Server) PriceMempoolEventHandler(ctx context.Context, msg *types.MsgVoteRequestPriceFeed) (string, *pricetypes.MsgVoteRequestPriceFeed, error) {
 	return string(msg.RequestId), msg, nil
 }
 
+// queryVoteRequestPriceFeed queries vote request price feed
 func (d Server) queryVoteRequestPriceFeed(ctx context.Context, requestId []byte, operatorId string) (*pricetypes.MsgVoteRequestPriceFeed, error) {
 	conn := d.clientCtx.GRPCClient
 	queryClient := pricetypes.NewQueryClient(conn)
@@ -77,6 +80,7 @@ func (d Server) queryVoteRequestPriceFeed(ctx context.Context, requestId []byte,
 	}, nil
 }
 
+// isVoteRequestPriceFeedTx checks if the tx is VoteRequestPriceFeed
 func (d Server) isVoteRequestPriceFeedTx(tx cmttypes.Tx) (*pricetypes.MsgVoteRequestPriceFeed, bool) {
 	// check tx is VoteRequestPriceFeed
 	decoder := d.clientCtx.TxConfig.TxDecoder()
@@ -117,6 +121,7 @@ func (d Server) isVoteRequestPriceFeedTx(tx cmttypes.Tx) (*pricetypes.MsgVoteReq
 	return voteMsg, true
 }
 
+// PriceBlockHandler handles price feed event in block
 func (d Server) PriceBlockHandler(ctx context.Context, block *cmttypes.Block) (string, *pricetypes.MsgVoteRequestPriceFeed, error) {
 	for _, tx := range block.Data.Txs {
 		// only collect VoteRequestPriceFeed

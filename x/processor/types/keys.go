@@ -30,6 +30,7 @@ func KeyPrefix(p string) []byte {
 	return []byte(p)
 }
 
+// MsgVoteRequestProcessorKey returns the key for the vote request processor
 func MsgVoteRequestProcessorKey(requestId []byte, operatorId string) []byte {
 	return append(
 		append(

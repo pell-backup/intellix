@@ -142,6 +142,7 @@ func (s Server) waitForEnoughOperateVote(ctx sdktypes.Context, in *types.Request
 	return resp, nil
 }
 
+// collectVoteRequestProcessor collects enough events or blocks
 func (r Server) collectVoteRequestProcessor(ctx sdktypes.Context, in *types.RequestScriptIn) ([]*processortypes.MsgVoteRequestProcessor, error) {
 	var (
 		key       = string(in.RequestId)
@@ -212,6 +213,7 @@ func (r Server) collectVoteRequestProcessor(ctx sdktypes.Context, in *types.Requ
 	}
 }
 
+// collectEvents collects events
 func (r Server) collectEvents(ctx context.Context, operatorMaps map[string]*avsitypes.Operator, eventCh *tx_listener.EventChannel[*processortypes.MsgVoteRequestProcessor], eventData *[]*processortypes.MsgVoteRequestProcessor, waitChan chan struct{}) {
 	eventDataByOperatorId := make(map[string]*processortypes.MsgVoteRequestProcessor)
 	for _, data := range *eventData {
@@ -247,6 +249,7 @@ func (r Server) collectEvents(ctx context.Context, operatorMaps map[string]*avsi
 	}
 }
 
+// collectBlocks collects blocks
 func (r Server) collectBlocks(ctx context.Context, blockHeight int64, ch *tx_listener.BlockChannel[*processortypes.MsgVoteRequestProcessor], blockData *[]*processortypes.MsgVoteRequestProcessor, waitChan chan struct{}) {
 	var mu = sync.Mutex{}
 	select {
@@ -270,6 +273,7 @@ func (r Server) collectBlocks(ctx context.Context, blockHeight int64, ch *tx_lis
 	}
 }
 
+// getMsgBytes gets bytes of MsgVoteRequestProcessor
 func (r Server) getMsgBytes(msg *processortypes.MsgVoteRequestProcessor) []byte {
 	b := &processortypes.MsgVoteRequestProcessor{
 		TaskIndex:                 msg.TaskIndex,
@@ -292,6 +296,7 @@ func (r Server) getMsgBytes(msg *processortypes.MsgVoteRequestProcessor) []byte 
 	return bytes
 }
 
+// verifyOperatorEvents verifies operator events
 func (r Server) verifyOperatorEvents(ctx sdktypes.Context, events []tx_listener.EventData[*processortypes.MsgVoteRequestProcessor]) ([]*processortypes.MsgVoteRequestProcessor, bool) {
 
 	var operatorMaps = make(map[string]*avsitypes.Operator)

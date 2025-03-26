@@ -10,6 +10,7 @@ import (
 	"intellix/x/price/types"
 )
 
+// QueryVoteRequestPriceFeed queries vote request price feed
 func (k Keeper) QueryVoteRequestPriceFeed(goCtx context.Context, req *types.QueryVoteRequestPriceFeedReq) (*types.QueryVoteRequestPriceFeedResp, error) {
 	if req == nil || req.RequestId == nil || req.OperatorId == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid request")
