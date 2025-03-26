@@ -139,18 +139,13 @@ func (c *MempoolWSClient) readPump() {
 
 // writePump sends messages from the hub to the WebSocket client.
 func (c *MempoolWSClient) writePump() {
-	for {
-		select {
-		case message, ok := <-c.send:
-			if !ok {
-				// If the channel is closed, send a close message and exit
-				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
-				return
-			}
-			if err := c.conn.WriteMessage(websocket.TextMessage, message); err != nil {
-				return
-			}
+	for message := range c.send {
+		if err := c.conn.WriteMessage(websocket.TextMessage, message); err != nil {
+			return
 		}
+	}
+	if err := c.conn.WriteMessage(websocket.CloseMessage, []byte{}); err != nil {
+		fmt.Println("Write error:", err)
 	}
 }
 

@@ -10,7 +10,7 @@ import (
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
 	"github.com/IntelliXLabs/iwasm/api"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/protobuf/proto"
 
 	"intellix/dvs/processor/types"
 	pkgutils "intellix/pkg/utils"
@@ -336,13 +336,6 @@ func (r *Server) checkAndChooseEnoughBlocks(ctx context.Context, blockHeight int
 	}
 
 	return out, maxHeightBlocks >= blockHeight+r.waitBlockCount
-}
-
-func (s Server) shouldStopCollecting(ctx sdktypes.Context, firstTxBlock, currentBlock int64) bool {
-	if firstTxBlock == 0 {
-		return false
-	}
-	return currentBlock >= firstTxBlock+s.waitBlockCount
 }
 
 func (s Server) aggrDataByExecWasmAggrScript(ctx sdktypes.Context, instance api.InstanceResult, scriptConfig []byte, datas [][]byte) ([]byte, []byte, error) {

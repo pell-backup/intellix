@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"sort"
@@ -11,7 +10,6 @@ import (
 	"cosmossdk.io/math"
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
-	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/gogoproto/proto"
 
 	"intellix/dvs/price/types"
@@ -264,30 +262,6 @@ func (d Server) collectEvents(ctx context.Context, operatorMaps map[string]*avsi
 		}
 	}
 
-}
-
-func (s Server) processBlockTxs(ctx context.Context, block *cmttypes.Block, requestID []byte) []pricetypes.MsgVoteRequestPriceFeed {
-	var priceFeedTxs []pricetypes.MsgVoteRequestPriceFeed
-	//s.logger.Info("Processing block", "height", block.Header.Height, "tx_count", len(block.Data.Txs))
-
-	for _, tx := range block.Data.Txs {
-		// only collect VoteRequestPriceFeed && current requestId data
-		//s.logger.Info("Processing transaction", "tx_hash", tx.Hash())
-		if msg, ok := s.isVoteRequestPriceFeedTx(tx); ok && bytes.Equal(msg.RequestId, requestID) {
-			priceFeedTxs = append(priceFeedTxs, pricetypes.MsgVoteRequestPriceFeed{
-				TaskIndex:   msg.TaskIndex,
-				OperatorId:  msg.OperatorId,
-				RequestId:   msg.RequestId,
-				BaseSymbol:  msg.BaseSymbol,
-				QuoteSymbol: msg.QuoteSymbol,
-				Price:       msg.Price,
-				Timestamp:   msg.Timestamp,
-				BlockHeight: uint64(block.Header.Height),
-			})
-		}
-	}
-
-	return priceFeedTxs
 }
 
 func (d Server) collectBlocks(ctx context.Context, blockHeight int64, ch *tx_listener.BlockChannel[*pricetypes.MsgVoteRequestPriceFeed], blockData *[]*pricetypes.MsgVoteRequestPriceFeed, waitChan chan struct{}) {
