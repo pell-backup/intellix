@@ -28,9 +28,9 @@ require (
 	cosmossdk.io/x/feegrant v0.1.1
 	cosmossdk.io/x/nft v0.1.0
 	cosmossdk.io/x/upgrade v0.1.4
-	github.com/0xPellNetwork/pellapp-sdk v0.1.8
-	github.com/0xPellNetwork/pelldvs v0.2.2
-	github.com/0xPellNetwork/pelldvs-interactor v0.0.13
+	github.com/0xPellNetwork/pellapp-sdk v0.1.10-0.20250326104725-d8f1c56f254a
+	github.com/0xPellNetwork/pelldvs v0.3.0
+	github.com/0xPellNetwork/pelldvs-interactor v0.0.14
 	github.com/0xPellNetwork/pelldvs-libs v0.2.0
 	github.com/IntelliXLabs/iwasm v0.0.6
 	github.com/IntelliXLabs/price-oracle-dvs v0.4.3
@@ -200,6 +200,7 @@ require (
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jdx/go-netrc v1.0.0 // indirect
+	github.com/jinzhu/copier v0.3.5 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
