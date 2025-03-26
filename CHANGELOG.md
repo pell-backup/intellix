@@ -42,6 +42,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 - (feat) [#51](https://github.com/IntelliXLabs/intellix/pull/51 ): feat: centralize the task dispather and merge the dispather and gateway into one process and start.
 - (refactor) [#53](https://github.com/IntelliXLabs/intellix/pull/53 ): upgrade interactor to handle OperatorSocketUpdate event.
+- (feat) [#64](https://github.com/IntelliXLabs/intellix/pull/64 ): feat: collect price request results from mempool
 
 ### Improvements
 
