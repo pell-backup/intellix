@@ -28,7 +28,7 @@ require (
 	cosmossdk.io/x/feegrant v0.1.1
 	cosmossdk.io/x/nft v0.1.0
 	cosmossdk.io/x/upgrade v0.1.4
-	github.com/0xPellNetwork/pellapp-sdk v0.1.10-0.20250326101730-717f325adc2e
+	github.com/0xPellNetwork/pellapp-sdk v0.1.10-0.20250326104725-d8f1c56f254a
 	github.com/0xPellNetwork/pelldvs v0.3.0
 	github.com/0xPellNetwork/pelldvs-interactor v0.0.14
 	github.com/0xPellNetwork/pelldvs-libs v0.2.0

@@ -235,8 +235,8 @@ github.com/0xPellNetwork/contracts v0.2.31 h1:k2t5dTYfvyGyar+XPcY5W5xcJzs4b/++RT
 github.com/0xPellNetwork/contracts v0.2.31/go.mod h1:eJZRJT/Mzea8LuhiFZXWy36tfIaDVt1oFmjN7Ux7gTw=
 github.com/0xPellNetwork/pell-middleware-contracts v0.2.32 h1:RW2JZB/ScdSqqVaixONkXXuXO6AfkeiLKQbB8PgNBsg=
 github.com/0xPellNetwork/pell-middleware-contracts v0.2.32/go.mod h1:Qex0CyN926FuTONIfZfoMsbs+2UDCwMpkZg3QvRccvQ=
-github.com/0xPellNetwork/pellapp-sdk v0.1.10-0.20250326101730-717f325adc2e h1:e/TOGdK+k5sc3/Tk2+RWRM87Nkf8lbVx03o/PiuN9pM=
-github.com/0xPellNetwork/pellapp-sdk v0.1.10-0.20250326101730-717f325adc2e/go.mod h1:cTxCCKnzXBnAqGalLaMy1RjEGrA++FxqVGwK0Bbon98=
+github.com/0xPellNetwork/pellapp-sdk v0.1.10-0.20250326104725-d8f1c56f254a h1:YTRXPavk1x5TOQ9PfqkktjVKNpgdLlL54eae9F26Ndk=
+github.com/0xPellNetwork/pellapp-sdk v0.1.10-0.20250326104725-d8f1c56f254a/go.mod h1:cTxCCKnzXBnAqGalLaMy1RjEGrA++FxqVGwK0Bbon98=
 github.com/0xPellNetwork/pelldvs v0.3.0 h1:QhCd8zI4+dhwBokBwDV/HcFzzHcN0VCjP/URgygrI44=
 github.com/0xPellNetwork/pelldvs v0.3.0/go.mod h1:osqufSthuMd6hZxH89Yljopele4mcqx5gxxpRh+heZw=
 github.com/0xPellNetwork/pelldvs-interactor v0.0.14 h1:vcC0DzK9JNz6x/r8SA+fAcQiata/K/PdQhfIe88JyFQ=
