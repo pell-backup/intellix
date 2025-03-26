@@ -10,7 +10,7 @@ import (
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
 	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
 	"github.com/IntelliXLabs/iwasm/api"
-	"google.golang.org/protobuf/proto"
+	"github.com/cosmos/gogoproto/proto"
 
 	"intellix/dvs/processor/types"
 	pkgutils "intellix/pkg/utils"
