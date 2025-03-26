@@ -113,7 +113,7 @@ function setup_operator_config {
       "USD": "USD"
     }
   },
-  "ws_mempool_endpoint": "$WS_MEMPOOL_ENDPOINT",
+  "ws_mempool_endpoint": "$WS_MEMPOOL_ENDPOINT"
 }
 EOF
 
