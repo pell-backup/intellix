@@ -6,6 +6,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/gorilla/websocket"
 	"intellix/x/price/types"
+	processortypes "intellix/x/processor/types"
 	"sync"
 	"time"
 
@@ -47,9 +48,10 @@ type ChainListener[K comparable, E any, B any] struct {
 	wsEndpoint     string // websocket endpoint
 	subscribeQuery string // event query string
 
-	eventHandler        EventHandler[K, E]        // new event handler
-	blockHandler        BlockHandler[K, B]        // new block handler
-	mempoolEventHandler MempoolEventHandler[K, E] // new mempool handler
+	eventHandler                 EventHandler[K, E]                 // new event handler
+	blockHandler                 BlockHandler[K, B]                 // new block handler
+	priceMempoolEventHandler     PriceMempoolEventHandler[K, E]     // new price mempool handler
+	processorMempoolEventHandler ProcessorMempoolEventHandler[K, E] // new processor mempool handler
 
 	// maybe save to db
 	events     map[K][]EventData[E]
@@ -72,7 +74,8 @@ func NewChainListener[K comparable, E any, B any](
 	maxHistory int,
 	eventHandler EventHandler[K, E],
 	blockHandler BlockHandler[K, B],
-	mempoolEventHandler MempoolEventHandler[K, E],
+	priceMempoolEventHandler PriceMempoolEventHandler[K, E],
+	processorMempoolEventHandler ProcessorMempoolEventHandler[K, E],
 ) *ChainListener[K, E, B] {
 	ctx, cancel := context.WithCancel(context.Background())
 	if maxHistory <= 0 {
@@ -82,22 +85,23 @@ func NewChainListener[K comparable, E any, B any](
 		panic("handlers cannot be nil")
 	}
 	return &ChainListener[K, E, B]{
-		logger:              logger,
-		ctx:                 ctx,
-		cancel:              cancel,
-		clientCtx:           clientCtx,
-		wsEndpoint:          wsEndpoint,
-		subscribeQuery:      subscribeQuery,
-		maxHistory:          maxHistory,
-		eventHandler:        eventHandler,
-		blockHandler:        blockHandler,
-		mempoolEventHandler: mempoolEventHandler,
-		events:              make(map[K][]EventData[E]),
-		blocks:              make(map[K][]BlockData[B]),
-		eventChannels:       make([]*EventChannel[E], 0),
-		blockChannels:       make([]*BlockChannel[B], 0),
-		cleanupInterval:     30 * time.Minute,
-		retentionPeriod:     60 * time.Minute,
+		logger:                       logger,
+		ctx:                          ctx,
+		cancel:                       cancel,
+		clientCtx:                    clientCtx,
+		wsEndpoint:                   wsEndpoint,
+		subscribeQuery:               subscribeQuery,
+		maxHistory:                   maxHistory,
+		eventHandler:                 eventHandler,
+		blockHandler:                 blockHandler,
+		priceMempoolEventHandler:     priceMempoolEventHandler,
+		processorMempoolEventHandler: processorMempoolEventHandler,
+		events:                       make(map[K][]EventData[E]),
+		blocks:                       make(map[K][]BlockData[B]),
+		eventChannels:                make([]*EventChannel[E], 0),
+		blockChannels:                make([]*BlockChannel[B], 0),
+		cleanupInterval:              30 * time.Minute,
+		retentionPeriod:              60 * time.Minute,
 	}
 }
 
@@ -175,17 +179,54 @@ func (l *ChainListener[K, E, B]) startMempoolWebsocketListener(ctx context.Conte
 		}
 		l.logger.Info("MempoolWebsocketListener read websocket msg", "msg", string(msg))
 
-		var voteMsg []types.MsgVoteRequestPriceFeed
-		if err := json.Unmarshal(msg, &voteMsg); err != nil {
+		// handle msg if msg type is price feed
+		var priceVoteMsg []types.MsgVoteRequestPriceFeed
+		if err := json.Unmarshal(msg, &priceVoteMsg); err != nil {
 			l.logger.Error("MempoolWebsocketListener unmarshal fail", "err", err)
 			continue
 		}
 
-		for _, v := range voteMsg {
-			key, value, err := l.mempoolEventHandler(ctx, &v)
+		for _, v := range priceVoteMsg {
+			var key K
+			var value E
+			var err error
+
+			// handle msg use priceMempoolEventHandler
+			key, value, err = l.priceMempoolEventHandler(ctx, &v)
 			if err != nil {
 				continue
 			}
+
+			// build EventData
+			event := EventData[E]{
+				Height:    0,
+				TxHash:    []byte{},
+				Event:     abci.Event{},
+				Data:      value,
+				Timestamp: time.Now(),
+			}
+			l.saveAndBroadcastEvent(key, event)
+		}
+
+		// handle msg if msg type is processor
+		var processorVoteMsg []processortypes.MsgVoteRequestProcessor
+		if err := json.Unmarshal(msg, &processorVoteMsg); err != nil {
+			l.logger.Error("MempoolWebsocketListener unmarshal fail", "err", err)
+			continue
+		}
+
+		for _, v := range processorVoteMsg {
+			var key K
+			var value E
+			var err error
+
+			// handle msg use processorMempoolEventHandler
+			key, value, err = l.processorMempoolEventHandler(ctx, &v)
+			if err != nil {
+				continue
+			}
+
+			// build EventData
 			event := EventData[E]{
 				Height:    0,
 				TxHash:    []byte{},

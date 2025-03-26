@@ -3,8 +3,6 @@ package server
 import (
 	context "context"
 	"fmt"
-	pricetypes "intellix/x/price/types"
-
 	abci "github.com/cometbft/cometbft/abci/types"
 	cmttypes "github.com/cometbft/cometbft/types"
 	"github.com/cosmos/cosmos-sdk/x/authz"
@@ -77,10 +75,8 @@ func (r Server) ProcessorBlockHandler(ctx context.Context, block *cmttypes.Block
 	return "", nil, nil
 }
 
-func (d Server) PriceMempoolEventHandler(ctx context.Context, msg *pricetypes.MsgVoteFinalizedRequestPrice) (string, *pricetypes.MsgVoteRequestPriceFeed, error) {
-	var requestId string
-	priceFeed := &pricetypes.MsgVoteRequestPriceFeed{}
-	return requestId, priceFeed, nil
+func (d Server) ProcessorMempoolEventHandler(ctx context.Context, msg *processortypes.MsgVoteRequestProcessor) (string, *processortypes.MsgVoteRequestProcessor, error) {
+	return string(msg.RequestId), msg, nil
 }
 
 func (r Server) isVoteRequestTx(tx cmttypes.Tx) (*processortypes.MsgVoteRequestProcessor, bool) {

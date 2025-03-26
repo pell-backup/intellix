@@ -2,7 +2,8 @@ package tx_listener
 
 import (
 	"context"
-	"intellix/x/price/types"
+	pricetypes "intellix/x/price/types"
+	processortypes "intellix/x/processor/types"
 	"time"
 
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -13,7 +14,9 @@ type EventHandler[K comparable, T any] func(ctx context.Context, event abci.Even
 
 type BlockHandler[K comparable, T any] func(ctx context.Context, block *cmttypes.Block) (K, T, error)
 
-type MempoolEventHandler[K comparable, T any] func(ctx context.Context, msg *types.MsgVoteRequestPriceFeed) (K, T, error)
+type PriceMempoolEventHandler[K comparable, T any] func(ctx context.Context, msg *pricetypes.MsgVoteRequestPriceFeed) (K, T, error)
+
+type ProcessorMempoolEventHandler[K comparable, T any] func(ctx context.Context, msg *processortypes.MsgVoteRequestProcessor) (K, T, error)
 
 type EventData[T any] struct {
 	Height    int64

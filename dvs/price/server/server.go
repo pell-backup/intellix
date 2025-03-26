@@ -98,7 +98,7 @@ func NewServer(
 		k.logger, k.clientCtx,
 		k.wsEndpoint,
 		"tm.event='Tx' AND eventType='finalized_price_feed'", 1000,
-		k.PriceEventHandler, k.PriceBlockHandler, k.PriceMempoolEventHandler,
+		k.PriceEventHandler, k.PriceBlockHandler, k.PriceMempoolEventHandler, nil,
 	)
 	k.PriceListener.Start()
 

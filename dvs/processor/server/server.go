@@ -103,13 +103,13 @@ func NewServer(
 	k.taskGatewayClient = taskGatewayClient
 
 	// Processor event listener
-	//k.ProcessorListener = tx_listener.NewChainListener(
-	//	k.logger, k.clientCtx,
-	//	k.wsEndpoint,
-	//	"tm.event='Tx' AND eventType='vote_request_processor'", 1000,
-	//	k.ProcessorEventHandler, k.ProcessorBlockHandler, k.PriceMempoolEventHandler,
-	//)
-	//k.ProcessorListener.Start()
+	k.ProcessorListener = tx_listener.NewChainListener(
+		k.logger, k.clientCtx,
+		k.wsEndpoint,
+		"tm.event='Tx' AND eventType='vote_request_processor'", 1000,
+		k.ProcessorEventHandler, k.ProcessorBlockHandler, nil, k.ProcessorMempoolEventHandler,
+	)
+	k.ProcessorListener.Start()
 
 	return k, nil
 }
