@@ -104,7 +104,7 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 	}
 
 	// Check if the quote symbol is in H-shares
-	if _, ok := symbolList[types.HKShares][quoteSymbol]; ok {
+	if _, ok := symbolList[types.HKShares][baseSymbolConfig]; ok {
 		fetchPriceIfs[dataSourceEasyMoney] = &EasyMoneyFetchPriceService{logger: logger}
 	}
 
