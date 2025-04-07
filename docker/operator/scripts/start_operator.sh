@@ -100,7 +100,7 @@ function setup_operator_config {
   },
   "ecc_key_pair": {
     "ecc_private_key_path": "$PELLDVS_HOME/config/ecc_private_key.pem",
-    "ecc_public_key": $ECC_PUBLIC_KEY
+    "ecc_public_key": "$ECC_PUBLIC_KEY"
   }
 }
 EOF
