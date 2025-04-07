@@ -36,7 +36,13 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 # Changelog
 
-## [Unreleased v1.1.0]
+## [Unreleased v1.1.1]
+
+### Dependencies
+
+- (deps) [#65](https://github.com/IntelliXLabs/intellix/pull/65 ): chore: bump pelldvs version to v0.3.0
+
+## [Released v1.1.0]
 
 ### Features
 

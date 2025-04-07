@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/0xPellNetwork/pellapp-sdk/pelldvs"
-	dvstypes "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types"
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
+	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
 
 	"intellix/dvs"
 	"intellix/dvs/processor/types"
@@ -60,7 +60,7 @@ func (r Server) voteData(ctx sdktypes.Context, in *types.RequestScriptIn, data [
 	return nil
 }
 
-func (r Server) responseToTask(ctx sdktypes.Context, in *types.RequestScriptIn, data []byte, validatedData *dvstypes.RequestPostRequestValidatedData) error {
+func (r Server) responseToTask(ctx sdktypes.Context, in *types.RequestScriptIn, data []byte, validatedData *avsitypes.DVSResponse) error {
 	var nonSignerStakeIndices [][]uint32
 	for _, v := range validatedData.NonSignerStakeIndices {
 		nonSignerStakeIndices = append(nonSignerStakeIndices, v.NonSignerStakeIndice)
@@ -88,11 +88,11 @@ func (r Server) responseToTask(ctx sdktypes.Context, in *types.RequestScriptIn, 
 			Error:                        validatedData.Error,
 			Hash:                         validatedData.Hash,
 			NonSignersPubkeysG1:          validatedData.NonSignersPubkeysG1,
-			QuorumApksG1:                 validatedData.QuorumApksG1,
+			QuorumApksG1:                 validatedData.GroupApksG1,
 			SignersApkG2:                 validatedData.SignersApkG2,
 			SignersAggSigG1:              validatedData.SignersAggSigG1,
-			NonSignerQuorumBitmapIndices: validatedData.NonSignerQuorumBitmapIndices,
-			QuorumApkIndices:             validatedData.QuorumApkIndices,
+			NonSignerQuorumBitmapIndices: validatedData.NonSignerGroupBitmapIndices,
+			QuorumApkIndices:             validatedData.GroupApkIndices,
 			TotalStakeIndices:            validatedData.TotalStakeIndices,
 			NonSignerStakeIndices:        nonSignerStakeIndices,
 		},

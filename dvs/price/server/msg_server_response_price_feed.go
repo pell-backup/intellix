@@ -7,8 +7,8 @@ import (
 
 	"cosmossdk.io/math"
 	"github.com/0xPellNetwork/pellapp-sdk/pelldvs"
-	dvstypes "github.com/0xPellNetwork/pellapp-sdk/pelldvs/types"
 	sdktypes "github.com/0xPellNetwork/pellapp-sdk/types"
+	avsitypes "github.com/0xPellNetwork/pelldvs/avsi/types"
 	contractdataoracle "github.com/IntelliXLabs/price-oracle-dvs/bindings/DataOracle"
 
 	"intellix/dvs"
@@ -47,7 +47,7 @@ func (d Server) DVSResponsHandler(ctx context.Context, in *types.RequestPriceFee
 	return &types.ResponsePriceFeedOut{}, nil
 }
 
-func (d Server) sendVoteFinalizedRequestPriceTx(ctx sdktypes.Context, raw *types.RequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractdataoracle.IDataOracleTaskResponse) (*pricetypes.MsgVoteFinalizedRequestPrice, error) {
+func (d Server) sendVoteFinalizedRequestPriceTx(ctx sdktypes.Context, raw *types.RequestPriceFeedIn, validatedData *avsitypes.DVSResponse, priceData *contractdataoracle.IDataOracleTaskResponse) (*pricetypes.MsgVoteFinalizedRequestPrice, error) {
 	addr, err := d.SenderAddress()
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (d Server) sendVoteFinalizedRequestPriceTx(ctx sdktypes.Context, raw *types
 	return msg, nil
 }
 
-func (d Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.RequestPriceFeedIn, validatedData *dvstypes.RequestPostRequestValidatedData, priceData *contractdataoracle.IDataOracleTaskResponse) error {
+func (d Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.RequestPriceFeedIn, validatedData *avsitypes.DVSResponse, priceData *contractdataoracle.IDataOracleTaskResponse) error {
 
 	nonSignerStakeIndices := make([][]uint32, len(validatedData.NonSignerStakeIndices))
 	for i, indices := range validatedData.NonSignerStakeIndices {
@@ -104,11 +104,11 @@ func (d Server) sendResponseToGateway(ctx sdktypes.Context, raw *types.RequestPr
 			Error:                        validatedData.Error,
 			Hash:                         validatedData.Hash,
 			NonSignersPubkeysG1:          validatedData.NonSignersPubkeysG1,
-			QuorumApksG1:                 validatedData.QuorumApksG1,
+			QuorumApksG1:                 validatedData.GroupApksG1,
 			SignersApkG2:                 validatedData.SignersApkG2,
 			SignersAggSigG1:              validatedData.SignersAggSigG1,
-			NonSignerQuorumBitmapIndices: validatedData.NonSignerQuorumBitmapIndices,
-			QuorumApkIndices:             validatedData.QuorumApkIndices,
+			NonSignerQuorumBitmapIndices: validatedData.NonSignerGroupBitmapIndices,
+			QuorumApkIndices:             validatedData.GroupApkIndices,
 			TotalStakeIndices:            validatedData.TotalStakeIndices,
 			NonSignerStakeIndices:        nonSignerStakeIndices,
 		},
