@@ -62,7 +62,8 @@ PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH
 
 export TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-20}
 
-## create a new task
+## ---------------
+## create a new task request crypto price
 cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "ETH" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
 # wait for the task to be processed
@@ -82,7 +83,7 @@ ssh operator "bash /root/scripts/update_operator_socket.sh http://operator:26657
 logt ""
 
 ## create a new task
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "PEPE" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "0.399001" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
 # wait for the task to be processed
 echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
@@ -90,8 +91,9 @@ sleep ${TIMEOUT_FOR_TASK_PROCESS}
 RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
 assert_gt "$RESULT" "0"
 
-## create a new task
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "SUNDOG" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+## ---------------
+## create a new task request A stock price
+cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "0.399001" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
 # wait for the task to be processed
 echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
@@ -99,8 +101,9 @@ sleep ${TIMEOUT_FOR_TASK_PROCESS}
 RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
 assert_gt "$RESULT" "0"
 
-## create a new task
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "TON" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+## ---------------
+## create a new task request US stock price
+cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "AAPL" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
 # wait for the task to be processed
 echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"

@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -13,85 +11,14 @@ import (
 	"github.com/0xPellNetwork/pelldvs-libs/log"
 )
 
-// APIKeyManager is responsible for managing API keys
-type CMCAPIKeyManager struct {
-	logger log.Logger
-	path   string
-}
-
-// NewAPIKeyManager creates a new API key manager
-func NewCMCAPIKeyManager(logger log.Logger, path string) *CMCAPIKeyManager {
-	return &CMCAPIKeyManager{
-		logger: logger,
-		path:   path,
-	}
-}
-
-// GetAPIKey retrieves an API key from a file
-func (m *CMCAPIKeyManager) GetAPIKey(name string) (string, error) {
-	if m.path == "" {
-		m.logger.Error("API key path not set")
-		return "", fmt.Errorf("API key path not set")
-	}
-
-	keyPath := filepath.Join(m.path, fmt.Sprintf("%s.key", name))
-	m.logger.Info("Reading API key", "path", keyPath)
-
-	// Check if the file exists
-	if _, err := os.Stat(keyPath); os.IsNotExist(err) {
-		m.logger.Error("API key file does not exist", "path", keyPath)
-		return "", fmt.Errorf("API key file does not exist: %s", keyPath)
-	}
-
-	// Read file contents
-	keyBytes, err := os.ReadFile(keyPath)
-	if err != nil {
-		m.logger.Error("Failed to read API key file", "path", keyPath, "error", err)
-		return "", fmt.Errorf("failed to read API key file: %w", err)
-	}
-
-	// Remove whitespace
-	key := strings.TrimSpace(string(keyBytes))
-	if key == "" {
-		m.logger.Error("API key is empty", "path", keyPath)
-		return "", fmt.Errorf("API key is empty")
-	}
-
-	// Remove potential quotes
-	key = strings.Trim(key, "\"'")
-
-	m.logger.Info("API key loaded successfully", "name", name)
-	return key, nil
-}
-
-// CoinMarketCapFetchPriceService implements the CoinMarketCap data source
+// CMCFetchPriceService implements the CoinMarketCap data source
 type CMCFetchPriceService struct {
-	logger        log.Logger
-	apiKeyManager *CMCAPIKeyManager
-}
-
-// NewCoinMarketCapFetchPriceService creates a new CoinMarketCap data source service
-func NewCMCFetchPriceService(logger log.Logger, apiKeyPath string) *CMCFetchPriceService {
-	return &CMCFetchPriceService{
-		logger:        logger,
-		apiKeyManager: NewCMCAPIKeyManager(logger, apiKeyPath),
-	}
+	logger log.Logger
+	apiKey string
 }
 
 func (s *CMCFetchPriceService) fetchCoinPrice(base, quote string, tickConverter PriceTickConverter, priceChan chan<- *PriceInfo) error {
 	s.logger.Info("CoinMarketCap data source activated", "status", "initializing")
-
-	// Get API key
-	apiKey, err := s.apiKeyManager.GetAPIKey("coinmarketcap")
-	if err != nil {
-		s.logger.Error("Failed to get CoinMarketCap API key", "error", err)
-		return fmt.Errorf("failed to get CoinMarketCap API key: %w", err)
-	}
-
-	if apiKey == "" {
-		s.logger.Error("Skipping CoinMarketCap data source due to missing API key")
-		return fmt.Errorf("CoinMarketCap API key is empty")
-	}
 
 	base = strings.ToUpper(base)
 	quote = strings.ToUpper(quote)
@@ -116,7 +43,7 @@ func (s *CMCFetchPriceService) fetchCoinPrice(base, quote string, tickConverter 
 	}
 
 	// Set API key
-	req.Header.Set("X-CMC_PRO_API_KEY", apiKey)
+	req.Header.Set("X-CMC_PRO_API_KEY", s.apiKey)
 	req.Header.Set("Accept", "application/json")
 
 	client := &http.Client{}

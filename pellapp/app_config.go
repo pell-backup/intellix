@@ -20,6 +20,7 @@ type AppConfig struct {
 	GasAdjustment  float64 `mapstructure:"gas_adjustment"`
 
 	PriceTickConverterConfig map[string]map[string]string `mapstructure:"price_tick_converter_config"`
+	ApiKey                   map[string]string            `mapstructure:"api_key"`
 }
 
 func (p AppConfig) Validate() error {

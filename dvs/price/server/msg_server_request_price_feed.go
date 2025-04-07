@@ -21,7 +21,8 @@ func (s Server) RequestPriceFeed(ctx context.Context, request *types.RequestPric
 	s.logger.Info("ProcessRequestPriceFeed", "PriceFeedParam", fmt.Sprintf("%+v", request.PriceFeed))
 
 	// fetch raw price from chain
-	rawPrices, err := fetchRawPrices(pkgContext, s.Logger(), request.PriceFeed.BaseSymbol, request.PriceFeed.QuoteSymbol, ToPriceTickConverterByDataSource(s.tickConverterConfig))
+	rawPrices, err := fetchRawPrices(pkgContext, s.Logger(), request.PriceFeed.BaseSymbol, request.PriceFeed.QuoteSymbol,
+		ToPriceTickConverterByDataSource(s.tickConverterConfig), s.apiKey)
 	if err != nil {
 		s.logger.Error("ProcessRequestPriceFeed fetchRawPrices error: " + err.Error())
 		return nil, fmt.Errorf("failed to fetch raw prices: %w", err)

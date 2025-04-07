@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"os"
 	"sort"
 	"strings"
 
@@ -23,6 +22,8 @@ const (
 	dataSourceCoinMarketCap = "coinmarketcap"
 	dataSourceOKX           = "okx"
 	dataSourceGate          = "gate"
+	dataSourceEasyMoney     = "easymoney"
+	dataSourceITick         = "itick"
 )
 
 type PriceTickConverter map[string]string
@@ -69,42 +70,26 @@ func TruncatePriceDecimal(priceStr string, logger log.Logger) string {
 	return priceStr
 }
 
-func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSymbol string, tickConverter PriceTickConverterByDataSource) (map[string]math.LegacyDec, error) {
+func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSymbol string, tickConverter PriceTickConverterByDataSource,
+	apiKey map[string]string) (map[string]math.LegacyDec, error) {
+
 	// Record enabled data sources
 	logger.Info("Initializing price data sources")
 
 	// TODO: configurable
 	var fetchPriceIfs = map[string]FetchPriceServiceIF{
-		dataSourceCoinbase: &CoinbaseFetchPriceService{logger: logger},
-		dataSourceBinance:  &BinanceFetchPriceService{logger: logger},
+		dataSourceCoinbase:  &CoinbaseFetchPriceService{logger: logger},
+		dataSourceBinance:   &BinanceFetchPriceService{logger: logger},
+		dataSourceOKX:       &OKXFetchPriceService{logger: logger},
+		dataSourceGate:      &GateFetchPriceService{logger: logger},
+		dataSourceEasyMoney: &EasyMoneyFetchPriceService{logger: logger},
+		dataSourceITick:     &ITickFetchPriceService{logger: logger},
 	}
 
-	// Check environment variables to determine whether to enable OKX and Gate.io data sources
-	apiKeysPath := os.Getenv("API_KEYS_PATH")
-
-	logger.Info("Checking environment variables for data sources",
-		"API_KEYS_PATH", apiKeysPath)
-
-	fetchPriceIfs[dataSourceOKX] = &OKXFetchPriceService{logger: logger}
-	fetchPriceIfs[dataSourceGate] = &GateFetchPriceService{logger: logger}
-
-	// Try to enable CoinMarketCap data source
-	if apiKeysPath != "" {
-		logger.Info("Checking for CoinMarketCap API key")
-		cmcService := NewCMCFetchPriceService(logger, apiKeysPath)
-
-		// Try to get API key and verify if it's available
-		apiKey, err := cmcService.apiKeyManager.GetAPIKey("coinmarketcap")
-		if err != nil {
-			logger.Error("Failed to get CoinMarketCap API key, skipping this data source", "error", err)
-		} else if apiKey != "" {
-			logger.Info("Enabling CoinMarketCap data source with valid API key")
-			fetchPriceIfs[dataSourceCoinMarketCap] = cmcService
-		} else {
-			logger.Error("CoinMarketCap API key is empty, skipping this data source")
-		}
+	if apiKey["coinmarketcap"] != "" {
+		fetchPriceIfs[dataSourceCoinMarketCap] = &CMCFetchPriceService{logger: logger, apiKey: apiKey["coinmarketcap"]}
 	} else {
-		logger.Error("API_KEYS_PATH not set, skipping CoinMarketCap data source")
+		logger.Error("CoinMarketCap API key is empty, skipping this data source")
 	}
 
 	// Record enabled data sources

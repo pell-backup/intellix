@@ -27,7 +27,6 @@ function load_defaults {
   export OPERATOR_RPC_SERVER=${OPERATOR_RPC_SERVER:-operator:26657}
 
   export COINMARKETCAP_API_KEY=${COINMARKETCAP_API_KEY:-""}
-  export API_KEYS_PATH=${API_KEYS_PATH:-"/root/.intellix/api_keys"}
 }
 
 function dvs_healthcheck {
@@ -111,24 +110,14 @@ function setup_operator_config {
     "coinmarketcap": {
       "USD": "USD"
     }
+  },
+  "api_key": {
+    "coinmarketcap": "$COINMARKETCAP_API_KEY"
   }
 }
 EOF
 
   logt "Operator config created:"
-  
-  # set coinmarketcap api key
-  COINMARKETCAP_API_KEY=$(echo $COINMARKETCAP_API_KEY | sed 's/^"\(.*\)"$/\1/')
-  
-  mkdir -p "$API_KEYS_PATH"
-  if [ -n "$COINMARKETCAP_API_KEY" ]; then
-    echo "$COINMARKETCAP_API_KEY" > "$API_KEYS_PATH/coinmarketcap.key"
-    logt "CoinMarketCap API key configured: $COINMARKETCAP_API_KEY"
-  else
-    logt "No CoinMarketCap API key provided"
-  fi
-  
-  logt "API keys path: $API_KEYS_PATH"
 }
 
 function start_operator {
