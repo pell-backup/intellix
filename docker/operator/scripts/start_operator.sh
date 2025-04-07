@@ -151,13 +151,13 @@ function setup_operator_config {
       "BOME": "USD"
     },
     "a_shares": {
-      "1.000001": "USD",
-      "0.399001": "USD"
+      "1_000001": "USD",
+      "0_399001": "USD"
     },
     "hk_shares": {
-      "100.HSI": "USD"
+      "100_HSI": "USD"
     },
-    "us_stokes": {
+    "us_stocks": {
       "MSTR": "USD",
       "BB": "USD",
       "COIN": "USD",
@@ -173,6 +173,7 @@ function setup_operator_config {
 EOF
 
   logt "Operator config created:"
+  cat $PELLDVS_HOME/config/operator.config.json
 }
 
 function start_operator {

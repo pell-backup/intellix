@@ -80,8 +80,12 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 
 	fetchPriceIfs := make(map[string]FetchPriceServiceIF)
 
+	// This is a workaround for the fact that some exchanges use different base symbols
+	baseSymbolConfig := strings.ReplaceAll(baseSymbol, ".", "_")
+	baseSymbolConfig = strings.ToLower(baseSymbolConfig)
+
 	// Check if the base symbol is a crypto symbol
-	if _, ok := symbolList[types.Crypto][baseSymbol]; ok {
+	if _, ok := symbolList[types.Crypto][baseSymbolConfig]; ok {
 		fetchPriceIfs[dataSourceCoinbase] = &CoinbaseFetchPriceService{logger: logger}
 		fetchPriceIfs[dataSourceBinance] = &BinanceFetchPriceService{logger: logger}
 		fetchPriceIfs[dataSourceOKX] = &OKXFetchPriceService{logger: logger}
@@ -95,12 +99,12 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 	}
 
 	// Check if the quote symbol is in A-shares
-	if _, ok := symbolList[types.AShares][quoteSymbol]; ok {
+	if _, ok := symbolList[types.AShares][baseSymbolConfig]; ok {
 		fetchPriceIfs[dataSourceEasyMoney] = &EasyMoneyFetchPriceService{logger: logger}
 	}
 
 	// Check if the quote symbol is in US stocks
-	if _, ok := symbolList[types.USStocks][quoteSymbol]; ok {
+	if _, ok := symbolList[types.USStocks][baseSymbolConfig]; ok {
 		// This assumes you want to **add** this source, not override the whole map
 		fetchPriceIfs[dataSourceCoinbase] = &CoinbaseFetchPriceService{logger: logger}
 	}
