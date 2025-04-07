@@ -76,7 +76,7 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 	apiKey map[string]string, symbolList map[string]map[string]string) (map[string]math.LegacyDec, error) {
 
 	// Record enabled data sources
-	logger.Info("Initializing price data sources")
+	logger.Info("Initializing price data sources, symbol list", "symbolList", fmt.Sprintf("%+v", symbolList))
 
 	fetchPriceIfs := make(map[string]FetchPriceServiceIF)
 
@@ -111,6 +111,8 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 
 	// Record enabled data sources
 	logger.Info("Enabled price data sources",
+		"baseSymbol", baseSymbol,
+		"quoteSymbol", quoteSymbol,
 		"count", len(fetchPriceIfs),
 		"sources", fmt.Sprintf("%v", getMapKeys(fetchPriceIfs)))
 
@@ -141,7 +143,7 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 	}
 
 	if len(prices) == 0 {
-		return nil, fmt.Errorf("failed to fetch prices from exchanges")
+		return nil, fmt.Errorf("failed to fetch prices from datasource")
 	}
 
 	// Record prices from each data source
