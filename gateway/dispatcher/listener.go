@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"strings"
+	"os"
 
 	"cosmossdk.io/math"
 	interactortypes "github.com/0xPellNetwork/pelldvs-interactor/types"
@@ -166,8 +166,21 @@ func (d *Dispatcher) serializeVRFTask(chainID uint64, newTask *contractdataoracl
 		return nil, err
 	}
 
+	// get private key from file
+	if d.config.ECCKeyPair.ECCPrivateKeyPath == "" {
+		d.logger.Error("Private key path is empty")
+		return nil, errors.New("private key path is empty")
+	}
+
+	// Read private key file
+	keyBytes, err := os.ReadFile(d.config.ECCKeyPair.ECCPrivateKeyPath)
+	if err != nil {
+		d.logger.Error("Failed to read private key file", "err", err)
+		return nil, err
+	}
+
 	// Decode private key
-	privKeyStr := strings.TrimPrefix(d.config.ECCKeyPair.ECCPrivateKey, "0x")
+	privKeyStr := string(keyBytes)
 	priKeyBuf, err := hex.DecodeString(privKeyStr)
 	if err != nil {
 		d.logger.Error("Failed to decode private key", "error", err)

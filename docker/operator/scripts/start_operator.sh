@@ -28,6 +28,9 @@ function load_defaults {
 
   export COINMARKETCAP_API_KEY=${COINMARKETCAP_API_KEY:-""}
   export API_KEYS_PATH=${API_KEYS_PATH:-"/root/.intellix/api_keys"}
+
+  export ECC_PRIVATE_KEY=${ECC_PRIVATE_KEY:-120227b28b159b591f822f7cb4373e3ac37031f050f38486cbd6a4173c22d3d5c90903515b41d933f87408a1837681b62a1b49521e10e614027685eac41fe66d1f5c55}
+  export ECC_PUBLIC_KEY=${ECC_PUBLIC_KEY:-03515b41d933f87408a1837681b62a1b49521e10e614027685eac41fe66d1f5c55}
 }
 
 function dvs_healthcheck {
@@ -96,18 +99,18 @@ function setup_operator_config {
     }
   },
   "ecc_key_pair": {
-    "ecc_private_key": "",
-    "ecc_public_key": "03515b41d933f87408a1837681b62a1b49521e10e614027685eac41fe66d1f5c55"
+    "ecc_private_key_path": "$PELLDVS_HOME/config/ecc_private_key.pem",
+    "ecc_public_key": $ECC_PUBLIC_KEY
   }
 }
 EOF
 
   cat $PELLDVS_HOME/config/operator.config.json
   logt "Operator config created:"
-  
+
   # set coinmarketcap api key
   COINMARKETCAP_API_KEY=$(echo $COINMARKETCAP_API_KEY | sed 's/^"\(.*\)"$/\1/')
-  
+
   mkdir -p "$API_KEYS_PATH"
   if [ -n "$COINMARKETCAP_API_KEY" ]; then
     echo "$COINMARKETCAP_API_KEY" > "$API_KEYS_PATH/coinmarketcap.key"
@@ -115,7 +118,7 @@ EOF
   else
     logt "No CoinMarketCap API key provided"
   fi
-  
+
   logt "API keys path: $API_KEYS_PATH"
 }
 
