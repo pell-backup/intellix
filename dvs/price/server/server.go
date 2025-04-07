@@ -34,6 +34,7 @@ type Server struct {
 	taskGatewayClient   *taskgateway.Client
 	tickConverterConfig map[string]map[string]string
 	apiKey              map[string]string
+	symbolList          map[string]map[string]string
 }
 
 func NewServer(
@@ -50,6 +51,7 @@ func NewServer(
 	gasAdjustment float64,
 	tickConverterConfig map[string]map[string]string,
 	apiKey map[string]string,
+	symbolList map[string]map[string]string,
 ) (Server, error) {
 	if gasPrices == "" {
 		gasPrices = "1uixn"
@@ -73,6 +75,7 @@ func NewServer(
 		gasAdjustment:       gasAdjustment,
 		tickConverterConfig: tickConverterConfig,
 		apiKey:              apiKey,
+		symbolList:          symbolList,
 	}
 
 	if operatorAddress != "" {

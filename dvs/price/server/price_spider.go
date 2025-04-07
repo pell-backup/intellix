@@ -9,6 +9,8 @@ import (
 	"cosmossdk.io/math"
 	"github.com/0xPellNetwork/pelldvs-libs/log"
 	"golang.org/x/sync/errgroup"
+
+	"intellix/dvs/price/types"
 )
 
 type PriceInfo struct {
@@ -71,25 +73,36 @@ func TruncatePriceDecimal(priceStr string, logger log.Logger) string {
 }
 
 func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSymbol string, tickConverter PriceTickConverterByDataSource,
-	apiKey map[string]string) (map[string]math.LegacyDec, error) {
+	apiKey map[string]string, symbolList map[string]map[string]string) (map[string]math.LegacyDec, error) {
 
 	// Record enabled data sources
 	logger.Info("Initializing price data sources")
 
-	// TODO: configurable
-	var fetchPriceIfs = map[string]FetchPriceServiceIF{
-		dataSourceCoinbase:  &CoinbaseFetchPriceService{logger: logger},
-		dataSourceBinance:   &BinanceFetchPriceService{logger: logger},
-		dataSourceOKX:       &OKXFetchPriceService{logger: logger},
-		dataSourceGate:      &GateFetchPriceService{logger: logger},
-		dataSourceEasyMoney: &EasyMoneyFetchPriceService{logger: logger},
-		dataSourceITick:     &ITickFetchPriceService{logger: logger},
+	fetchPriceIfs := make(map[string]FetchPriceServiceIF)
+
+	// Check if the base symbol is a crypto symbol
+	if _, ok := symbolList[types.Crypto][baseSymbol]; ok {
+		fetchPriceIfs[dataSourceCoinbase] = &CoinbaseFetchPriceService{logger: logger}
+		fetchPriceIfs[dataSourceBinance] = &BinanceFetchPriceService{logger: logger}
+		fetchPriceIfs[dataSourceOKX] = &OKXFetchPriceService{logger: logger}
+		fetchPriceIfs[dataSourceGate] = &GateFetchPriceService{logger: logger}
+
+		if key := apiKey[types.CoinMarketCap]; key != "" {
+			fetchPriceIfs[dataSourceCoinMarketCap] = &CMCFetchPriceService{logger: logger, apiKey: key}
+		} else {
+			logger.Error("CoinMarketCap API key is empty, skipping this data source")
+		}
 	}
 
-	if apiKey["coinmarketcap"] != "" {
-		fetchPriceIfs[dataSourceCoinMarketCap] = &CMCFetchPriceService{logger: logger, apiKey: apiKey["coinmarketcap"]}
-	} else {
-		logger.Error("CoinMarketCap API key is empty, skipping this data source")
+	// Check if the quote symbol is in A-shares
+	if _, ok := symbolList[types.AShares][quoteSymbol]; ok {
+		fetchPriceIfs[dataSourceEasyMoney] = &EasyMoneyFetchPriceService{logger: logger}
+	}
+
+	// Check if the quote symbol is in US stocks
+	if _, ok := symbolList[types.USStocks][quoteSymbol]; ok {
+		// This assumes you want to **add** this source, not override the whole map
+		fetchPriceIfs[dataSourceCoinbase] = &CoinbaseFetchPriceService{logger: logger}
 	}
 
 	// Record enabled data sources

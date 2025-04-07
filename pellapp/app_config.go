@@ -21,6 +21,7 @@ type AppConfig struct {
 
 	PriceTickConverterConfig map[string]map[string]string `mapstructure:"price_tick_converter_config"`
 	ApiKey                   map[string]string            `mapstructure:"api_key"`
+	SymbolList               map[string]map[string]string `mapstructure:"symbol_list"`
 }
 
 func (p AppConfig) Validate() error {

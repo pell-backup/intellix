@@ -113,6 +113,61 @@ function setup_operator_config {
   },
   "api_key": {
     "coinmarketcap": "$COINMARKETCAP_API_KEY"
+  },
+  "symbol_list": {
+    "crypto": {
+      "TON": "USD",
+      "BTC": "USD",
+      "SAVM": "USD",
+      "DOGE": "USD",
+      "ORDI": "USD",
+      "PEPE": "USD",
+      "CAT": "USD",
+      "GOAT": "USD",
+      "NEIROCTO": "USD",
+      "XLM": "USD",
+      "XRP": "USD",
+      "ACT": "USD",
+      "DOGS": "USD",
+      "MEME": "USD",
+      "BNB": "USD",
+      "ETH": "USD",
+      "MUBI": "USD",
+      "BB": "USD",
+      "CATS": "USD",
+      "DAI": "USD",
+      "LADYS": "USD",
+      "SUNDOG": "USD",
+      "BAN": "USD",
+      "PUSS": "USD",
+      "MOODENG": "USD",
+      "USDC": "USD",
+      "NEIRO": "USD",
+      "1000SATS": "USD",
+      "NEIROETH": "USD",
+      "AUCTION": "USD",
+      "WIF": "USD",
+      "USDT": "USD",
+      "BOME": "USD"
+    },
+    "a_shares": {
+      "1.000001": "USD",
+      "0.399001": "USD"
+    },
+    "hk_shares": {
+      "100.HSI": "USD"
+    },
+    "us_stokes": {
+      "MSTR": "USD",
+      "BB": "USD",
+      "COIN": "USD",
+      "NVDA": "USD",
+      "TSLA": "USD",
+      "PLTR": "USD",
+      "AAPL": "USD",
+      "AMZN": "USD",
+      "GOOGL": "USD"
+    }
   }
 }
 EOF

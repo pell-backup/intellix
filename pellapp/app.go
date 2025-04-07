@@ -151,7 +151,7 @@ func NewApp(
 		app.logger, clientCtx, key, config.CosmosChainId,
 		config.GatewayAddr, config.OperatorAddr,
 		config.WaitBlockCount, config.GasPrices, config.GasAdjustment, config.PriceTickConverterConfig,
-		config.ApiKey,
+		config.ApiKey, config.SymbolList,
 	)
 	if err != nil {
 		panic(err)

@@ -82,15 +82,6 @@ logt "update operator sokcet address and sleep 5 seconds to wait for the dispatc
 ssh operator "bash /root/scripts/update_operator_socket.sh http://operator:26657"
 logt ""
 
-## create a new task
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "0.399001" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
-
-# wait for the task to be processed
-echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
-sleep ${TIMEOUT_FOR_TASK_PROCESS}
-RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
-assert_gt "$RESULT" "0"
-
 ## ---------------
 ## create a new task request A stock price
 cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "0.399001" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
@@ -100,6 +91,17 @@ echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
 sleep ${TIMEOUT_FOR_TASK_PROCESS}
 RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
 assert_gt "$RESULT" "0"
+
+## ---------------
+## create a new task request HK stock price
+cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "100.HSI" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+
+# wait for the task to be processed
+echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
+sleep ${TIMEOUT_FOR_TASK_PROCESS}
+RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
+assert_gt "$RESULT" "0"
+
 
 ## ---------------
 ## create a new task request US stock price
