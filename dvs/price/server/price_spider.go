@@ -103,6 +103,11 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 		fetchPriceIfs[dataSourceEasyMoney] = &EasyMoneyFetchPriceService{logger: logger}
 	}
 
+	// Check if the quote symbol is in H-shares
+	if _, ok := symbolList[types.HKShares][quoteSymbol]; ok {
+		fetchPriceIfs[dataSourceEasyMoney] = &EasyMoneyFetchPriceService{logger: logger}
+	}
+
 	// Check if the quote symbol is in US stocks
 	if _, ok := symbolList[types.USStocks][baseSymbolConfig]; ok {
 		// This assumes you want to **add** this source, not override the whole map
