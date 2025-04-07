@@ -106,7 +106,7 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 	// Check if the quote symbol is in US stocks
 	if _, ok := symbolList[types.USStocks][baseSymbolConfig]; ok {
 		// This assumes you want to **add** this source, not override the whole map
-		fetchPriceIfs[dataSourceCoinbase] = &CoinbaseFetchPriceService{logger: logger}
+		fetchPriceIfs[dataSourceITick] = &ITickFetchPriceService{logger: logger}
 	}
 
 	// Record enabled data sources
