@@ -151,11 +151,11 @@ function setup_operator_config {
       "BOME": "USD"
     },
     "a_shares": {
-      "1_000001": "USD",
-      "0_399001": "USD"
+      "1_000001": "CNY",
+      "0_399001": "CNY"
     },
     "hk_shares": {
-      "100_HSI": "USD"
+      "100_HSI": "HKD",
     },
     "us_stocks": {
       "MSTR": "USD",

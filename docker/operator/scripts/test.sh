@@ -59,6 +59,7 @@ abci_healthcheck
 
 ADMIN_KEY=0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
 PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/PriceOraclePayInNativeConsumer.json" | jq -r .address)
+INDICES_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS=$(ssh hardhat "cat $HARDHAT_DVS_PATH/IndicesOraclePayInNativeConsumer.json" | jq -r .address)
 
 export TIMEOUT_FOR_TASK_PROCESS=${TIMEOUT_FOR_TASK_PROCESS:-20}
 
@@ -84,31 +85,31 @@ logt ""
 
 ## ---------------
 ## create a new task request A stock price
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "0.399001" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+cast send "$INDICES_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string,string)" "0.399001" "CNY" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
 # wait for the task to be processed
 echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
 sleep ${TIMEOUT_FOR_TASK_PROCESS}
-RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
+RESULT=$(cast call "$INDICES_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
 assert_gt "$RESULT" "0"
 
 ## ---------------
 ## create a new task request HK stock price
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "100.HSI" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+cast send "$INDICES_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string,string)" "100.HSI" "HKD" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
 # wait for the task to be processed
 echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
 sleep ${TIMEOUT_FOR_TASK_PROCESS}
-RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
+RESULT=$(cast call "$INDICES_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
 assert_gt "$RESULT" "0"
 
 
 ## ---------------
 ## create a new task request US stock price
-cast send "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string)" "AAPL" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
+cast send "$INDICES_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "requestPrice(string,string)" "AAPL" "USD" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL"
 
 # wait for the task to be processed
 echo "wait ${TIMEOUT_FOR_TASK_PROCESS} seconds for the task to be processed"
 sleep ${TIMEOUT_FOR_TASK_PROCESS}
-RESULT=$(cast call "$PRICE_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
+RESULT=$(cast call "$INDICES_ORACLE_PAY_IN_NATIVE_CONSUMER_ADDRESS" "price()" --private-key "$ADMIN_KEY" --rpc-url "$ETH_RPC_URL" | cast to-dec)
 assert_gt "$RESULT" "0"

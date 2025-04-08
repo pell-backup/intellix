@@ -21,7 +21,7 @@ jobs:
       packages: write
       contents: read
     env:
-      DFT_CONTRACT_VERSION: v0.4.4
+      DFT_CONTRACT_VERSION: v0.4.8
       IMAGE_NAME: pellnetwork/intellix-e2e-hardhat
 
     steps:
