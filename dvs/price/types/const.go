@@ -1,10 +1,12 @@
 package types
 
 const (
-	Crypto   = "crypto"
-	AShares  = "a_shares"
-	HKShares = "hk_shares"
-	USStocks = "us_stocks"
+	AssetTypeCrypto   = "crypto"
+	AssetTypeAShares  = "a_shares"
+	AssetTypeHKShares = "hk_shares"
+	AssetTypeUSStocks = "us_stocks"
+)
 
-	CoinMarketCap = "coinmarketcap"
+const (
+	DataSourceCoinMarketCap = "coinmarketcap"
 )

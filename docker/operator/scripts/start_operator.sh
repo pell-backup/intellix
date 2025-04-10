@@ -98,17 +98,11 @@ function setup_operator_config {
     "binance": {
       "USD": "USDT"
     },
-    "coinbase": {
-      "USD": "USD"
-    },
     "okx": {
       "USD": "USDT"
     },
     "gate": {
       "USD": "USDT"
-    },
-    "coinmarketcap": {
-      "USD": "USD"
     }
   },
   "api_key": {
@@ -155,7 +149,7 @@ function setup_operator_config {
       "0_399001": "CNY"
     },
     "hk_shares": {
-      "100_HSI": "HKD",
+      "100_HSI": "HKD"
     },
     "us_stocks": {
       "MSTR": "USD",

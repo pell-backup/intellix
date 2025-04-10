@@ -85,31 +85,31 @@ func fetchRawPrices(ctx context.Context, logger log.Logger, baseSymbol, quoteSym
 	baseSymbolConfig = strings.ToLower(baseSymbolConfig)
 
 	// Check if the base symbol is a crypto symbol
-	if _, ok := symbolList[types.Crypto][baseSymbolConfig]; ok {
+	if _, ok := symbolList[types.AssetTypeCrypto][baseSymbolConfig]; ok {
 		fetchPriceIfs[dataSourceCoinbase] = &CoinbaseFetchPriceService{logger: logger}
 		fetchPriceIfs[dataSourceBinance] = &BinanceFetchPriceService{logger: logger}
 		fetchPriceIfs[dataSourceOKX] = &OKXFetchPriceService{logger: logger}
 		fetchPriceIfs[dataSourceGate] = &GateFetchPriceService{logger: logger}
 
-		if key := apiKey[types.CoinMarketCap]; key != "" {
+		if key := apiKey[types.DataSourceCoinMarketCap]; key != "" {
 			fetchPriceIfs[dataSourceCoinMarketCap] = &CMCFetchPriceService{logger: logger, apiKey: key}
 		} else {
-			logger.Error("CoinMarketCap API key is empty, skipping this data source")
+			logger.Error("DataSourceCoinMarketCap API key is empty, skipping this data source")
 		}
 	}
 
 	// Check if the quote symbol is in A-shares
-	if _, ok := symbolList[types.AShares][baseSymbolConfig]; ok {
+	if _, ok := symbolList[types.AssetTypeAShares][baseSymbolConfig]; ok {
 		fetchPriceIfs[dataSourceEasyMoney] = &EasyMoneyFetchPriceService{logger: logger}
 	}
 
 	// Check if the quote symbol is in H-shares
-	if _, ok := symbolList[types.HKShares][baseSymbolConfig]; ok {
+	if _, ok := symbolList[types.AssetTypeHKShares][baseSymbolConfig]; ok {
 		fetchPriceIfs[dataSourceEasyMoney] = &EasyMoneyFetchPriceService{logger: logger}
 	}
 
 	// Check if the quote symbol is in US stocks
-	if _, ok := symbolList[types.USStocks][baseSymbolConfig]; ok {
+	if _, ok := symbolList[types.AssetTypeUSStocks][baseSymbolConfig]; ok {
 		// This assumes you want to **add** this source, not override the whole map
 		fetchPriceIfs[dataSourceITick] = &ITickFetchPriceService{logger: logger}
 	}
