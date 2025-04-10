@@ -42,6 +42,10 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 - (deps) [#65](https://github.com/IntelliXLabs/intellix/pull/65 ): chore: bump pelldvs version to v0.3.0
 
+### Features
+
+- (datasource) [#66](https://github.com/IntelliXLabs/intellix/pull/66 ): feat: support data sources for A-shares, HK-shares, and US stocks 
+
 ## [Released v1.1.0]
 
 ### Features
